@@ -1,0 +1,10 @@
+{
+  "bundle": {
+    "resources": {
+      "resources/backend-runtime/": "backend-runtime/"
+    },
+    "macOS": {
+      "signingIdentity": "-"
+    }
+  }
+}

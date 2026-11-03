@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Node / frontend
+node_modules/
+app/dist/
+
+# Rust / Tauri
+app/src-tauri/target/
+app/src-tauri/gen/
+app/src-tauri/resources/backend-runtime/
+
+# Benchmarks: modelos y resultados pesados (se regeneran con los scripts)
+bench/.models/
+bench/.venv/
+bench/corpus/*.wav
+bench/corpus/*.aiff
+bench/results/whisper_*.json
+
+# Sistema
+.DS_Store
+*.log

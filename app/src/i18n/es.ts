@@ -1,0 +1,42 @@
+/** Todos los textos de la interfaz (ADR-010: solo español). */
+export const es = {
+  appName: 'AI Study Assistant',
+  nav: {
+    dashboard: 'Inicio',
+    subjects: 'Mis asignaturas',
+    recordings: 'Grabaciones',
+    import: 'Importar archivos',
+    library: 'Biblioteca',
+    notes: 'Apuntes',
+    summaries: 'Resúmenes',
+    exams: 'Exámenes',
+    flashcards: 'Flashcards',
+    assistant: 'Asistente IA',
+    stats: 'Estadísticas',
+    settings: 'Configuración',
+  },
+  backend: {
+    starting: 'Iniciando el servicio local…',
+    ready: 'Servicio local activo',
+    failed: 'El servicio local no está disponible',
+    stopped: 'Servicio local detenido',
+  },
+  dashboard: {
+    title: 'Inicio',
+    subtitle: 'Tu espacio de estudio. Aquí verás tus asignaturas, clases y próximos repasos.',
+    systemTitle: 'Estado del sistema',
+    version: 'Versión',
+    database: 'Base de datos',
+    schema: (v: number) => `esquema v${v}`,
+    search: 'Búsqueda de texto',
+    available: 'disponible',
+    unavailable: 'no disponible',
+    dataDir: 'Tus datos se guardan en',
+    privacy: 'Todo se procesa en este Mac. Nada se envía a Internet sin tu permiso.',
+    retry: 'Reintentar',
+  },
+  comingSoon: {
+    title: 'Próximamente',
+    body: (phase: number) => `Esta sección se construye en la fase ${phase} del proyecto.`,
+  },
+} as const

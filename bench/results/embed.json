@@ -1,0 +1,61 @@
+{
+  "docs": 31,
+  "questions": 30,
+  "bm25": {
+    "recall@1": 0.967,
+    "recall@3": 1.0,
+    "recall@5": 1.0,
+    "mrr": 0.983
+  },
+  "qwen3-embedding:0.6b": {
+    "dim": 1024,
+    "ms_per_chunk": 33.7,
+    "mem_mb": 962,
+    "semantic": {
+      "recall@1": 0.9,
+      "recall@3": 0.933,
+      "recall@5": 1.0,
+      "mrr": 0.933
+    },
+    "hybrid_rrf": {
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "mrr": 1.0
+    }
+  },
+  "embeddinggemma": {
+    "dim": 768,
+    "ms_per_chunk": 22.3,
+    "mem_mb": 654,
+    "semantic": {
+      "recall@1": 0.967,
+      "recall@3": 0.967,
+      "recall@5": 0.967,
+      "mrr": 0.969
+    },
+    "hybrid_rrf": {
+      "recall@1": 0.967,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "mrr": 0.978
+    }
+  },
+  "bge-m3": {
+    "dim": 1024,
+    "ms_per_chunk": 24.0,
+    "mem_mb": 657,
+    "semantic": {
+      "recall@1": 0.9,
+      "recall@3": 0.933,
+      "recall@5": 0.967,
+      "mrr": 0.925
+    },
+    "hybrid_rrf": {
+      "recall@1": 0.933,
+      "recall@3": 0.967,
+      "recall@5": 1.0,
+      "mrr": 0.951
+    }
+  }
+}

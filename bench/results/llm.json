@@ -1,0 +1,190 @@
+[
+  {
+    "model": "qwen3.5:4b",
+    "speed_4k": {
+      "ctx_target": 4000,
+      "prompt_tokens": 5085,
+      "prefill_tok_s": 1235.7,
+      "decode_tok_s": 33.8,
+      "load_s": 1.0,
+      "total_s": 17.0
+    },
+    "ps_4k": {
+      "ps_size_mb": 4045,
+      "ps_vram_mb": 4045
+    },
+    "speed_16k": {
+      "ctx_target": 16000,
+      "prompt_tokens": 15073,
+      "prefill_tok_s": 1202.8,
+      "decode_tok_s": 25.9,
+      "load_s": 0.0,
+      "total_s": 12.8
+    },
+    "ps_16k": {
+      "ps_size_mb": 4734,
+      "ps_vram_mb": 4734
+    },
+    "exam": {
+      "rounds": 8,
+      "json_ok": 8,
+      "questions": 16,
+      "quote_literal": 16,
+      "quote_source_ok": 16,
+      "distinct_options": 16,
+      "seconds": 140.2
+    },
+    "grounding": {
+      "answered_correctly": "5/5",
+      "refused_correctly": "5/5",
+      "injection_resisted": "3/3"
+    },
+    "memory": {
+      "peak_ollama_footprint_mb": 7792,
+      "peak_system_used_mb": 21685,
+      "min_system_available_mb": 2891,
+      "swap_delta_mb": -616
+    }
+  },
+  {
+    "model": "qwen3.5:9b",
+    "speed_4k": {
+      "ctx_target": 4000,
+      "prompt_tokens": 5085,
+      "prefill_tok_s": 631.4,
+      "decode_tok_s": 33.9,
+      "load_s": 2.8,
+      "total_s": 22.7
+    },
+    "ps_4k": {
+      "ps_size_mb": 7569,
+      "ps_vram_mb": 7569
+    },
+    "speed_16k": {
+      "ctx_target": 16000,
+      "prompt_tokens": 15073,
+      "prefill_tok_s": 659.2,
+      "decode_tok_s": 32.9,
+      "load_s": 0.0,
+      "total_s": 35.0
+    },
+    "ps_16k": {
+      "ps_size_mb": 8318,
+      "ps_vram_mb": 8318
+    },
+    "exam": {
+      "rounds": 8,
+      "json_ok": 8,
+      "questions": 16,
+      "quote_literal": 16,
+      "quote_source_ok": 16,
+      "distinct_options": 16,
+      "seconds": 123.8
+    },
+    "grounding": {
+      "answered_correctly": "5/5",
+      "refused_correctly": "5/5",
+      "injection_resisted": "3/3"
+    },
+    "memory": {
+      "peak_ollama_footprint_mb": 12303,
+      "peak_system_used_mb": 22479,
+      "min_system_available_mb": 2097,
+      "swap_delta_mb": 2161
+    }
+  },
+  {
+    "model": "qwen3.5:9b-mlx",
+    "speed_4k": {
+      "ctx_target": 4000,
+      "prompt_tokens": 5085,
+      "prefill_tok_s": 529.8,
+      "decode_tok_s": 18.3,
+      "load_s": 2.2,
+      "total_s": 33.8
+    },
+    "ps_4k": {
+      "ps_size_mb": 8747,
+      "ps_vram_mb": 8747
+    },
+    "speed_16k": {
+      "ctx_target": 16000,
+      "prompt_tokens": 15073,
+      "prefill_tok_s": 494.0,
+      "decode_tok_s": 16.2,
+      "load_s": 0.0,
+      "total_s": 55.2
+    },
+    "ps_16k": {
+      "ps_size_mb": 9436,
+      "ps_vram_mb": 9436
+    },
+    "exam": {
+      "rounds": 8,
+      "json_ok": 8,
+      "questions": 16,
+      "quote_literal": 16,
+      "quote_source_ok": 16,
+      "distinct_options": 16,
+      "seconds": 213.6
+    },
+    "grounding": {
+      "answered_correctly": "5/5",
+      "refused_correctly": "5/5",
+      "injection_resisted": "3/3"
+    },
+    "memory": {
+      "peak_ollama_footprint_mb": 12303,
+      "peak_system_used_mb": 22432,
+      "min_system_available_mb": 2144,
+      "swap_delta_mb": 351
+    }
+  },
+  {
+    "model": "gemma4:12b",
+    "speed_4k": {
+      "ctx_target": 4000,
+      "prompt_tokens": 4917,
+      "prefill_tok_s": 327.1,
+      "decode_tok_s": 21.6,
+      "load_s": 2.0,
+      "total_s": 34.7
+    },
+    "ps_4k": {
+      "ps_size_mb": 8021,
+      "ps_vram_mb": 8021
+    },
+    "speed_16k": {
+      "ctx_target": 16000,
+      "prompt_tokens": 14573,
+      "prefill_tok_s": 339.9,
+      "decode_tok_s": 20.5,
+      "load_s": 0.0,
+      "total_s": 60.4
+    },
+    "ps_16k": {
+      "ps_size_mb": 9546,
+      "ps_vram_mb": 9546
+    },
+    "exam": {
+      "rounds": 8,
+      "json_ok": 8,
+      "questions": 16,
+      "quote_literal": 16,
+      "quote_source_ok": 16,
+      "distinct_options": 16,
+      "seconds": 145.1
+    },
+    "grounding": {
+      "answered_correctly": "5/5",
+      "refused_correctly": "5/5",
+      "injection_resisted": "3/3"
+    },
+    "memory": {
+      "peak_ollama_footprint_mb": 17423,
+      "peak_system_used_mb": 22283,
+      "min_system_available_mb": 2293,
+      "swap_delta_mb": 4680
+    }
+  }
+]

@@ -1,0 +1,113 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Study Assistant API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": ["system"],
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/info": {
+      "get": {
+        "tags": ["system"],
+        "summary": "System Info",
+        "operationId": "system_info_api_v1_system_info_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemInfoOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "schema_version": {
+            "type": "integer",
+            "title": "Schema Version"
+          }
+        },
+        "type": "object",
+        "required": ["status", "version", "schema_version"],
+        "title": "HealthOut"
+      },
+      "SystemInfoOut": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "python_version": {
+            "type": "string",
+            "title": "Python Version"
+          },
+          "sqlite_version": {
+            "type": "string",
+            "title": "Sqlite Version"
+          },
+          "fts5_available": {
+            "type": "boolean",
+            "title": "Fts5 Available"
+          },
+          "schema_version": {
+            "type": "integer",
+            "title": "Schema Version"
+          },
+          "data_dir": {
+            "type": "string",
+            "title": "Data Dir"
+          },
+          "user_display_name": {
+            "type": "string",
+            "title": "User Display Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "python_version",
+          "sqlite_version",
+          "fts5_available",
+          "schema_version",
+          "data_dir",
+          "user_display_name"
+        ],
+        "title": "SystemInfoOut"
+      }
+    }
+  }
+}
