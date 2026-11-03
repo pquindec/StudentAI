@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.0] — 2026-11-03 · Fase 2: asignaturas y fuentes
+### Añadido
+- Migración `0002_sources_jobs.sql`: `sources`, `source_links` (N:M con unidades o sesiones), `source_versions`, `segments`, `jobs`.
+- API: CRUD de asignaturas, unidades y sesiones; biblioteca (`/sources` con filtros), texto pegado/nota, contenido versionado con control de concurrencia, reintento; trabajos (`/jobs`, cancelar).
+- Importación de archivos: validación por extensión + *magic bytes*, límites por tipo, copia inmutable (`0400`) con nombre UUID, SHA-256 y deduplicación por asignatura.
+- Extractores PDF, DOCX, TXT, MD, RTF y CSV en un subproceso aislado con timeout y límite de CPU; segmentos con página, sección y offsets exactos.
+- Audio: `ffprobe` + normalización a WAV 16 kHz mono con progreso y cancelación (la transcripción llega en la Fase 3).
+- Cola de trabajos persistente con clases de recurso, recuperación tras cierre y cancelación.
+- Rust: comandos `pick_files` (selector nativo) e `import_files`; solo se importan rutas elegidas por el usuario (diálogo o arrastrar y soltar), de un solo uso y con caducidad. El proxy de la UI bloquea `/api/v1/internal/`.
+- UI: Mis asignaturas, detalle con árbol de unidades y sesiones, Importar (soltar, elegir, pegar), Biblioteca con filtros, detalle de material con vista previa, edición y versiones, y panel "En proceso".
+
+### Corregido durante la fase
+- Textos cortos en Windows-1252/Latin-1 se decodificaban con una página de códigos equivocada (el detector elegía cp775/cp1250) → se prueba primero Windows-1252 si todos los caracteres no ASCII son letras o signos occidentales.
+- `SourceOut` recibía `needs_review` dos veces (error 500 al consultar una fuente).
+
 ## [0.1.0] — 2026-11-03 · Fase 1: estructura y entorno
 ### Añadido
 - Monorepo: `app/` (Tauri 2 + React 19 + TS 7 + Tailwind 4), `backend/` (FastAPI, Python 3.13 con uv), `scripts/`.

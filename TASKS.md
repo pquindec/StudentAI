@@ -10,14 +10,14 @@
 | 0 — Investigación y arquitectura | ✅ Aprobada (2026-11-03) |
 | 0.5 — Benchmarks en el equipo | ✅ Completada (2026-11-03) — ver `BENCHMARKS.md` |
 | 1 — Estructura y entorno | ✅ Completada (2026-11-03) |
-| 2 — Asignaturas y fuentes | ⏸ **Pendiente de aprobación** |
+| 2 — Asignaturas y fuentes | 🟡 Implementada (2026-11-03) — falta la verificación manual en la UI |
 | 3–10 | ⏳ No iniciadas |
 
 ### Tareas nuevas surgidas de la Fase 0.5
 - [x] (F1) Usar Ollama **oficial** en desarrollo (el de Homebrew no tiene salida estructurada); documentarlo en INSTALLATION.md
 - [x] (F1) Tabla `users` y `owner_id` en el esquema inicial (ADR-009); interfaz `ApiTransport` en el frontend
-- [ ] (F2) Sustituir `httpx` por `httpx2` en las pruebas cuando Starlette lo exija (hoy solo es un aviso de obsolescencia)
-- [ ] (F2) Añadir un router en el frontend cuando haya más de una pantalla real
+- [ ] (F3) Sustituir `httpx` por `httpx2` en las pruebas cuando Starlette lo exija (sigue siendo solo un aviso)
+- [x] (F2) Navegación entre pantallas: estado en memoria (`lib/nav.ts`), sin librería de rutas (una app de escritorio no necesita URLs)
 - [ ] (F3) Gestor de modelos de whisper con verificación de tamaño y SHA-256
 - [ ] (F3) Repetir el benchmark de transcripción con una **grabación real** de clase
 - [ ] (F4) Comprobación de capacidades del proveedor LLM al arrancar
@@ -44,16 +44,17 @@
 - [x] Docs: README, CLAUDE, PROJECT_CONTEXT, CHANGELOG, THREAT_MODEL v1, SECURITY, INSTALLATION, API_DOCUMENTATION, DATABASE, TESTING
 - **Criterio de aceptación — cumplido:** la app abre en `tauri dev` y muestra el estado del backend obtenido por el socket; sin token → 401 (pytest + curl); el `.app` arranca su backend embebido fuera del entorno de desarrollo.
 
-## Fase 2 — Asignaturas y fuentes
-- [ ] CRUD de Subject, Unit (árbol) y Session
-- [ ] Botón "Añadir fuente": Finder, arrastrar y soltar, pegar texto, nota manual
-- [ ] Validación de archivos (tipo real por *magic bytes*, tamaño, límites), copia inmutable, sha256 y deduplicación
-- [ ] Extractores: PDF (pypdfium2/pdfplumber), DOCX, TXT/MD, RTF, CSV + detección de "sin texto"
-- [ ] Vista previa y edición del texto extraído (versionado)
-- [ ] Knowledge Library: lista, filtros, estado, vínculos N:M, borrado en cascada
-- [ ] Cola de trabajos persistente + panel "Procesando" (progreso y cancelación)
-- [ ] Importación de audio: probe y normalización (sin transcribir todavía)
-- [ ] Pruebas con archivos malformados (PDF corrupto, DOCX zip-bomb, extensión falsa)
+## Fase 2 — Asignaturas y fuentes 🟡
+- [x] CRUD de Subject, Unit (árbol) y Session
+- [x] "Añadir fuente": selector nativo (Finder), arrastrar y soltar, pegar texto, nota manual
+- [x] Validación de archivos (tipo real por *magic bytes*, tamaño, límites), copia inmutable, sha256 y deduplicación
+- [x] Extractores: PDF (pypdfium2/pdfplumber), DOCX, TXT/MD, RTF, CSV + detección de "sin texto"
+- [x] Vista previa y edición del texto extraído (versionado, conflicto de versiones)
+- [x] Knowledge Library: lista, filtros, estado, vínculos N:M, borrado en cascada
+- [x] Cola de trabajos persistente + panel "Procesando" (progreso y cancelación)
+- [x] Importación de audio: probe y normalización (sin transcribir todavía)
+- [x] Pruebas con archivos malformados (PDF corrupto, DOCX zip-bomb, extensión falsa, binario como .txt, vacío)
+- [ ] Verificación manual en la app: arrastrar archivos reales y usar el selector (pendiente del usuario)
 - **Criterio de aceptación:** crear una asignatura con temas e incorporar PDF, DOCX, TXT, MD, RTF, texto pegado y un MP3/M4A; todos aparecen con sus metadatos y una vista previa correcta; los archivos inválidos muestran un error comprensible.
 
 ## Fase 3 — Grabación y transcripción

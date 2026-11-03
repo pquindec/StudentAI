@@ -6,12 +6,21 @@ import pytest
 
 from app.core.config import Settings
 from app.db.connection import connect
-from app.db.migrate import MIGRATIONS_DIR, migrate
+from app.db.migrate import available, migrate
+
+LATEST = max(v for v, _ in available())
+NEXT = f"{LATEST + 1:04d}"
+
+
+def _copy_real_migrations(dest: Path) -> None:
+    dest.mkdir()
+    for _, f in available():
+        (dest / f.name).write_text(f.read_text())
 
 
 def test_migrate_is_idempotent(settings: Settings) -> None:
-    assert migrate(settings.db_path, settings.backups_dir) == 1
-    assert migrate(settings.db_path, settings.backups_dir) == 1
+    assert migrate(settings.db_path, settings.backups_dir) == LATEST
+    assert migrate(settings.db_path, settings.backups_dir) == LATEST
 
 
 def test_db_file_is_private(settings: Settings) -> None:
@@ -25,23 +34,21 @@ def test_local_user_exists(settings: Settings) -> None:
 
 def test_backup_before_new_migration(settings: Settings, tmp_path: Path) -> None:
     mig = tmp_path / "migs"
-    mig.mkdir()
-    (mig / "0001_init.sql").write_text((MIGRATIONS_DIR / "0001_init.sql").read_text())
-    (mig / "0002_extra.sql").write_text("CREATE TABLE extra (id INTEGER PRIMARY KEY);")
-    assert migrate(settings.db_path, settings.backups_dir, mig) == 2
-    backups = list(settings.backups_dir.glob("app-*-pre-0002.db"))
+    _copy_real_migrations(mig)
+    (mig / f"{NEXT}_extra.sql").write_text("CREATE TABLE extra (id INTEGER PRIMARY KEY);")
+    assert migrate(settings.db_path, settings.backups_dir, mig) == LATEST + 1
+    backups = list(settings.backups_dir.glob(f"app-*-pre-{NEXT}.db"))
     assert len(backups) == 1
 
 
 def test_failed_migration_rolls_back(settings: Settings, tmp_path: Path) -> None:
     mig = tmp_path / "migs"
-    mig.mkdir()
-    (mig / "0001_init.sql").write_text((MIGRATIONS_DIR / "0001_init.sql").read_text())
-    (mig / "0002_bad.sql").write_text("CREATE TABLE half (id INTEGER); SELECT * FROM nope;")
+    _copy_real_migrations(mig)
+    (mig / f"{NEXT}_bad.sql").write_text("CREATE TABLE half (id INTEGER); SELECT * FROM nope;")
     with pytest.raises(sqlite3.Error):
         migrate(settings.db_path, settings.backups_dir, mig)
     conn = connect(settings.db_path)
-    assert conn.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0] == 1
+    assert conn.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0] == LATEST
     tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     assert "half" not in tables
 

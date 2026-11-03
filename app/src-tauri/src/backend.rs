@@ -179,6 +179,7 @@ pub fn start(app: &AppHandle) -> Result<(), String> {
                 hyper::Method::GET,
                 "/api/v1/health",
                 None,
+                false,
             )
             .await
                 && r.status == 200

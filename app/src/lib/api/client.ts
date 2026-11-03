@@ -1,8 +1,46 @@
 import type { components } from './schema'
 import { type ApiTransport, type HttpMethod, toApiError } from './transport'
 
-export type Health = components['schemas']['HealthOut']
-export type SystemInfo = components['schemas']['SystemInfoOut']
+type S = components['schemas']
+export type Health = S['HealthOut']
+export type SystemInfo = S['SystemInfoOut']
+export type Subject = S['SubjectOut']
+export type SubjectDetail = S['SubjectDetailOut']
+export type SubjectIn = S['SubjectIn']
+export type SubjectPatch = S['SubjectPatch']
+export type Unit = S['UnitOut']
+export type UnitIn = S['UnitIn']
+export type UnitPatch = S['UnitPatch']
+export type Session = S['SessionOut']
+export type SessionIn = S['SessionIn']
+export type Source = S['SourceOut']
+export type SourceList = S['SourceListOut']
+export type SourcePatch = S['SourcePatch']
+export type SourceContent = S['SourceContentOut']
+export type TextSourceIn = S['TextSourceIn']
+export type Job = S['JobOut']
+export type SourceKind = Source['kind']
+export type SourceStatus = Source['status']
+
+export interface SourceFilters {
+  subject_id?: string
+  unit_id?: string
+  kind?: SourceKind
+  status?: SourceStatus
+  q?: string
+  limit?: number
+  offset?: number
+}
+
+/** Construye la query sin valores vacíos (encodeURIComponent evita inyectar parámetros). */
+function query(params: object): string {
+  const parts = Object.entries(params)
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+  return parts.length ? `?${parts.join('&')}` : ''
+}
+
+const id = (value: string) => encodeURIComponent(value)
 
 /** Cliente tipado de la API. Los tipos se generan desde OpenAPI (`npm run gen:api`). */
 export class ApiClient {
@@ -24,5 +62,74 @@ export class ApiClient {
 
   systemInfo(): Promise<SystemInfo> {
     return this.call('GET', '/api/v1/system/info')
+  }
+
+  // --- Asignaturas, unidades y sesiones
+  listSubjects(archived = false): Promise<Subject[]> {
+    return this.call('GET', `/api/v1/subjects${query({ archived })}`)
+  }
+  getSubject(subjectId: string): Promise<SubjectDetail> {
+    return this.call('GET', `/api/v1/subjects/${id(subjectId)}`)
+  }
+  createSubject(body: SubjectIn): Promise<Subject> {
+    return this.call('POST', '/api/v1/subjects', body)
+  }
+  updateSubject(subjectId: string, body: SubjectPatch): Promise<Subject> {
+    return this.call('PATCH', `/api/v1/subjects/${id(subjectId)}`, body)
+  }
+  deleteSubject(subjectId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/subjects/${id(subjectId)}`)
+  }
+  createUnit(subjectId: string, body: UnitIn): Promise<Unit> {
+    return this.call('POST', `/api/v1/subjects/${id(subjectId)}/units`, body)
+  }
+  updateUnit(unitId: string, body: UnitPatch): Promise<Unit> {
+    return this.call('PATCH', `/api/v1/units/${id(unitId)}`, body)
+  }
+  deleteUnit(unitId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/units/${id(unitId)}`)
+  }
+  createSession(subjectId: string, body: SessionIn): Promise<Session> {
+    return this.call('POST', `/api/v1/subjects/${id(subjectId)}/sessions`, body)
+  }
+  deleteSession(sessionId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/sessions/${id(sessionId)}`)
+  }
+
+  // --- Fuentes (biblioteca)
+  listSources(filters: SourceFilters = {}): Promise<SourceList> {
+    return this.call('GET', `/api/v1/sources${query(filters)}`)
+  }
+  getSource(sourceId: string): Promise<Source> {
+    return this.call('GET', `/api/v1/sources/${id(sourceId)}`)
+  }
+  createTextSource(body: TextSourceIn): Promise<Source> {
+    return this.call('POST', '/api/v1/sources/text', body)
+  }
+  updateSource(sourceId: string, body: SourcePatch): Promise<Source> {
+    return this.call('PATCH', `/api/v1/sources/${id(sourceId)}`, body)
+  }
+  deleteSource(sourceId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/sources/${id(sourceId)}`)
+  }
+  getContent(sourceId: string, version?: number): Promise<SourceContent> {
+    return this.call('GET', `/api/v1/sources/${id(sourceId)}/content${query({ version })}`)
+  }
+  saveContent(sourceId: string, text: string, baseVersion: number): Promise<SourceContent> {
+    return this.call('PUT', `/api/v1/sources/${id(sourceId)}/content`, {
+      text,
+      base_version: baseVersion,
+    })
+  }
+  retrySource(sourceId: string): Promise<Source> {
+    return this.call('POST', `/api/v1/sources/${id(sourceId)}/retry`)
+  }
+
+  // --- Trabajos en segundo plano
+  listJobs(active = true): Promise<Job[]> {
+    return this.call('GET', `/api/v1/jobs${query({ active, limit: 50 })}`)
+  }
+  cancelJob(jobId: string): Promise<Job> {
+    return this.call('POST', `/api/v1/jobs/${id(jobId)}/cancel`)
   }
 }

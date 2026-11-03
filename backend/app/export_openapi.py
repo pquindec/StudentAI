@@ -16,7 +16,7 @@ def main() -> None:
     dummy = Settings(
         data_dir=Path("/nonexistent"), socket_path=Path("/nonexistent"), token="x" * 32
     )
-    schema = create_app(dummy).openapi()
+    schema = create_app(dummy, run_jobs=False).openapi()
     out.write_text(json.dumps(schema, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"OpenAPI exportado a {out}")
 

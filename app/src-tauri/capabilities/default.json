@@ -1,7 +1,13 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Permisos mínimos de la ventana principal: eventos y los dos comandos propios.",
+  "description": "Permisos mínimos de la ventana principal: eventos y los comandos propios.",
   "windows": ["main"],
-  "permissions": ["core:event:default", "allow-api-request", "allow-backend-status"]
+  "permissions": [
+    "core:event:default",
+    "allow-api-request",
+    "allow-backend-status",
+    "allow-pick-files",
+    "allow-import-files"
+  ]
 }

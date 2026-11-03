@@ -16,13 +16,23 @@ pub struct Response {
     pub body: Bytes,
 }
 
-/// Valida la ruta pedida por el frontend: solo la API versionada, sin trucos de ruta.
+/// Cabecera que solo añaden los comandos propios del núcleo (nunca el proxy de la UI).
+const CORE_HEADER: &str = "x-core-caller";
+
+/// Valida la ruta pedida por el frontend: solo la API versionada, sin trucos de ruta y nunca
+/// los endpoints internos (importar por ruta de archivo es exclusivo del núcleo).
 pub fn validate_path(path: &str) -> Result<(), String> {
+    // El backend decodifica `%xx` en la ruta antes de enrutar: se prohíbe en la parte de ruta
+    // (no en la query) para que `/api/v1/%69nternal` no esquive el bloqueo.
+    let route = path.split('?').next().unwrap_or_default();
     let ok = path.starts_with("/api/v1/")
         && path.len() <= MAX_PATH_LEN
         && !path.contains("..")
         && !path.contains('#')
         && !path.contains('\\')
+        && !route.contains('%')
+        && !route.contains("//")
+        && !route.starts_with("/api/v1/internal")
         && path.chars().all(|c| c.is_ascii_graphic());
     if ok {
         Ok(())
@@ -48,6 +58,7 @@ pub async fn send(
     method: Method,
     path: &str,
     json_body: Option<Vec<u8>>,
+    from_core: bool,
 ) -> Result<Response, String> {
     let stream = UnixStream::connect(socket)
         .await
@@ -65,6 +76,9 @@ pub async fn send(
         .header("host", "backend")
         .header("authorization", format!("Bearer {token}"))
         .header("accept", "application/json");
+    if from_core {
+        builder = builder.header(CORE_HEADER, "1");
+    }
     if json_body.is_some() {
         builder = builder.header("content-type", "application/json");
     }
@@ -93,6 +107,7 @@ mod tests {
     fn accepts_api_paths() {
         assert!(validate_path("/api/v1/health").is_ok());
         assert!(validate_path("/api/v1/subjects?archived=false").is_ok());
+        assert!(validate_path("/api/v1/sources?q=patr%C3%B3n").is_ok());
     }
 
     #[test]
@@ -106,6 +121,10 @@ mod tests {
             "/api/v1/\\x",
             "http://evil/api/v1/",
             "/api/v1/ñ",
+            "/api/v1/internal/sources/import-file",
+            "/api/v1/internal",
+            "/api/v1/%69nternal/sources/import-file",
+            "/api/v1//internal/sources/import-file",
         ] {
             assert!(validate_path(p).is_err(), "{p} debería rechazarse");
         }

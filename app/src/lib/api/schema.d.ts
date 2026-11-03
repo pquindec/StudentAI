@@ -38,10 +38,257 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/subjects': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Subjects */
+    get: operations['list_subjects_api_v1_subjects_get']
+    put?: never
+    /** Create Subject */
+    post: operations['create_subject_api_v1_subjects_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/subjects/{subject_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Subject */
+    get: operations['get_subject_api_v1_subjects__subject_id__get']
+    put?: never
+    post?: never
+    /** Delete Subject */
+    delete: operations['delete_subject_api_v1_subjects__subject_id__delete']
+    options?: never
+    head?: never
+    /** Update Subject */
+    patch: operations['update_subject_api_v1_subjects__subject_id__patch']
+    trace?: never
+  }
+  '/api/v1/subjects/{subject_id}/units': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Create Unit */
+    post: operations['create_unit_api_v1_subjects__subject_id__units_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/units/{unit_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /** Delete Unit */
+    delete: operations['delete_unit_api_v1_units__unit_id__delete']
+    options?: never
+    head?: never
+    /** Update Unit */
+    patch: operations['update_unit_api_v1_units__unit_id__patch']
+    trace?: never
+  }
+  '/api/v1/subjects/{subject_id}/sessions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Create Session */
+    post: operations['create_session_api_v1_subjects__subject_id__sessions_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/sessions/{session_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /** Delete Session */
+    delete: operations['delete_session_api_v1_sessions__session_id__delete']
+    options?: never
+    head?: never
+    /** Update Session */
+    patch: operations['update_session_api_v1_sessions__session_id__patch']
+    trace?: never
+  }
+  '/api/v1/sources': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Sources */
+    get: operations['list_sources_api_v1_sources_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/sources/text': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Create Text Source */
+    post: operations['create_text_source_api_v1_sources_text_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/sources/{source_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Source */
+    get: operations['get_source_api_v1_sources__source_id__get']
+    put?: never
+    post?: never
+    /** Delete Source */
+    delete: operations['delete_source_api_v1_sources__source_id__delete']
+    options?: never
+    head?: never
+    /** Update Source */
+    patch: operations['update_source_api_v1_sources__source_id__patch']
+    trace?: never
+  }
+  '/api/v1/sources/{source_id}/content': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Content */
+    get: operations['get_content_api_v1_sources__source_id__content_get']
+    /**
+     * Update Content
+     * @description Guarda una edición como versión NUEVA (la anterior se conserva).
+     */
+    put: operations['update_content_api_v1_sources__source_id__content_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/sources/{source_id}/retry': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Retry */
+    post: operations['retry_api_v1_sources__source_id__retry_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/jobs': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * List Jobs
+     * @description Activos (en cola o en curso) o, con active=false, los más recientes.
+     */
+    get: operations['list_jobs_api_v1_jobs_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/jobs/{job_id}/cancel': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Cancel Job */
+    post: operations['cancel_job_api_v1_jobs__job_id__cancel_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    /** ContentIn */
+    ContentIn: {
+      /** Text */
+      text: string
+      /** Base Version */
+      base_version: number
+    }
+    /** HTTPValidationError */
+    HTTPValidationError: {
+      /** Detail */
+      detail?: components['schemas']['ValidationError'][]
+    }
     /** HealthOut */
     HealthOut: {
       /** Status */
@@ -50,6 +297,281 @@ export interface components {
       version: string
       /** Schema Version */
       schema_version: number
+    }
+    /** JobOut */
+    JobOut: {
+      /** Id */
+      id: string
+      /** Type */
+      type: string
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'queued' | 'running' | 'done' | 'failed' | 'cancelled'
+      /** Progress */
+      progress: number
+      /** Message */
+      message: string | null
+      /** Source Id */
+      source_id: string | null
+      /** Source Title */
+      source_title: string | null
+      /** Error Code */
+      error_code: string | null
+      /** Error Message */
+      error_message: string | null
+      /** Created At */
+      created_at: string
+      /** Started At */
+      started_at: string | null
+      /** Finished At */
+      finished_at: string | null
+    }
+    /** SegmentOut */
+    SegmentOut: {
+      /** Ordinal */
+      ordinal: number
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'heading' | 'paragraph' | 'table' | 'list'
+      /** Level */
+      level: number | null
+      /** Text */
+      text: string
+      /** Page */
+      page: number | null
+      /** Section Path */
+      section_path: string | null
+      /** Start Ms */
+      start_ms: number | null
+      /** End Ms */
+      end_ms: number | null
+      /** Char Start */
+      char_start: number
+      /** Char End */
+      char_end: number
+    }
+    /** SessionIn */
+    SessionIn: {
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'class' | 'study'
+      /** Title */
+      title: string
+      /** Unit Id */
+      unit_id?: string | null
+      /** Held At */
+      held_at?: string | null
+      /** Duration Ms */
+      duration_ms?: number | null
+      /** Notes */
+      notes?: string | null
+    }
+    /** SessionOut */
+    SessionOut: {
+      /** Id */
+      id: string
+      /** Subject Id */
+      subject_id: string
+      /** Unit Id */
+      unit_id: string | null
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'class' | 'study'
+      /** Title */
+      title: string
+      /** Held At */
+      held_at: string | null
+      /** Duration Ms */
+      duration_ms: number | null
+      /** Notes */
+      notes: string | null
+    }
+    /** SessionPatch */
+    SessionPatch: {
+      /** Title */
+      title?: string | null
+      /** Unit Id */
+      unit_id?: string | null
+      /** Held At */
+      held_at?: string | null
+      /** Notes */
+      notes?: string | null
+    }
+    /** SourceContentOut */
+    SourceContentOut: {
+      /** Version */
+      version: number
+      /** Origin */
+      origin: string
+      /** Text */
+      text: string
+      /** Segments */
+      segments: components['schemas']['SegmentOut'][]
+      /** Versions */
+      versions: components['schemas']['VersionInfo'][]
+    }
+    /** SourceListOut */
+    SourceListOut: {
+      /** Items */
+      items: components['schemas']['SourceOut'][]
+      /** Total */
+      total: number
+    }
+    /** SourceOut */
+    SourceOut: {
+      /** Id */
+      id: string
+      /** Subject Id */
+      subject_id: string
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'recording' | 'audio' | 'pdf' | 'docx' | 'txt' | 'md' | 'rtf' | 'csv' | 'paste' | 'note'
+      /** Title */
+      title: string
+      /** Original Name */
+      original_name: string | null
+      /** Mime */
+      mime: string | null
+      /** Size Bytes */
+      size_bytes: number | null
+      /** Duration Ms */
+      duration_ms: number | null
+      /** Page Count */
+      page_count: number | null
+      /** Language */
+      language: string | null
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'pending' | 'processing' | 'ready' | 'failed' | 'cancelled'
+      /** Error Code */
+      error_code: string | null
+      /** Error Message */
+      error_message: string | null
+      /** Needs Review */
+      needs_review: boolean
+      /** Metadata */
+      metadata: {
+        [key: string]: unknown
+      }
+      /** Imported At */
+      imported_at: string
+      /** Processed At */
+      processed_at: string | null
+      /** Unit Ids */
+      unit_ids: string[]
+      /** Session Ids */
+      session_ids: string[]
+      /** Version */
+      version: number | null
+      /** Char Count */
+      char_count: number | null
+    }
+    /** SourcePatch */
+    SourcePatch: {
+      /** Title */
+      title?: string | null
+      /** Unit Ids */
+      unit_ids?: string[] | null
+      /** Session Ids */
+      session_ids?: string[] | null
+    }
+    /** SubjectDetailOut */
+    SubjectDetailOut: {
+      /** Id */
+      id: string
+      /** Name */
+      name: string
+      /** Description */
+      description: string | null
+      /** Color */
+      color: string | null
+      /** Term */
+      term: string | null
+      /** Archived At */
+      archived_at: string | null
+      /** Created At */
+      created_at: string
+      /** Updated At */
+      updated_at: string
+      /**
+       * Source Count
+       * @default 0
+       */
+      source_count: number
+      /**
+       * Unit Count
+       * @default 0
+       */
+      unit_count: number
+      /** Units */
+      units: components['schemas']['UnitOut'][]
+      /** Sessions */
+      sessions: components['schemas']['SessionOut'][]
+    }
+    /** SubjectIn */
+    SubjectIn: {
+      /** Name */
+      name: string
+      /** Description */
+      description?: string | null
+      /** Color */
+      color?: string | null
+      /** Term */
+      term?: string | null
+    }
+    /** SubjectOut */
+    SubjectOut: {
+      /** Id */
+      id: string
+      /** Name */
+      name: string
+      /** Description */
+      description: string | null
+      /** Color */
+      color: string | null
+      /** Term */
+      term: string | null
+      /** Archived At */
+      archived_at: string | null
+      /** Created At */
+      created_at: string
+      /** Updated At */
+      updated_at: string
+      /**
+       * Source Count
+       * @default 0
+       */
+      source_count: number
+      /**
+       * Unit Count
+       * @default 0
+       */
+      unit_count: number
+    }
+    /** SubjectPatch */
+    SubjectPatch: {
+      /** Name */
+      name?: string | null
+      /** Description */
+      description?: string | null
+      /** Color */
+      color?: string | null
+      /** Term */
+      term?: string | null
+      /** Archived */
+      archived?: boolean | null
     }
     /** SystemInfoOut */
     SystemInfoOut: {
@@ -67,6 +589,102 @@ export interface components {
       data_dir: string
       /** User Display Name */
       user_display_name: string
+    }
+    /** TextSourceIn */
+    TextSourceIn: {
+      /** Subject Id */
+      subject_id: string
+      /**
+       * Kind
+       * @default paste
+       * @enum {string}
+       */
+      kind: 'paste' | 'note'
+      /** Title */
+      title: string
+      /** Text */
+      text: string
+      /**
+       * Unit Ids
+       * @default []
+       */
+      unit_ids: string[]
+      /**
+       * Session Ids
+       * @default []
+       */
+      session_ids: string[]
+    }
+    /** UnitIn */
+    UnitIn: {
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'course' | 'module' | 'topic'
+      /** Title */
+      title: string
+      /** Parent Id */
+      parent_id?: string | null
+      /**
+       * Position
+       * @default 0
+       */
+      position: number
+    }
+    /** UnitOut */
+    UnitOut: {
+      /** Id */
+      id: string
+      /** Subject Id */
+      subject_id: string
+      /** Parent Id */
+      parent_id: string | null
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'course' | 'module' | 'topic'
+      /** Title */
+      title: string
+      /** Position */
+      position: number
+    }
+    /** UnitPatch */
+    UnitPatch: {
+      /** Title */
+      title?: string | null
+      /** Parent Id */
+      parent_id?: string | null
+      /** Position */
+      position?: number | null
+    }
+    /** ValidationError */
+    ValidationError: {
+      /** Location */
+      loc: (string | number)[]
+      /** Message */
+      msg: string
+      /** Error Type */
+      type: string
+      /** Input */
+      input?: unknown
+      /** Context */
+      ctx?: Record<string, never>
+    }
+    /** VersionInfo */
+    VersionInfo: {
+      /** Version */
+      version: number
+      /**
+       * Origin
+       * @enum {string}
+       */
+      origin: 'extracted' | 'transcribed' | 'user_edit' | 'pasted'
+      /** Char Count */
+      char_count: number
+      /** Created At */
+      created_at: string
     }
   }
   responses: never
@@ -113,6 +731,703 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['SystemInfoOut']
+        }
+      }
+    }
+  }
+  list_subjects_api_v1_subjects_get: {
+    parameters: {
+      query?: {
+        archived?: boolean
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SubjectOut'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_subject_api_v1_subjects_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SubjectIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SubjectOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_subject_api_v1_subjects__subject_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SubjectDetailOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_subject_api_v1_subjects__subject_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_subject_api_v1_subjects__subject_id__patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SubjectPatch']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SubjectOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_unit_api_v1_subjects__subject_id__units_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UnitIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['UnitOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_unit_api_v1_units__unit_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        unit_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_unit_api_v1_units__unit_id__patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        unit_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UnitPatch']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['UnitOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_session_api_v1_subjects__subject_id__sessions_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SessionIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_session_api_v1_sessions__session_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        session_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_session_api_v1_sessions__session_id__patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        session_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SessionPatch']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_sources_api_v1_sources_get: {
+    parameters: {
+      query?: {
+        subject_id?: string | null
+        unit_id?: string | null
+        kind?:
+          | (
+              | 'recording'
+              | 'audio'
+              | 'pdf'
+              | 'docx'
+              | 'txt'
+              | 'md'
+              | 'rtf'
+              | 'csv'
+              | 'paste'
+              | 'note'
+            )
+          | null
+        status?: ('pending' | 'processing' | 'ready' | 'failed' | 'cancelled') | null
+        q?: string | null
+        limit?: number
+        offset?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SourceListOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_text_source_api_v1_sources_text_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TextSourceIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SourceOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_source_api_v1_sources__source_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SourceOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_source_api_v1_sources__source_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_source_api_v1_sources__source_id__patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SourcePatch']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SourceOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_content_api_v1_sources__source_id__content_get: {
+    parameters: {
+      query?: {
+        version?: number | null
+      }
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SourceContentOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_content_api_v1_sources__source_id__content_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContentIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SourceContentOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  retry_api_v1_sources__source_id__retry_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SourceOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_jobs_api_v1_jobs_get: {
+    parameters: {
+      query?: {
+        active?: boolean
+        limit?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['JobOut'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  cancel_job_api_v1_jobs__job_id__cancel_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        job_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['JobOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }

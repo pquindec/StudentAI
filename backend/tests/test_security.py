@@ -18,7 +18,9 @@ def test_wrong_token_is_401(client: TestClient, header: str) -> None:
 def test_valid_token_is_200(client: TestClient, auth: dict[str, str]) -> None:
     r = client.get("/api/v1/health", headers=auth)
     assert r.status_code == 200
-    assert r.json() == {"status": "ok", "version": "0.1.0", "schema_version": 1}
+    body = r.json()
+    assert body["status"] == "ok"
+    assert body["schema_version"] >= 2
 
 
 def test_unknown_route_also_requires_token(client: TestClient) -> None:

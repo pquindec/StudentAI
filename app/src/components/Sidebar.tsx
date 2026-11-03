@@ -1,5 +1,6 @@
 import { es } from '../i18n/es'
 import type { BackendStatus } from '../lib/backendStatus'
+import { JobsPanel } from './JobsPanel'
 import { StatusDot } from './StatusDot'
 
 export type Section = keyof typeof es.nav
@@ -46,6 +47,7 @@ export function Sidebar({ current, onSelect, status }: Props) {
           </ul>
         ))}
       </div>
+      <JobsPanel enabled={status.state === 'ready'} />
       <div className="flex items-center gap-2 border-t border-zinc-200 px-5 py-3 text-xs text-zinc-500 dark:border-zinc-800">
         <StatusDot status={status} />
         <span>{es.backend[status.state]}</span>
