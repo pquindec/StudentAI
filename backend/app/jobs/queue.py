@@ -58,6 +58,10 @@ def progress(db: sqlite3.Connection, job_id: str, value: float, message: str | N
     )
 
 
+def save_checkpoint(db: sqlite3.Connection, job_id: str, data: dict[str, Any]) -> None:
+    db.execute("UPDATE jobs SET checkpoint_json = ? WHERE id = ?", (json.dumps(data), job_id))
+
+
 def finish(
     db: sqlite3.Connection,
     job_id: str,

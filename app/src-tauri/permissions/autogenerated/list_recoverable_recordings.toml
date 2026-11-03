@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-list-recoverable-recordings"
+description = "Enables the list_recoverable_recordings command without any pre-configured scope."
+commands.allow = ["list_recoverable_recordings"]
+
+[[permission]]
+identifier = "deny-list-recoverable-recordings"
+description = "Denies the list_recoverable_recordings command without any pre-configured scope."
+commands.deny = ["list_recoverable_recordings"]

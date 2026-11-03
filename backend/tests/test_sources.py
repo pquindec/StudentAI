@@ -150,7 +150,7 @@ def test_audio_probe_and_normalize(
     assert s["status"] == "ready", s
     assert s["kind"] == "audio"
     assert 2900 <= s["duration_ms"] <= 3200
-    assert s["metadata"]["transcription"] == "pending"
+    assert s["metadata"]["transcription"] == "needs_model"  # sin modelo instalado
     norm = settings.data_dir / "sources" / s["id"] / "normalized.wav"
     assert norm.exists()
     original = settings.data_dir / "sources" / s["id"] / f"original.{ext}"

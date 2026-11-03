@@ -958,6 +958,108 @@
         }
       }
     },
+    "/api/v1/sources/{source_id}/transcribe": {
+      "post": {
+        "tags": ["sources"],
+        "summary": "Transcribe Source",
+        "description": "(Re)transcribe un audio ya preparado. La transcripción anterior se conserva como versión.",
+        "operationId": "transcribe_source_api_v1_sources__source_id__transcribe_post",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranscribeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sources/{source_id}/export": {
+      "get": {
+        "tags": ["sources"],
+        "summary": "Export Source",
+        "operationId": "export_source_api_v1_sources__source_id__export_get",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": ["txt", "srt"],
+              "type": "string",
+              "default": "txt",
+              "title": "Format"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/jobs": {
       "get": {
         "tags": ["jobs"],
@@ -1055,6 +1157,105 @@
           }
         }
       }
+    },
+    "/api/v1/stt": {
+      "get": {
+        "tags": ["stt"],
+        "summary": "Stt Status",
+        "operationId": "stt_status_api_v1_stt_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SttStatusOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stt/settings": {
+      "put": {
+        "tags": ["stt"],
+        "summary": "Update Settings",
+        "operationId": "update_settings_api_v1_stt_settings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SttSettingsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SttStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stt/models/{model_id}/download": {
+      "post": {
+        "tags": ["stt"],
+        "summary": "Download Model",
+        "description": "Descarga explícita pedida por el usuario (única conexión a Internet de esta fase).",
+        "operationId": "download_model_api_v1_stt_models__model_id__download_post",
+        "parameters": [
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Model Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SttStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1076,6 +1277,21 @@
         "type": "object",
         "required": ["text", "base_version"],
         "title": "ContentIn"
+      },
+      "ExportOut": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": ["filename", "content"],
+        "title": "ExportOut"
       },
       "HTTPValidationError": {
         "properties": {
@@ -1226,6 +1442,69 @@
           "finished_at"
         ],
         "title": "JobOut"
+      },
+      "ModelOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["stt", "vad"],
+            "title": "Kind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "installed": {
+            "type": "boolean",
+            "title": "Installed"
+          },
+          "download_job_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Download Job Id"
+          },
+          "download_progress": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Download Progress"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "description",
+          "size_bytes",
+          "installed",
+          "download_job_id",
+          "download_progress"
+        ],
+        "title": "ModelOut"
       },
       "SegmentOut": {
         "properties": {
@@ -1827,6 +2106,66 @@
         "type": "object",
         "title": "SourcePatch"
       },
+      "SttSettingsIn": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["auto", "es", "en"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "title": "SttSettingsIn"
+      },
+      "SttStatusOut": {
+        "properties": {
+          "whisper_available": {
+            "type": "boolean",
+            "title": "Whisper Available"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "language": {
+            "type": "string",
+            "enum": ["auto", "es", "en"],
+            "title": "Language"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelOut"
+            },
+            "type": "array",
+            "title": "Models"
+          }
+        },
+        "type": "object",
+        "required": ["whisper_available", "ready", "model", "language", "models"],
+        "title": "SttStatusOut"
+      },
       "SubjectDetailOut": {
         "properties": {
           "id": {
@@ -2219,6 +2558,24 @@
         "type": "object",
         "required": ["subject_id", "title", "text"],
         "title": "TextSourceIn"
+      },
+      "TranscribeIn": {
+        "properties": {
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["auto", "es", "en"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "title": "TranscribeIn"
       },
       "UnitIn": {
         "properties": {

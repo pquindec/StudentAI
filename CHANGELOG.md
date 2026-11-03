@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0] — 2026-11-03 · Fase 3: grabación y transcripción
+### Añadido
+- Grabador nativo en Rust (cpal + hound): micrófono elegible, nivel de entrada, pausa/reanudar, segmentos WAV de 60 s vaciados a disco cada segundo, manifiesto y límite de 6 h. Al parar se une y se importa como fuente `recording`.
+- Recuperación de grabaciones interrumpidas (cabecera WAV reparada) al abrir la app.
+- Indicador permanente de grabación (barra superior roja y título de la ventana).
+- Transcripción con whisper.cpp por tramos de 5 min con checkpoint: tras un cierre continúa donde iba. VAD Silero, idioma automático (se fija tras el primer tramo) o manual.
+- Gestor de modelos: descarga solo a petición del usuario, con verificación de tamaño y SHA-256.
+- Texto transcrito con marcas `[mm:ss]` por frase: editable sin perder la sincronización.
+- Reproductor con transcripción sincronizada (clic para saltar, frase actual resaltada); volver a transcribir conservando la versión anterior; exportar a TXT y SRT con el diálogo nativo.
+- Migración `0003_transcription.sql` (`jobs.checkpoint_json`, una transcripción activa por fuente).
+
+### Corregido durante la fase
+- Las marcas de tiempo se truncaban al segundo (hasta 1,3 s de error) → se redondean (máx. 0,8 s medido).
+- Tras un `kill -9` del backend, whisper seguía vivo y podía coincidir con la reanudación → archivos temporales únicos por tramo, PID registrado y eliminación del huérfano al reanudar; al cerrar la app el backend mata sus procesos hijos.
+
 ## [0.2.0] — 2026-11-03 · Fase 2: asignaturas y fuentes
 ### Añadido
 - Migración `0002_sources_jobs.sql`: `sources`, `source_links` (N:M con unidades o sesiones), `source_versions`, `segments`, `jobs`.

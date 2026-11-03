@@ -2,12 +2,23 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Permisos mínimos de la ventana principal: eventos y los comandos propios.",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:event:default",
     "allow-api-request",
     "allow-backend-status",
     "allow-pick-files",
-    "allow-import-files"
+    "allow-import-files",
+    "allow-save-text-file",
+    "allow-list-input-devices",
+    "allow-recording-status",
+    "allow-start-recording",
+    "allow-pause-recording",
+    "allow-stop-recording",
+    "allow-list-recoverable-recordings",
+    "allow-recover-recording",
+    "allow-discard-recording"
   ]
 }

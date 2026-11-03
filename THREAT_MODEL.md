@@ -32,8 +32,10 @@ Método: STRIDE por frontera de confianza. Se revisa al final de cada fase.
 | T12 | I | Envío no consentido a la nube | Consentimiento con vista previa + auditoría | ⏳ F8 |
 | T13 | I | Robo de claves API | Keychain de macOS | ⏳ F8 |
 | T14 | S/I | Cualquier proceso local usa Ollama (puerto 11434 sin autenticación) | Riesgo aceptado: Ollama no recibe datos persistentes; solo prompts efímeros | ⚠️ Aceptado |
-| T15 | T | Modelo descargado corrupto o sustituido | Verificación de tamaño y SHA-256 | ⏳ F3 |
+| T15 | T | Modelo descargado corrupto o sustituido | Verificación de tamaño y SHA-256; descarga solo a petición | ✅ F3 |
 | T17 | E | La UI (p. ej. tras un XSS) importa archivos arbitrarios del disco (`~/.ssh/…`) | Solo rutas autorizadas por un gesto del usuario (selector nativo/soltar); endpoint interno bloqueado en el proxy y protegido por cabecera | ✅ F2 |
+| T18 | I | Grabación sin que el usuario lo sepa | Solo se graba tras pulsar «Empezar»; barra roja permanente y título de ventana «● Grabando»; permiso de micrófono de macOS | ✅ F3 |
+| T19 | I | La UI lee archivos locales arbitrarios vía `asset://` | Ámbito limitado a los audios normalizados | ✅ F3 |
 | T16 | I | Datos de compañeros en el futuro modo web | Auth real, aislamiento por usuario, VPN/Tailscale, RGPD | ⏳ Fuera de alcance actual |
 
 ## Riesgos residuales aceptados

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { AudioPanel, TranscriptView } from '../components/Transcript'
 import {
   Button,
   Card,
@@ -16,7 +17,7 @@ import { api, ApiError, type Source, type SourceContent } from '../lib/api'
 import { formatBytes, formatDate, formatDuration } from '../lib/format'
 import { useNavigate } from '../lib/nav'
 import { errorMessage, useQuery } from '../lib/useQuery'
-import { unitTree } from '../lib/subjects'
+import { isAudio, unitTree } from '../lib/subjects'
 
 /**
  * Vista previa del texto por segmentos. El contenido importado se muestra como TEXTO
@@ -68,11 +69,13 @@ function Editor({
   content,
   onSaved,
   onCancel,
+  hint,
 }: {
   source: Source
   content: SourceContent
   onSaved: () => void
   onCancel: () => void
+  hint?: string
 }) {
   const [text, setText] = useState(content.text)
   const [error, setError] = useState<string | null>(null)
@@ -96,6 +99,7 @@ function Editor({
   return (
     <div className="space-y-3">
       <p className="text-xs text-zinc-500">{es.source.editHint}</p>
+      {hint && <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{hint}</p>}
       <textarea
         aria-label={es.source.edit}
         className={`${inputClass} min-h-[28rem] font-mono text-xs leading-relaxed`}
@@ -192,6 +196,14 @@ export function SourceDetail({ id }: { id: string }) {
   const [editing, setEditing] = useState(false)
   const [linking, setLinking] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const [currentMs, setCurrentMs] = useState(0)
+  const seek = (ms: number) => {
+    const a = audioRef.current
+    if (!a) return
+    a.currentTime = ms / 1000
+    void a.play()
+  }
 
   // Refresca mientras se procesa.
   const pending = s?.status === 'pending' || s?.status === 'processing'
@@ -214,8 +226,8 @@ export function SourceDetail({ id }: { id: string }) {
   const meta = s.metadata as Record<string, unknown>
   const warnings = Array.isArray(meta.warnings) ? (meta.warnings as string[]) : []
   const isOld = content.data != null && s.version != null && content.data.version !== s.version
-  const audioPending =
-    (s.kind === 'audio' || s.kind === 'recording') && meta.transcription === 'pending'
+  const audio = isAudio(s)
+  const timed = content.data?.segments.some((x) => x.start_ms != null) ?? false
 
   const retry = async () => {
     setActionError(null)
@@ -255,7 +267,7 @@ export function SourceDetail({ id }: { id: string }) {
         }
       />
       <ErrorText>{actionError}</ErrorText>
-      <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <Card className="min-w-0">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <h2 className="font-medium">{es.source.content}</h2>
@@ -296,10 +308,7 @@ export function SourceDetail({ id }: { id: string }) {
           {s.status === 'cancelled' && (
             <Button onClick={() => void retry()}>{es.source.retry}</Button>
           )}
-          {s.status === 'ready' && audioPending && (
-            <p className="text-sm text-zinc-500">{es.source.audioPending}</p>
-          )}
-          {s.status === 'ready' && !audioPending && s.version == null && (
+          {s.status === 'ready' && !audio && s.version == null && (
             <p className="text-sm text-zinc-500">{es.source.noContent}</p>
           )}
           {s.needs_review && !editing && (
@@ -320,13 +329,27 @@ export function SourceDetail({ id }: { id: string }) {
                   setVersion(undefined)
                   void reload()
                 }}
+                hint={timed ? es.transcript.editHint : undefined}
               />
+            ) : timed ? (
+              <TranscriptView content={content.data} currentMs={currentMs} onSeek={seek} />
             ) : (
               <Preview content={content.data} />
             ))}
         </Card>
 
-        <aside className="space-y-4">
+        <aside className="space-y-4 self-start lg:sticky lg:top-4">
+          {audio && (
+            <AudioPanel
+              source={s}
+              audioRef={audioRef}
+              onTime={setCurrentMs}
+              onChanged={() => {
+                setVersion(undefined)
+                void reload()
+              }}
+            />
+          )}
           <Card>
             <h2 className="mb-3 text-sm font-medium">{es.source.details}</h2>
             <dl className="space-y-2 text-sm">

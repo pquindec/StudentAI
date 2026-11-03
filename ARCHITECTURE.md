@@ -257,6 +257,8 @@ settings(key, value_json) · schema_migrations(version, applied_at)
 [Crash] → al arrancar: manifest sin "closed" → "¿Recuperar grabación de 47 min?"
 ```
 
+> **Implementado (F3):** segmentos de 60 s vaciados cada segundo (`hound` actualiza la cabecera); al parar Rust une los segmentos y los importa por el endpoint interno con `kind=recording`. La transcripción corta el WAV normalizado en tramos de 5 min (sin recodificar), repite el final de cada tramo desde la última frase completa (no corta frases) y guarda un checkpoint por tramo. Texto: una línea por frase con `[mm:ss]`.
+
 ### 6.2 Importación de audio (misma importancia que grabar)
 ```
 Finder / drag&drop → Rust valida extensión+tamaño → copia a sources/<id>/original.ext (+sha256, dedupe)

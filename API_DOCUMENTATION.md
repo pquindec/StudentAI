@@ -31,6 +31,11 @@ Formato único:
 | GET/PATCH/DELETE | `/api/v1/sources/{id}` | Detalle / renombrar y vínculos / borrar (cancela trabajos y borra archivos) |
 | GET/PUT | `/api/v1/sources/{id}/content` | Texto y segmentos (`?version=`) / nueva versión con `base_version` (409 `version_conflict`, 400 `no_changes`) |
 | POST | `/api/v1/sources/{id}/retry` | Reprocesar una fuente fallida o cancelada |
+| GET | `/api/v1/stt` | whisper.cpp disponible, modelos (instalado, descarga en curso), modelo e idioma elegidos |
+| PUT | `/api/v1/stt/settings` | `{model?, language?: auto\|es\|en}` |
+| POST | `/api/v1/stt/models/{id}/download` | Descarga explícita (202); también descarga el VAD si falta |
+| POST | `/api/v1/sources/{id}/transcribe` | `{language?}` — (re)transcribir un audio; la versión anterior se conserva |
+| GET | `/api/v1/sources/{id}/export?format=txt\|srt` | `{filename, content}` (la UI lo guarda con el diálogo nativo) |
 | GET | `/api/v1/jobs` | Trabajos (`?active=true`) con progreso |
 | POST | `/api/v1/jobs/{id}/cancel` | Cancelar (inmediato si está en cola; cooperativo si está en curso) |
 
@@ -40,6 +45,11 @@ Errores de dominio frecuentes: `not_found`, `invalid_hierarchy`, `invalid_link`,
 1. La UI llama a `invoke('pick_files')` (selector nativo abierto desde Rust) o recibe rutas por el evento de arrastrar y soltar.
 2. Rust registra esas rutas como **autorizadas** (un solo uso, caducan a los 10 min). Ninguna otra ruta se puede importar.
 3. `invoke('import_files', {request:{subject_id, unit_ids, session_ids, paths}})` → por cada ruta autorizada Rust llama a `POST /api/v1/internal/sources/import-file` con la cabecera `x-core-caller: 1`. Devuelve `[{path, status, body}]`.
+
+## Grabación (comandos Rust, solo escritorio)
+`list_input_devices`, `recording_status`, `start_recording({device_id?, target:{subject_id, title, unit_ids, session_ids}})`, `pause_recording({resume})`, `stop_recording` → `{recording_id, status, body, warning}`, `list_recoverable_recordings`, `recover_recording({id})`, `discard_recording({id})`, `save_text_file({defaultName, content})`. Evento `recording://status` (~7 por segundo) con estado, duración y nivel.
+
+Formato del texto transcrito: una línea por frase con marca `[mm:ss]` o `[h:mm:ss]`; una línea en blanco separa párrafos. `segments.start_ms/end_ms` salen de esas marcas.
 
 `/api/v1/internal/*` no aparece en el esquema, el proxy de la UI lo rechaza (también con `%xx` o `//`) y el backend exige la cabecera del núcleo.
 

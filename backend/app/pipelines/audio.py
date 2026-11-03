@@ -7,7 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from app.core import limits
+from app.core import children, limits
 
 
 class AudioError(Exception):
@@ -107,6 +107,7 @@ def normalize(
     proc = subprocess.Popen(  # noqa: S603
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
     )
+    children.register(proc)
     if proc.stdout is None:
         raise AudioError("convert_failed", "No se pudo iniciar la conversión de audio")
     try:
@@ -128,4 +129,5 @@ def normalize(
     finally:
         if proc.poll() is None:
             proc.kill()
+        children.unregister(proc)
         tmp.unlink(missing_ok=True)

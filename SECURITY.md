@@ -24,6 +24,11 @@ Amenazas y riesgos: `THREAT_MODEL.md`. Este archivo lista **solo lo que está im
 | Copia inmutable (`0400`) con nombre UUID: el nombre original nunca se usa como ruta | `files.py` | `test_original_name_never_used_as_path` |
 | Extracción en subproceso aislado (`python -I`), timeout y límite de CPU | `extract/runner.py` | PDF corrupto → `failed` sin afectar al backend |
 | El contenido importado se muestra como texto (React escapa), nunca como HTML | `SourceDetail.tsx` | — |
+| Modelos descargados solo a petición, URL fija HTTPS, tamaño y SHA-256 verificados antes de usarlos | `stt/models.py` | `test_download_verifies_hash` |
+| Protocolo `asset` limitado a `$APPDATA/sources/*/normalized.wav` (ni BD, ni originales, ni modelos) | `tauri.conf.json` | — |
+| Grabaciones: carpetas con nombre UUID validado (recuperar/descartar no aceptan rutas), permisos `0700` | `recorder.rs` | `ids_are_uuid_only` |
+| Sin procesos huérfanos: whisper/ffmpeg registrados y terminados al salir; huérfano de un `kill -9` eliminado al reanudar | `core/children.py`, `whisper_cpp.kill_stale` | prueba E2E manual (registrada en TESTING.md) |
+| Solo el núcleo marca un audio como `recording` (campo del endpoint interno) | `routes/internal.py` | `test_recording_import_kind` |
 | Vínculos solo dentro de la misma asignatura (servicio + trigger) | `services/sources.py`, `0002` | `test_links_must_be_same_subject` |
 
 ## Pendiente (fases siguientes)

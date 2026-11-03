@@ -7,7 +7,7 @@ usuario eligió explícitamente (diálogo de Finder o arrastrar y soltar).
 import sqlite3
 import uuid
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field, StringConstraints
@@ -44,6 +44,9 @@ class ImportFileIn(BaseModel):
     subject_id: str
     unit_ids: Annotated[list[str], Field(max_length=200)] = []
     session_ids: Annotated[list[str], Field(max_length=200)] = []
+    # Solo el grabador nativo marca su audio como grabación (no se puede desde la UI).
+    kind: Literal["recording"] | None = None
+    title: Annotated[str, StringConstraints(min_length=1, max_length=300)] | None = None
 
 
 @router.post("/sources/import-file", response_model=SourceOut, status_code=201)
@@ -69,7 +72,11 @@ def import_file(
             )
         sid = str(uuid.uuid4())
         stored = files.finalize(tmp, sources_dir, sid, info.ext)
-        kind = "audio" if info.kind == "audio" else info.kind
+        kind = info.kind
+        if body.kind == "recording":
+            if info.kind != "audio":
+                raise AppError(400, "not_audio", "La grabación no es un audio válido")
+            kind = "recording"
         try:
             with tx(db):
                 svc.check_link_targets(db, body.subject_id, body.unit_ids, body.session_ids)
@@ -80,7 +87,7 @@ def import_file(
                         sid,
                         body.subject_id,
                         kind,
-                        Path(name).stem[:300] or name,
+                        body.title or Path(name).stem[:300] or name,
                         name,
                         str(stored.relative_to(settings.data_dir)),
                         sha,

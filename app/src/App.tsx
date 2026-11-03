@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { RecordingBar } from './components/RecordingBar'
+import { RecordingProvider } from './components/RecordingProvider'
+import { RecoveryDialog } from './components/RecoveryDialog'
 import { Sidebar, type Section } from './components/Sidebar'
 import { useBackendStatus } from './lib/backendStatus'
 import { NavContext, type Route, sectionOf } from './lib/nav'
@@ -6,13 +9,13 @@ import { ComingSoon } from './pages/ComingSoon'
 import { Dashboard } from './pages/Dashboard'
 import { Import } from './pages/Import'
 import { Library } from './pages/Library'
+import { Recordings } from './pages/Recordings'
 import { SourceDetail } from './pages/SourceDetail'
 import { SubjectDetail } from './pages/SubjectDetail'
 import { Subjects } from './pages/Subjects'
 
 /** Fase del plan (TASKS.md) en la que se construye cada sección pendiente. */
 const PHASE: Partial<Record<Section, number>> = {
-  recordings: 3,
   notes: 4,
   summaries: 4,
   assistant: 5,
@@ -46,6 +49,8 @@ function Page({ route, status }: { route: Route; status: ReturnType<typeof useBa
       ) : (
         <Library />
       )
+    case 'recordings':
+      return <Recordings />
     case 'source':
       return <SourceDetail key={route.id} id={route.id} />
     default:
@@ -60,16 +65,22 @@ export default function App() {
 
   return (
     <NavContext.Provider value={setRoute}>
-      <div className="flex h-full">
-        <Sidebar
-          current={sectionOf(route)}
-          onSelect={(name) => setRoute({ name })}
-          status={status}
-        />
-        <main className="flex-1 overflow-y-auto">
-          {ready || route.name === 'dashboard' ? <Page route={route} status={status} /> : null}
-        </main>
-      </div>
+      <RecordingProvider>
+        <div className="flex h-full">
+          <Sidebar
+            current={sectionOf(route)}
+            onSelect={(name) => setRoute({ name })}
+            status={status}
+          />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <RecordingBar />
+            <main className="flex-1 overflow-y-auto">
+              {ready || route.name === 'dashboard' ? <Page route={route} status={status} /> : null}
+            </main>
+          </div>
+        </div>
+        <RecoveryDialog enabled={ready} />
+      </RecordingProvider>
     </NavContext.Provider>
   )
 }

@@ -15,7 +15,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.7.4", features = [] }
 
 [dependencies]
-tauri = { version = "2.12.5", features = [] }
+tauri = { version = "2.12.5", features = ["protocol-asset"] }
 tauri-plugin-log = "2"
 # Selector nativo de archivos, abierto solo desde Rust (sin permisos JS de diálogo).
 tauri-plugin-dialog = "2"
@@ -27,3 +27,6 @@ hyper = { version = "1", features = ["client", "http1"] }
 hyper-util = { version = "0.1", features = ["tokio"] }
 http-body-util = "0.1"
 bytes = "1"
+# Grabación nativa (CoreAudio) y escritura WAV. Ambas Apache-2.0 (ADR-003, ADR-007).
+cpal = "0.18"
+hound = "3.5"

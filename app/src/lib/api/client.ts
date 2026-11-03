@@ -19,6 +19,10 @@ export type SourcePatch = S['SourcePatch']
 export type SourceContent = S['SourceContentOut']
 export type TextSourceIn = S['TextSourceIn']
 export type Job = S['JobOut']
+export type SttStatus = S['SttStatusOut']
+export type SttModel = S['ModelOut']
+export type SttLanguage = SttStatus['language']
+export type ExportFile = S['ExportOut']
 export type SourceKind = Source['kind']
 export type SourceStatus = Source['status']
 
@@ -123,6 +127,23 @@ export class ApiClient {
   }
   retrySource(sourceId: string): Promise<Source> {
     return this.call('POST', `/api/v1/sources/${id(sourceId)}/retry`)
+  }
+
+  // --- Transcripción
+  sttStatus(): Promise<SttStatus> {
+    return this.call('GET', '/api/v1/stt')
+  }
+  updateSttSettings(body: { model?: string; language?: SttLanguage }): Promise<SttStatus> {
+    return this.call('PUT', '/api/v1/stt/settings', body)
+  }
+  downloadModel(modelId: string): Promise<SttStatus> {
+    return this.call('POST', `/api/v1/stt/models/${id(modelId)}/download`)
+  }
+  transcribe(sourceId: string, language?: SttLanguage): Promise<Source> {
+    return this.call('POST', `/api/v1/sources/${id(sourceId)}/transcribe`, { language })
+  }
+  exportSource(sourceId: string, format: 'txt' | 'srt'): Promise<ExportFile> {
+    return this.call('GET', `/api/v1/sources/${id(sourceId)}/export${query({ format })}`)
   }
 
   // --- Trabajos en segundo plano

@@ -10,8 +10,9 @@
 | 0 — Investigación y arquitectura | ✅ Aprobada (2026-11-03) |
 | 0.5 — Benchmarks en el equipo | ✅ Completada (2026-11-03) — ver `BENCHMARKS.md` |
 | 1 — Estructura y entorno | ✅ Completada (2026-11-03) |
-| 2 — Asignaturas y fuentes | 🟡 Implementada (2026-11-03) — falta la verificación manual en la UI |
-| 3–10 | ⏳ No iniciadas |
+| 2 — Asignaturas y fuentes | ✅ Completada y verificada por el usuario (2026-11-03) |
+| 3 — Grabación y transcripción | 🟡 Implementada (2026-11-03) — falta la prueba manual de grabación con micrófono |
+| 4–10 | ⏳ No iniciadas |
 
 ### Tareas nuevas surgidas de la Fase 0.5
 - [x] (F1) Usar Ollama **oficial** en desarrollo (el de Homebrew no tiene salida estructurada); documentarlo en INSTALLATION.md
@@ -44,7 +45,7 @@
 - [x] Docs: README, CLAUDE, PROJECT_CONTEXT, CHANGELOG, THREAT_MODEL v1, SECURITY, INSTALLATION, API_DOCUMENTATION, DATABASE, TESTING
 - **Criterio de aceptación — cumplido:** la app abre en `tauri dev` y muestra el estado del backend obtenido por el socket; sin token → 401 (pytest + curl); el `.app` arranca su backend embebido fuera del entorno de desarrollo.
 
-## Fase 2 — Asignaturas y fuentes 🟡
+## Fase 2 — Asignaturas y fuentes ✅
 - [x] CRUD de Subject, Unit (árbol) y Session
 - [x] "Añadir fuente": selector nativo (Finder), arrastrar y soltar, pegar texto, nota manual
 - [x] Validación de archivos (tipo real por *magic bytes*, tamaño, límites), copia inmutable, sha256 y deduplicación
@@ -55,16 +56,20 @@
 - [x] Importación de audio: probe y normalización (sin transcribir todavía)
 - [x] Pruebas con archivos malformados (PDF corrupto, DOCX zip-bomb, extensión falsa, binario como .txt, vacío)
 - [x] Verificación manual en la app (usuario, 2026-11-03): importación de PDF correcta; se mejoró la confirmación tras importar
-- [ ] Comprobar de nuevo la pantalla Importar con la mejora y el resto de formatos (DOCX, TXT/MD, RTF, audio, texto pegado, archivo inválido)
+- [x] Comprobar de nuevo la pantalla Importar con la mejora y el resto de formatos (usuario: «funciona bien»)
 - **Criterio de aceptación:** crear una asignatura con temas e incorporar PDF, DOCX, TXT, MD, RTF, texto pegado y un MP3/M4A; todos aparecen con sus metadatos y una vista previa correcta; los archivos inválidos muestran un error comprensible.
 
-## Fase 3 — Grabación y transcripción
-- [ ] Recorder en Rust (cpal): selección de dispositivo, nivel de entrada, pausa/reanudar, segmentos de 60 s y manifiesto
-- [ ] Recuperación de grabaciones interrumpidas
-- [ ] Permiso de micrófono (Info.plist) e indicador permanente de grabación
-- [ ] Provider STT whisper.cpp: VAD, idioma automático o manual, bloques con checkpoint, timestamps
-- [ ] Editor de transcripción + reproductor sincronizado
-- [ ] Exportación a TXT y SRT
+## Fase 3 — Grabación y transcripción 🟡
+- [x] Recorder en Rust (cpal): selección de dispositivo, nivel de entrada, pausa/reanudar, segmentos de 60 s y manifiesto
+- [x] Recuperación de grabaciones interrumpidas (al abrir la app: recuperar o descartar)
+- [x] Permiso de micrófono (Info.plist), indicador permanente (barra roja + título de ventana)
+- [x] Provider STT whisper.cpp: VAD, idioma automático o manual, tramos de 5 min con checkpoint, timestamps
+- [x] Gestor de modelos: descarga explícita con verificación de tamaño y SHA-256
+- [x] Editor de transcripción + reproductor sincronizado
+- [x] Exportación a TXT y SRT
+- [x] Aceptación (backend real como proceso): audio de 30 min, `kill -9` al 49 %, reapertura → transcripción completa, ordenada, sin duplicados, editable y exportable; timestamps dentro de ±1 s (máx. 0,8 s) frente a una pasada sin cortes
+- [ ] Prueba manual (usuario): grabar con el micrófono, pausar/reanudar, cerrar la app a la fuerza grabando y recuperar
+- [ ] (F9) Empaquetar `whisper-cli` y `ffmpeg` dentro del `.app` (hoy se usan los de Homebrew)
 - **Criterio de aceptación:** grabar 10 min (o importar un audio de 30 min), cerrar la app a la fuerza a mitad de proceso, reabrir y obtener una transcripción completa, editable, con timestamps correctos (±1 s) y exportable.
 
 ## Fase 4 — IA local: apuntes y resúmenes

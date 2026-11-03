@@ -9,9 +9,12 @@ from app.core import limits
 from app.core.errors import AppError, bad_request, conflict
 from app.db.connection import tx
 from app.jobs import queue
+from app.pipelines.extract.document import segment
 from app.services import sources as svc
 from app.services import subjects as subj
+from app.services import transcription
 from app.services.subjects import remove_source_dir
+from app.stt.transcript import to_srt, to_txt
 
 router = APIRouter(tags=["sources"])
 
@@ -279,6 +282,64 @@ def retry(source_id: str, request: Request, db: Db, user: UserId) -> SourceOut:
         enqueue_processing(db, src["kind"], source_id)
     request.app.state.scheduler.wake()
     return to_out(db, svc.get_source(db, user, source_id))
+
+
+class TranscribeIn(BaseModel):
+    language: Literal["auto", "es", "en"] | None = None
+
+
+@router.post("/sources/{source_id}/transcribe", response_model=SourceOut, status_code=202)
+def transcribe_source(
+    source_id: str,
+    body: TranscribeIn,
+    request: Request,
+    db: Db,
+    user: UserId,
+    settings: AppSettings,
+) -> SourceOut:
+    """(Re)transcribe un audio ya preparado. La transcripción anterior se conserva como versión."""
+    src = svc.get_source(db, user, source_id)
+    if src["kind"] not in ("audio", "recording"):
+        raise bad_request("not_audio", "Solo se pueden transcribir audios y grabaciones")
+    if src["status"] in ("pending", "processing"):
+        raise conflict("busy", "Este audio se está procesando todavía")
+    if not (settings.data_dir / "sources" / source_id / "normalized.wav").exists():
+        raise bad_request("not_prepared", "Reintenta el procesamiento del audio primero")
+    if not transcription.ready(db, settings.data_dir):
+        raise bad_request("needs_model", "Descarga el modelo de transcripción para continuar")
+    with tx(db):
+        db.execute(
+            "UPDATE sources SET status = 'pending', error_code = NULL, error_message = NULL"
+            " WHERE id = ?",
+            (source_id,),
+        )
+        transcription.enqueue(db, source_id, body.language)
+    request.app.state.scheduler.wake()
+    return to_out(db, svc.get_source(db, user, source_id))
+
+
+class ExportOut(BaseModel):
+    filename: str
+    content: str
+
+
+@router.get("/sources/{source_id}/export", response_model=ExportOut)
+def export_source(
+    source_id: str, db: Db, user: UserId, format: Literal["txt", "srt"] = "txt"
+) -> ExportOut:
+    src = svc.get_source(db, user, source_id)
+    version = svc.current_version(db, source_id)
+    if version is None:
+        raise bad_request("no_content", "Este material todavía no tiene texto")
+    segs = segment(version["text"])
+    if format == "srt":
+        if not any(x.start_ms is not None for x in segs):
+            raise bad_request("no_timestamps", "Este texto no tiene marcas de tiempo")
+        content = to_srt(segs, src["duration_ms"])
+    else:
+        content = to_txt(version["text"])
+    stem = "".join(c for c in src["title"] if c.isalnum() or c in " -_").strip()[:80]
+    return ExportOut(filename=f"{stem or 'transcripcion'}.{format}", content=content)
 
 
 def enqueue_processing(db: Db, kind: str, source_id: str) -> str:

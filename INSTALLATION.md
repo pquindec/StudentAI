@@ -29,7 +29,9 @@ La app usa el puerto **1420** para Vite en desarrollo.
 ```bash
 ollama pull qwen3.5:9b && ollama pull qwen3.5:4b && ollama pull qwen3-embedding:0.6b
 ```
-Los modelos de whisper los gestionará la app (con verificación de SHA-256).
+Los modelos de whisper se descargan desde la app (Grabaciones › Transcripción), solo cuando lo pides, y se verifican con SHA-256. Se guardan en `~/Library/Application Support/com.aistudyassistant.desktop/models/whisper/`.
+
+La primera vez que grabes, macOS pedirá permiso para el micrófono (en desarrollo, para la Terminal que ejecuta `tauri dev`).
 
 ## Construir el .app (prueba de empaquetado)
 ```bash

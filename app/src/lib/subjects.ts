@@ -1,4 +1,6 @@
-import type { Unit } from './api'
+import type { Source, Unit } from './api'
+
+export const isAudio = (s: Source) => s.kind === 'audio' || s.kind === 'recording'
 
 export const SUBJECT_COLORS = [
   '#4f46e5',

@@ -236,6 +236,43 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/sources/{source_id}/transcribe': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Transcribe Source
+     * @description (Re)transcribe un audio ya preparado. La transcripción anterior se conserva como versión.
+     */
+    post: operations['transcribe_source_api_v1_sources__source_id__transcribe_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/sources/{source_id}/export': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Export Source */
+    get: operations['export_source_api_v1_sources__source_id__export_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/jobs': {
     parameters: {
       query?: never
@@ -273,6 +310,60 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/stt': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Stt Status */
+    get: operations['stt_status_api_v1_stt_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/stt/settings': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Update Settings */
+    put: operations['update_settings_api_v1_stt_settings_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/stt/models/{model_id}/download': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Download Model
+     * @description Descarga explícita pedida por el usuario (única conexión a Internet de esta fase).
+     */
+    post: operations['download_model_api_v1_stt_models__model_id__download_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -283,6 +374,13 @@ export interface components {
       text: string
       /** Base Version */
       base_version: number
+    }
+    /** ExportOut */
+    ExportOut: {
+      /** Filename */
+      filename: string
+      /** Content */
+      content: string
     }
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -327,6 +425,28 @@ export interface components {
       started_at: string | null
       /** Finished At */
       finished_at: string | null
+    }
+    /** ModelOut */
+    ModelOut: {
+      /** Id */
+      id: string
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'stt' | 'vad'
+      /** Label */
+      label: string
+      /** Description */
+      description: string
+      /** Size Bytes */
+      size_bytes: number
+      /** Installed */
+      installed: boolean
+      /** Download Job Id */
+      download_job_id: string | null
+      /** Download Progress */
+      download_progress: number | null
     }
     /** SegmentOut */
     SegmentOut: {
@@ -487,6 +607,29 @@ export interface components {
       /** Session Ids */
       session_ids?: string[] | null
     }
+    /** SttSettingsIn */
+    SttSettingsIn: {
+      /** Model */
+      model?: string | null
+      /** Language */
+      language?: ('auto' | 'es' | 'en') | null
+    }
+    /** SttStatusOut */
+    SttStatusOut: {
+      /** Whisper Available */
+      whisper_available: boolean
+      /** Ready */
+      ready: boolean
+      /** Model */
+      model: string
+      /**
+       * Language
+       * @enum {string}
+       */
+      language: 'auto' | 'es' | 'en'
+      /** Models */
+      models: components['schemas']['ModelOut'][]
+    }
     /** SubjectDetailOut */
     SubjectDetailOut: {
       /** Id */
@@ -614,6 +757,11 @@ export interface components {
        * @default []
        */
       session_ids: string[]
+    }
+    /** TranscribeIn */
+    TranscribeIn: {
+      /** Language */
+      language?: ('auto' | 'es' | 'en') | null
     }
     /** UnitIn */
     UnitIn: {
@@ -1369,6 +1517,74 @@ export interface operations {
       }
     }
   }
+  transcribe_source_api_v1_sources__source_id__transcribe_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TranscribeIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SourceOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  export_source_api_v1_sources__source_id__export_get: {
+    parameters: {
+      query?: {
+        format?: 'txt' | 'srt'
+      }
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ExportOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   list_jobs_api_v1_jobs_get: {
     parameters: {
       query?: {
@@ -1419,6 +1635,90 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['JobOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  stt_status_api_v1_stt_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SttStatusOut']
+        }
+      }
+    }
+  }
+  update_settings_api_v1_stt_settings_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SttSettingsIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SttStatusOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  download_model_api_v1_stt_models__model_id__download_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        model_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SttStatusOut']
         }
       }
       /** @description Validation Error */

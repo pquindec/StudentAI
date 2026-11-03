@@ -18,6 +18,7 @@ from pathlib import Path
 import uvicorn
 
 from app.api.app import create_app
+from app.core import children
 from app.core.config import Settings
 from app.db.migrate import migrate
 
@@ -35,6 +36,7 @@ def exit_when_parent_dies() -> None:
     def watch() -> None:
         sys.stdin.read()  # bloquea hasta EOF
         log.info("stdin cerrado: el proceso padre ha terminado, saliendo")
+        children.kill_all()  # sin whisper/ffmpeg huérfanos
         os._exit(0)
 
     threading.Thread(target=watch, daemon=True, name="parent-watch").start()

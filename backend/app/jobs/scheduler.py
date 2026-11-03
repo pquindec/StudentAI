@@ -8,10 +8,12 @@ import contextlib
 import logging
 from pathlib import Path
 
+from app.core import children
 from app.db.connection import connect
 from app.jobs import queue
 from app.jobs.handlers import HANDLERS, JobContext, JobFailed, set_source_status
 from app.pipelines.audio import Cancelled
+from app.services import transcription
 
 log = logging.getLogger(__name__)
 
@@ -35,6 +37,10 @@ class Scheduler:
             n = queue.recover_interrupted(db)
             if n:
                 log.info("Reanudando %d trabajo(s) interrumpido(s)", n)
+            # Audios que esperaban un modelo de transcripción que ya está instalado.
+            n = transcription.enqueue_waiting(db, self.data_dir)
+            if n:
+                log.info("Encolando %d transcripción(es) pendiente(s)", n)
         finally:
             db.close()
         self._task = asyncio.create_task(self._loop(), name="job-scheduler")
@@ -42,6 +48,7 @@ class Scheduler:
     async def stop(self) -> None:
         if self._task:
             self._task.cancel()
+        children.kill_all()
         # Los trabajos en curso quedan 'running' y se reanudan al próximo arranque.
 
     def wake(self) -> None:

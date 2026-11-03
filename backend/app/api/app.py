@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.api.routes import internal, jobs, sources, subjects, system
+from app.api.routes import internal, jobs, sources, stt, subjects, system
 from app.core.config import APP_VERSION, Settings
 from app.core.errors import AppError, from_integrity_error
 from app.core.security import TokenAuthMiddleware
@@ -37,7 +37,7 @@ def create_app(settings: Settings, run_jobs: bool = True) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = settings
-    for module in (system, subjects, sources, jobs, internal):
+    for module in (system, subjects, sources, jobs, stt, internal):
         app.include_router(module.router, prefix=API_PREFIX)
 
     @app.exception_handler(AppError)
