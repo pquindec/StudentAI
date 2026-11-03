@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { Button, Card, ErrorText, Field, inputClass, PageHeader } from '../components/ui'
+import {
+  Button,
+  Card,
+  ErrorText,
+  Field,
+  inputClass,
+  PageHeader,
+  StatusBadge,
+} from '../components/ui'
 import { es } from '../i18n/es'
-import { api, fileName, files, type ImportResult } from '../lib/api'
+import { api, fileName, files, type ImportResult, type SourceStatus } from '../lib/api'
 import { useNavigate } from '../lib/nav'
 import { errorMessage, useQuery } from '../lib/useQuery'
 import { unitTree } from '../lib/subjects'
@@ -11,6 +19,8 @@ interface Row {
   ok: boolean
   message: string
   sourceId?: string
+  /** Estado de procesamiento de un archivo importado con éxito (se actualiza solo). */
+  status?: SourceStatus
 }
 
 interface ErrBody {
@@ -21,7 +31,13 @@ interface ErrBody {
 function toRow(r: ImportResult): Row {
   const body = (r.body ?? {}) as ErrBody
   if (r.status === 201)
-    return { name: fileName(r.path), ok: true, message: es.import.queued, sourceId: body.id }
+    return {
+      name: fileName(r.path),
+      ok: true,
+      message: es.import.queued,
+      sourceId: body.id,
+      status: 'pending',
+    }
   return {
     name: fileName(r.path),
     ok: false,
@@ -129,7 +145,43 @@ export function Import({
   const [busy, setBusy] = useState(false)
   const [rows, setRows] = useState<Row[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [savedCount, setSavedCount] = useState(0)
+  const [pasteOpen, setPasteOpen] = useState(false)
   const navigate = useNavigate()
+
+  // Actualiza el estado de los archivos recién importados hasta que terminen de procesarse.
+  const processing = rows.some((r) => r.status === 'pending' || r.status === 'processing')
+  const rowsRef = useRef(rows)
+  useEffect(() => {
+    rowsRef.current = rows
+  }, [rows])
+  useEffect(() => {
+    if (!processing) return
+    const ac = new AbortController()
+    const t = window.setInterval(() => {
+      const ids = rowsRef.current
+        .filter((r) => r.sourceId && (r.status === 'pending' || r.status === 'processing'))
+        .map((r) => r.sourceId!)
+      void Promise.all(ids.map((id) => api.getSource(id).catch(() => null))).then((list) => {
+        if (ac.signal.aborted) return
+        setRows((rs) =>
+          rs.map((r) => {
+            const src = list.find((x) => x?.id === r.sourceId)
+            if (!src || !r.ok) return r
+            const message =
+              src.status === 'ready'
+                ? es.import.ready
+                : src.status === 'failed'
+                  ? (src.error_message ?? es.source.failed)
+                  : r.message
+            return { ...r, status: src.status, message, ok: src.status !== 'failed' }
+          }),
+        )
+      })
+    }, 1500)
+    ac.signal.addEventListener('abort', () => window.clearInterval(t))
+    return () => ac.abort()
+  }, [processing])
 
   // Si solo hay una asignatura, se elige sola.
   const only = subjects.data?.length === 1 ? subjects.data[0].id : ''
@@ -152,7 +204,9 @@ export function Import({
     setError(null)
     try {
       const results = await files.importPaths({ subject_id: sid, unit_ids: units }, paths)
-      setRows((prev) => [...results.map(toRow), ...prev])
+      const newRows = results.map(toRow)
+      setRows((prev) => [...newRows, ...prev])
+      setSavedCount(newRows.filter((r) => r.ok).length)
     } catch (e) {
       setError(typeof e === 'string' ? e : errorMessage(e))
     } finally {
@@ -276,6 +330,17 @@ export function Import({
             <p className="text-sm text-zinc-500">{es.import.webOnly}</p>
           )}
           <ErrorText>{error}</ErrorText>
+          {savedCount > 0 && (
+            <div
+              role="status"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200"
+            >
+              <span>✓ {es.import.savedNotice(savedCount)}</span>
+              <Button onClick={() => navigate({ name: 'library', subjectId: effectiveSubject })}>
+                {es.import.openLibrary}
+              </Button>
+            </div>
+          )}
 
           {rows.length > 0 && (
             <Card>
@@ -292,6 +357,7 @@ export function Import({
                         {r.message}
                       </div>
                     </div>
+                    {r.status && <StatusBadge status={r.status} />}
                     {r.sourceId && (
                       <Button
                         variant="ghost"
@@ -306,12 +372,22 @@ export function Import({
             </Card>
           )}
 
-          {effectiveSubject && (
-            <Card>
-              <h2 className="mb-3 font-medium">{es.import.paste}</h2>
-              <PasteForm subjectId={effectiveSubject} unitIds={unitIds} />
-            </Card>
-          )}
+          {effectiveSubject &&
+            (pasteOpen ? (
+              <Card>
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="font-medium">{es.import.paste}</h2>
+                  <Button variant="ghost" onClick={() => setPasteOpen(false)}>
+                    {es.import.pasteHide}
+                  </Button>
+                </div>
+                <PasteForm subjectId={effectiveSubject} unitIds={unitIds} />
+              </Card>
+            ) : (
+              <Button variant="ghost" onClick={() => setPasteOpen(true)}>
+                {es.import.pasteToggle}
+              </Button>
+            ))}
         </div>
       )}
     </div>

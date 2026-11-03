@@ -54,7 +54,8 @@
 - [x] Cola de trabajos persistente + panel "Procesando" (progreso y cancelación)
 - [x] Importación de audio: probe y normalización (sin transcribir todavía)
 - [x] Pruebas con archivos malformados (PDF corrupto, DOCX zip-bomb, extensión falsa, binario como .txt, vacío)
-- [ ] Verificación manual en la app: arrastrar archivos reales y usar el selector (pendiente del usuario)
+- [x] Verificación manual en la app (usuario, 2026-11-03): importación de PDF correcta; se mejoró la confirmación tras importar
+- [ ] Comprobar de nuevo la pantalla Importar con la mejora y el resto de formatos (DOCX, TXT/MD, RTF, audio, texto pegado, archivo inválido)
 - **Criterio de aceptación:** crear una asignatura con temas e incorporar PDF, DOCX, TXT, MD, RTF, texto pegado y un MP3/M4A; todos aparecen con sus metadatos y una vista previa correcta; los archivos inválidos muestran un error comprensible.
 
 ## Fase 3 — Grabación y transcripción

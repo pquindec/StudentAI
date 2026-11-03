@@ -14,6 +14,7 @@
 ### Corregido durante la fase
 - Textos cortos en Windows-1252/Latin-1 se decodificaban con una página de códigos equivocada (el detector elegía cp775/cp1250) → se prueba primero Windows-1252 si todos los caracteres no ASCII son letras o signos occidentales.
 - `SourceOut` recibía `needs_review` dos veces (error 500 al consultar una fuente).
+- Prueba manual: tras importar no quedaba claro que el archivo ya estaba guardado y el botón desactivado del formulario de texto pegado parecía el de guardar. Ahora se muestra un aviso «Archivo guardado en la biblioteca», el estado de cada archivo se actualiza solo hasta «Listo» y el formulario de texto pegado está plegado.
 
 ## [0.1.0] — 2026-11-03 · Fase 1: estructura y entorno
 ### Añadido
