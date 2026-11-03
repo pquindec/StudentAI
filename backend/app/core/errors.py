@@ -36,6 +36,7 @@ def bad_request(code: str, message: str, **details: Any) -> AppError:
 INTEGRITY_MESSAGES = {
     "parent_unit_other_subject": "La unidad superior pertenece a otra asignatura",
     "session_unit_other_subject": "La unidad elegida pertenece a otra asignatura",
+    "doc_source_other_subject": "Solo puedes usar fuentes de la misma asignatura",
     "link_other_subject": "Solo puedes vincular unidades o sesiones de la misma asignatura",
 }
 

@@ -1,6 +1,7 @@
 """Manejadores de trabajos. Se ejecutan en un hilo; cada uno abre su propia conexión."""
 
 import json
+import logging
 import shutil
 import sqlite3
 import uuid
@@ -10,10 +11,16 @@ from pathlib import Path
 from typing import Any
 
 from app.db.connection import tx
+from app.generation.docs import Job as GenJob
+from app.generation.docs import number_citations
 from app.jobs import queue
+from app.llm.base import ChatRequest, ChatResult, LLMCancelled, LLMError
 from app.pipelines import audio
 from app.pipelines.extract.document import to_markdown
 from app.pipelines.extract.runner import ExtractFailed, run_isolated
+from app.resources.manager import ResourceManager, profile
+from app.services import documents as docs_svc
+from app.services import llm as llm_svc
 from app.services import sources as src_svc
 from app.services import transcription
 from app.stt import models
@@ -25,6 +32,8 @@ from app.stt.whisper_cpp import (
     transcribe_wav,
     wav_duration_ms,
 )
+
+log = logging.getLogger(__name__)
 
 
 class JobFailed(Exception):
@@ -136,6 +145,8 @@ def _parts_dir(ctx: JobContext) -> Path:
 def transcribe(ctx: JobContext) -> None:
     """Transcribe por tramos con checkpoint: tras un cierre continúa en el último tramo."""
     src = ctx.source()
+    # whisper y el LLM no conviven en memoria (BENCHMARKS §4): se descarga el LLM inactivo.
+    ResourceManager(llm_svc.provider()).release()
     wav = ctx.data_dir / "sources" / ctx.source_id / "normalized.wav"
     if not wav.exists():
         raise JobFailed("no_audio", "Falta el audio preparado. Reintenta el procesamiento.")
@@ -254,7 +265,95 @@ def download_model(ctx: JobContext) -> None:
     transcription.enqueue_waiting(ctx.db, ctx.data_dir)
 
 
+def generate_doc(ctx: JobContext) -> None:
+    """Apuntes o resumen con map-reduce; el avance por bloque queda en el checkpoint."""
+    doc_id = str(payload(ctx.job).get("doc_id"))
+    doc = ctx.db.execute("SELECT * FROM generated_docs WHERE id = ?", (doc_id,)).fetchone()
+    if doc is None:
+        raise audio.Cancelled  # se borró mientras esperaba
+    docs_svc.set_status(ctx.db, doc_id, "running")
+    try:
+        _generate(ctx, dict(doc))
+    except (audio.Cancelled, LLMCancelled) as e:
+        docs_svc.set_status(ctx.db, doc_id, "cancelled")
+        raise audio.Cancelled from e
+    except LLMError as e:
+        docs_svc.set_status(ctx.db, doc_id, "failed", e.code, e.message)
+        raise JobFailed(e.code, e.message) from e
+    except JobFailed as e:
+        docs_svc.set_status(ctx.db, doc_id, "failed", e.code, e.message)
+        raise
+    except Exception:
+        docs_svc.set_status(ctx.db, doc_id, "failed", "internal_error", "Error inesperado")
+        raise
+
+
+def _generate(ctx: JobContext, doc: dict[str, Any]) -> None:
+    prov = llm_svc.provider()
+    info = prov.info()
+    if not info.running:
+        raise JobFailed("llm_unavailable", "Ollama no está en marcha. Abre la app de Ollama.")
+    rm = ResourceManager(prov)
+    choice = rm.acquire(
+        llm_svc.chosen_model(ctx.db),
+        llm_svc.light_model(ctx.db),
+        info.models,
+        report=lambda m: ctx.report(0, m),
+        cancelled=ctx.cancelled,
+    )
+    material = docs_svc.load_material(ctx.db, doc["id"])
+    segment_of = {f.id: f.segment_id for s in material for f in s.fragments}
+    budget = profile(choice.model).budget_mb
+    peak = {"mb": 0}
+
+    def chat(req: ChatRequest, task: str) -> ChatResult:
+        res = prov.chat(req, cancelled=ctx.cancelled)
+        loaded = rm.after_call(req.model)
+        if loaded:
+            peak["mb"] = max(peak["mb"], loaded)
+            if loaded > budget:
+                log.warning("%s ocupa %d MB (presupuesto %d MB)", req.model, loaded, budget)
+        docs_svc.record_run(
+            ctx.db,
+            ctx.job["id"],
+            req.model,
+            f"{doc['kind']}:{task}",
+            res.input_tokens,
+            res.output_tokens,
+            res.duration_ms,
+            loaded,
+        )
+        return res
+
+    job = GenJob(
+        kind=doc["kind"],
+        detail=doc["detail"],
+        model=choice.model,
+        keep_alive=llm_svc.keep_alive(ctx.db),
+        sources=material,
+        chat=chat,
+        report=lambda v, m: ctx.report(v, m),
+        checkpoint=json.loads(ctx.job.get("checkpoint_json") or "{}"),
+        save_checkpoint=lambda data: queue.save_checkpoint(ctx.db, ctx.job["id"], data),
+    )
+    draft = job.run()
+    content, cites = number_citations(draft, segment_of)
+    if not content["sections"]:
+        raise JobFailed(
+            "empty_result", "El modelo no encontró contenido con respaldo en las fuentes"
+        )
+    stats = {
+        **job.stats.__dict__,
+        "fallback": choice.fallback,
+        "available_mb": choice.available_mb,
+        "peak_loaded_mb": peak["mb"],
+        "budget_mb": budget,
+    }
+    docs_svc.save_result(ctx.db, doc["id"], content, cites, choice.model, stats)
+
+
 HANDLERS: dict[str, Callable[[JobContext], None]] = {
+    "generate_doc": generate_doc,
     "extract_document": extract_document,
     "prepare_audio": prepare_audio,
     "transcribe": transcribe,

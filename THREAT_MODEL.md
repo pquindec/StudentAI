@@ -27,7 +27,7 @@ Método: STRIDE por frontera de confianza. Se revisa al final de cada fase.
 | T7 | I | Fuga de datos en logs | Logs sin contenido de fuentes ni cuerpos de petición | ✅ F1 (regla) |
 | T8 | T | Corrupción de BD por migración fallida | Transacción por migración + copia previa | ✅ F1 |
 | T9 | T/D | Archivos maliciosos (zip bomb DOCX, PDF malformado, extensión falsa, path traversal) | Magic bytes, límites, rutas UUID, extracción en subproceso con timeout y RLIMIT_CPU | ✅ F2 |
-| T10 | T | Prompt injection en documentos o transcripciones | Fuentes delimitadas como datos, sin herramientas, salida con esquema, scope en SQL | ⏳ F4–F6 (validado en benchmark: 3/3 resistidos) |
+| T10 | T | Prompt injection en documentos o transcripciones | Fuentes delimitadas como datos (delimitadores e ids falsos neutralizados), sin herramientas, salida con esquema, citas verificadas, scope en SQL | ✅ F4 para apuntes/resúmenes (prueba real en TESTING.md) · ⏳ F5–F6 chat y exámenes |
 | T11 | I | Fuga entre asignaturas | Filtro obligatorio por `subject_id`/`owner_id` en SQL | ⏳ F5 |
 | T12 | I | Envío no consentido a la nube | Consentimiento con vista previa + auditoría | ⏳ F8 |
 | T13 | I | Robo de claves API | Keychain de macOS | ⏳ F8 |

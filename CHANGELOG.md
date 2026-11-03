@@ -1,6 +1,16 @@
 # Changelog
 
-## [0.3.0] — 2026-11-03 · Fase 3: grabación y transcripción
+## [0.4.0] — 2026-11-03 · Fase 4: IA local, apuntes y resúmenes
+### Añadido
+- Proveedor `LLMProvider` + Ollama local (streaming, salida con JSON Schema, `keep_alive`, cancelación a mitad de respuesta). Solo se conecta a `127.0.0.1`.
+- AI Resource Manager v1: mide la memoria disponible antes de cargar el modelo; si no llega para `qwen3.5:9b` usa `qwen3.5:4b`; si tampoco, espera mostrando «Esperando memoria libre» (máx. 10 min). Descarga los modelos que sobran y libera el LLM antes de cada transcripción.
+- Apuntes y resúmenes (breve / intermedio / detallado) de una o varias fuentes, con map-reduce. Cada punto cita fragmentos concretos; las citas inexistentes se descartan y se cuentan.
+- Contradicciones entre fuentes en los resúmenes, mostradas lado a lado sin resolverlas.
+- Páginas Apuntes y Resúmenes, vista del documento con citas clicables (texto literal, página o minuto, «Abrir fuente» salta al momento del audio), botones rápidos en cada fuente y panel de estado de Ollama.
+- Generación reanudable por bloques y registro de cada llamada en `model_runs`.
+- Migración `0004_generated_docs.sql`.
+
+ — 2026-11-03 · Fase 3: grabación y transcripción
 ### Añadido
 - Grabador nativo en Rust (cpal + hound): micrófono elegible, nivel de entrada, pausa/reanudar, segmentos WAV de 60 s vaciados a disco cada segundo, manifiesto y límite de 6 h. Al parar se une y se importa como fuente `recording`.
 - Recuperación de grabaciones interrumpidas (cabecera WAV reparada) al abrir la app.

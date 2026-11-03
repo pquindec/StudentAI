@@ -7,6 +7,8 @@ import { useBackendStatus } from './lib/backendStatus'
 import { NavContext, type Route, sectionOf } from './lib/nav'
 import { ComingSoon } from './pages/ComingSoon'
 import { Dashboard } from './pages/Dashboard'
+import { DocumentView } from './pages/DocumentView'
+import { Documents } from './pages/Documents'
 import { Import } from './pages/Import'
 import { Library } from './pages/Library'
 import { Recordings } from './pages/Recordings'
@@ -16,8 +18,6 @@ import { Subjects } from './pages/Subjects'
 
 /** Fase del plan (TASKS.md) en la que se construye cada sección pendiente. */
 const PHASE: Partial<Record<Section, number>> = {
-  notes: 4,
-  summaries: 4,
   assistant: 5,
   exams: 6,
   flashcards: 7,
@@ -52,7 +52,12 @@ function Page({ route, status }: { route: Route; status: ReturnType<typeof useBa
     case 'recordings':
       return <Recordings />
     case 'source':
-      return <SourceDetail key={route.id} id={route.id} />
+      return <SourceDetail key={`${route.id}-${route.at ?? ''}`} id={route.id} at={route.at} />
+    case 'document':
+      return <DocumentView key={route.id} id={route.id} />
+    case 'notes':
+    case 'summaries':
+      return <Documents key={route.name} kind={route.name === 'notes' ? 'notes' : 'summary'} />
     default:
       return <ComingSoon section={route.name} phase={PHASE[route.name] ?? 0} />
   }

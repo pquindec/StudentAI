@@ -29,6 +29,10 @@ Amenazas y riesgos: `THREAT_MODEL.md`. Este archivo lista **solo lo que está im
 | Grabaciones: carpetas con nombre UUID validado (recuperar/descartar no aceptan rutas), permisos `0700` | `recorder.rs` | `ids_are_uuid_only` |
 | Sin procesos huérfanos: whisper/ffmpeg registrados y terminados al salir; huérfano de un `kill -9` eliminado al reanudar | `core/children.py`, `whisper_cpp.kill_stale` | prueba E2E manual (registrada en TESTING.md) |
 | Solo el núcleo marca un audio como `recording` (campo del endpoint interno) | `routes/internal.py` | `test_recording_import_kind` |
+| El LLM solo se contacta en `127.0.0.1` (se rechaza cualquier otro host); sin herramientas ni acceso a red | `llm/ollama.py` | `test_ollama_only_local_and_down` |
+| Contenido importado delimitado como datos; se neutralizan `</fuente>` y los ids de fragmento falsos `[A1]` del texto | `generation/prompts.py` | `test_untrusted_content_cannot_escape_delimiters` |
+| Citas verificadas: solo ids entregados al modelo en esa llamada; las inventadas se descartan y se cuentan; un punto sin cita válida no se guarda | `generation/docs.py` | `test_validate_drops_invented_citations` |
+| Documentos y sus fuentes, siempre de la misma asignatura y del mismo propietario (servicio + trigger) | `services/documents.py`, `0004` | `test_documents_respect_subject_and_owner` |
 | Vínculos solo dentro de la misma asignatura (servicio + trigger) | `services/sources.py`, `0002` | `test_links_must_be_same_subject` |
 
 ## Pendiente (fases siguientes)

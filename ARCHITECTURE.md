@@ -319,6 +319,8 @@ Corrección: objetivas = deterministas; abiertas o cortas = LLM con rúbrica + e
 ### 6.7 Apuntes y resúmenes
 Estrategia *map-reduce* sobre los chunks del scope: resumen por fuente o sección con citas, y luego una síntesis global que conserva las citas. Detección de **contradicciones**: el LLM compara afirmaciones de fuentes distintas sobre el mismo concepto y las muestra lado a lado, **sin resolverlas**.
 
+> **Implementado (F4):** la unidad citable es el **segmento** (párrafo con página o frase con tiempo) de la versión fijada de cada fuente; los chunks de RAG llegan en la F5. Cada segmento se presenta al modelo con un id corto (`A12` = fuente A, ordinal 12). Bloques de ~10.000 caracteres (8K de contexto); *map* por bloque con salida JSON Schema → *reduce* (jerárquico si no cabe). Las citas se validan contra los ids entregados en cada llamada y se numeran [1], [2]… al guardar (`generated_doc_citations` → `segments`). Contradicciones solo en resúmenes de ≥ 2 fuentes y solo si citan ≥ 2 fuentes distintas. Avance por bloque en `jobs.checkpoint_json`.
+
 ---
 
 ## 7. Modelos de IA y presupuesto de memoria

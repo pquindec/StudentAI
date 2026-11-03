@@ -36,6 +36,13 @@ Formato único:
 | POST | `/api/v1/stt/models/{id}/download` | Descarga explícita (202); también descarga el VAD si falta |
 | POST | `/api/v1/sources/{id}/transcribe` | `{language?}` — (re)transcribir un audio; la versión anterior se conserva |
 | GET | `/api/v1/sources/{id}/export?format=txt\|srt` | `{filename, content}` (la UI lo guarda con el diálogo nativo) |
+| GET | `/api/v1/ai/status` | Ollama (en marcha, versión), modelo elegido y ligero, `keep_alive`, modelos instalados, cargados y memoria disponible |
+| PUT | `/api/v1/ai/settings` | `{model?, keep_alive?: 1m\|2m\|5m\|10m}` |
+| POST | `/api/v1/subjects/{id}/documents` | `{kind: notes\|summary, detail: brief\|medium\|detailed, source_ids[1..20], title?}` → 202, se genera en segundo plano |
+| GET | `/api/v1/subjects/{id}/documents` | Apuntes y resúmenes de la asignatura (con estado y progreso) |
+| GET | `/api/v1/documents/{id}` | Apartados → puntos con `refs`, contradicciones, citas (texto literal, página o tiempo, fuente) y métricas |
+| POST | `/api/v1/documents/{id}/retry` | Reintenta si falló o se canceló (409 si no) |
+| DELETE | `/api/v1/documents/{id}` | Borra (y cancela si se está generando) |
 | GET | `/api/v1/jobs` | Trabajos (`?active=true`) con progreso |
 | POST | `/api/v1/jobs/{id}/cancel` | Cancelar (inmediato si está en cola; cooperativo si está en curso) |
 

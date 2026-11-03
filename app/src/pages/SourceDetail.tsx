@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { QuickGenerate } from '../components/Documents'
 import { AudioPanel, TranscriptView } from '../components/Transcript'
 import {
   Button,
@@ -179,7 +180,7 @@ function LinksForm({ source, onDone }: { source: Source; onDone: () => void }) {
   )
 }
 
-export function SourceDetail({ id }: { id: string }) {
+export function SourceDetail({ id, at }: { id: string; at?: number }) {
   const navigate = useNavigate()
   const source = useQuery(() => api.getSource(id), [id])
   const [version, setVersion] = useState<number | undefined>(undefined)
@@ -253,6 +254,7 @@ export function SourceDetail({ id }: { id: string }) {
         subtitle={`${es.kinds[s.kind]} · ${subject.data?.name ?? ''}`}
         actions={
           <>
+            {ready && <QuickGenerate subjectId={s.subject_id} sourceId={s.id} />}
             <Button onClick={() => setLinking(true)}>{es.source.editLinks}</Button>
             <ConfirmButton
               label={es.common.delete}
@@ -344,6 +346,7 @@ export function SourceDetail({ id }: { id: string }) {
               source={s}
               audioRef={audioRef}
               onTime={setCurrentMs}
+              startAt={at}
               onChanged={() => {
                 setVersion(undefined)
                 void reload()

@@ -19,11 +19,14 @@ export function AudioPanel({
   audioRef,
   onTime,
   onChanged,
+  startAt,
 }: {
   source: Source
   audioRef: RefObject<HTMLAudioElement | null>
   onTime: (ms: number) => void
   onChanged: () => void
+  /** Posición inicial (ms), p. ej. al abrir la fuente desde una cita. */
+  startAt?: number
 }) {
   const navigate = useNavigate()
   const info = useQuery(() => api.systemInfo(), [])
@@ -75,6 +78,9 @@ export function AudioPanel({
           src={src.data}
           className="w-full"
           onTimeUpdate={(e) => onTime(e.currentTarget.currentTime * 1000)}
+          onLoadedMetadata={(e) => {
+            if (startAt != null) e.currentTarget.currentTime = startAt / 1000
+          }}
         />
       ) : (
         <p className="text-xs text-zinc-500">{src.loading ? '' : es.transcript.noPlayer}</p>

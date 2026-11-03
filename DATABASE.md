@@ -6,6 +6,7 @@ El modelo de datos completo y su justificación están en `ARCHITECTURE.md §5`.
 | Versión | Migración | Contenido |
 |---|---|---|
 | 1 | `0001_init.sql` | `users` (usuario `local`), `settings`, `subjects`, `units` (course/module/topic), `sessions` |
+| 4 | `0004_generated_docs.sql` | `generated_docs` (apuntes/resúmenes: contenido estructurado, estado, modelo, métricas de validación), `generated_doc_sources` (fuentes y versión fijada, misma asignatura por trigger), `generated_doc_citations` (ref → segmento), `model_runs` (tokens, duración, tamaño cargado) |
 | 3 | `0003_transcription.sql` | `jobs.checkpoint_json` (avance de trabajos largos), índice único: una transcripción activa por fuente; audios de la Fase 2 pasan a `transcription = needs_model` |
 | 2 | `0002_sources_jobs.sql` | `sources` (material importado), `source_links` (N:M con unidad **o** sesión), `source_versions` (texto por versión: extraído, transcrito, pegado, editado), `segments` (bloques con página, sección, offsets y timestamps), `jobs` (cola persistente) |
 

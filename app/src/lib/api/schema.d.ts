@@ -364,16 +364,327 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/ai/status': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Ai Status */
+    get: operations['ai_status_api_v1_ai_status_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/ai/settings': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Update Ai Settings */
+    put: operations['update_ai_settings_api_v1_ai_settings_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/subjects/{subject_id}/documents': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Documents */
+    get: operations['list_documents_api_v1_subjects__subject_id__documents_get']
+    put?: never
+    /** Create Document */
+    post: operations['create_document_api_v1_subjects__subject_id__documents_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/documents/{doc_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Document */
+    get: operations['get_document_api_v1_documents__doc_id__get']
+    put?: never
+    post?: never
+    /** Delete Document */
+    delete: operations['delete_document_api_v1_documents__doc_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/documents/{doc_id}/retry': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Retry Document */
+    post: operations['retry_document_api_v1_documents__doc_id__retry_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    /** AiSettingsIn */
+    AiSettingsIn: {
+      /** Model */
+      model?: string | null
+      /** Keep Alive */
+      keep_alive?: ('1m' | '2m' | '5m' | '10m') | null
+    }
+    /** AiStatusOut */
+    AiStatusOut: {
+      /** Running */
+      running: boolean
+      /** Version */
+      version: string | null
+      /** Model */
+      model: string
+      /** Light Model */
+      light_model: string | null
+      /**
+       * Keep Alive
+       * @enum {string}
+       */
+      keep_alive: '1m' | '2m' | '5m' | '10m'
+      /** Models */
+      models: components['schemas']['LlmModelOut'][]
+      /** Loaded */
+      loaded: components['schemas']['LoadedOut'][]
+      /** Available Mb */
+      available_mb: number | null
+    }
+    /** CitationOut */
+    CitationOut: {
+      /** Ref */
+      ref: number
+      /** Text */
+      text: string
+      /** Page */
+      page: number | null
+      /** Start Ms */
+      start_ms: number | null
+      /** End Ms */
+      end_ms: number | null
+      /** Source Id */
+      source_id: string
+      /** Source Title */
+      source_title: string
+      /** Source Kind */
+      source_kind: string
+      /** Version */
+      version: number
+    }
     /** ContentIn */
     ContentIn: {
       /** Text */
       text: string
       /** Base Version */
       base_version: number
+    }
+    /** ContradictionOut */
+    ContradictionOut: {
+      /** Topic */
+      topic: string
+      /** Claims */
+      claims: components['schemas']['PointOut'][]
+    }
+    /** DocDetailOut */
+    DocDetailOut: {
+      /** Id */
+      id: string
+      /** Subject Id */
+      subject_id: string
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'notes' | 'summary'
+      /**
+       * Detail
+       * @enum {string}
+       */
+      detail: 'brief' | 'medium' | 'detailed'
+      /** Title */
+      title: string
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'queued' | 'running' | 'ready' | 'failed' | 'cancelled'
+      /** Model */
+      model: string | null
+      /** Error Code */
+      error_code: string | null
+      /** Error Message */
+      error_message: string | null
+      /** Progress */
+      progress: number
+      /** Message */
+      message: string | null
+      /** Sources */
+      sources: components['schemas']['DocSourceOut'][]
+      /** Created At */
+      created_at: string
+      /** Updated At */
+      updated_at: string
+      /** Sections */
+      sections: components['schemas']['SectionOut'][]
+      /** Contradictions */
+      contradictions: components['schemas']['ContradictionOut'][]
+      /** Citations */
+      citations: components['schemas']['CitationOut'][]
+      stats: components['schemas']['DocStatsOut']
+    }
+    /** DocIn */
+    DocIn: {
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'notes' | 'summary'
+      /**
+       * Detail
+       * @default medium
+       * @enum {string}
+       */
+      detail: 'brief' | 'medium' | 'detailed'
+      /** Source Ids */
+      source_ids: string[]
+      /** Title */
+      title?: string | null
+    }
+    /** DocOut */
+    DocOut: {
+      /** Id */
+      id: string
+      /** Subject Id */
+      subject_id: string
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'notes' | 'summary'
+      /**
+       * Detail
+       * @enum {string}
+       */
+      detail: 'brief' | 'medium' | 'detailed'
+      /** Title */
+      title: string
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'queued' | 'running' | 'ready' | 'failed' | 'cancelled'
+      /** Model */
+      model: string | null
+      /** Error Code */
+      error_code: string | null
+      /** Error Message */
+      error_message: string | null
+      /** Progress */
+      progress: number
+      /** Message */
+      message: string | null
+      /** Sources */
+      sources: components['schemas']['DocSourceOut'][]
+      /** Created At */
+      created_at: string
+      /** Updated At */
+      updated_at: string
+    }
+    /** DocSourceOut */
+    DocSourceOut: {
+      /** Id */
+      id: string
+      /** Title */
+      title: string
+      /** Kind */
+      kind: string
+    }
+    /** DocStatsOut */
+    DocStatsOut: {
+      /**
+       * Calls
+       * @default 0
+       */
+      calls: number
+      /**
+       * Proposed Cites
+       * @default 0
+       */
+      proposed_cites: number
+      /**
+       * Invented Cites
+       * @default 0
+       */
+      invented_cites: number
+      /**
+       * Dropped Points
+       * @default 0
+       */
+      dropped_points: number
+      /**
+       * Dropped Contradictions
+       * @default 0
+       */
+      dropped_contradictions: number
+      /**
+       * Input Tokens
+       * @default 0
+       */
+      input_tokens: number
+      /**
+       * Output Tokens
+       * @default 0
+       */
+      output_tokens: number
+      /**
+       * Fallback
+       * @default false
+       */
+      fallback: boolean
+      /**
+       * Peak Loaded Mb
+       * @default 0
+       */
+      peak_loaded_mb: number
+      /**
+       * Budget Mb
+       * @default 0
+       */
+      budget_mb: number
     }
     /** ExportOut */
     ExportOut: {
@@ -426,6 +737,24 @@ export interface components {
       /** Finished At */
       finished_at: string | null
     }
+    /** LlmModelOut */
+    LlmModelOut: {
+      /** Name */
+      name: string
+      /** Installed */
+      installed: boolean
+      /** Min Free Mb */
+      min_free_mb: number
+      /** Budget Mb */
+      budget_mb: number
+    }
+    /** LoadedOut */
+    LoadedOut: {
+      /** Name */
+      name: string
+      /** Size Mb */
+      size_mb: number
+    }
     /** ModelOut */
     ModelOut: {
       /** Id */
@@ -447,6 +776,20 @@ export interface components {
       download_job_id: string | null
       /** Download Progress */
       download_progress: number | null
+    }
+    /** PointOut */
+    PointOut: {
+      /** Text */
+      text: string
+      /** Refs */
+      refs: number[]
+    }
+    /** SectionOut */
+    SectionOut: {
+      /** Title */
+      title: string
+      /** Points */
+      points: components['schemas']['PointOut'][]
     }
     /** SegmentOut */
     SegmentOut: {
@@ -1719,6 +2062,216 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['SttStatusOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  ai_status_api_v1_ai_status_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AiStatusOut']
+        }
+      }
+    }
+  }
+  update_ai_settings_api_v1_ai_settings_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AiSettingsIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AiStatusOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_documents_api_v1_subjects__subject_id__documents_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DocOut'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_document_api_v1_subjects__subject_id__documents_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DocIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DocOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_document_api_v1_documents__doc_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        doc_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DocDetailOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_document_api_v1_documents__doc_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        doc_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  retry_document_api_v1_documents__doc_id__retry_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        doc_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DocOut']
         }
       }
       /** @description Validation Error */

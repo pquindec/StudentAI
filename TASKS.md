@@ -11,8 +11,9 @@
 | 0.5 — Benchmarks en el equipo | ✅ Completada (2026-11-03) — ver `BENCHMARKS.md` |
 | 1 — Estructura y entorno | ✅ Completada (2026-11-03) |
 | 2 — Asignaturas y fuentes | ✅ Completada y verificada por el usuario (2026-11-03) |
-| 3 — Grabación y transcripción | 🟡 Implementada (2026-11-03) — falta la prueba manual de grabación con micrófono |
-| 4–10 | ⏳ No iniciadas |
+| 3 — Grabación y transcripción | ✅ Aprobada por el usuario (2026-11-03) |
+| 4 — IA local: apuntes y resúmenes | 🟡 Implementada (2026-11-03) — falta la revisión del usuario en la UI |
+| 5–10 | ⏳ No iniciadas |
 
 ### Tareas nuevas surgidas de la Fase 0.5
 - [x] (F1) Usar Ollama **oficial** en desarrollo (el de Homebrew no tiene salida estructurada); documentarlo en INSTALLATION.md
@@ -59,7 +60,7 @@
 - [x] Comprobar de nuevo la pantalla Importar con la mejora y el resto de formatos (usuario: «funciona bien»)
 - **Criterio de aceptación:** crear una asignatura con temas e incorporar PDF, DOCX, TXT, MD, RTF, texto pegado y un MP3/M4A; todos aparecen con sus metadatos y una vista previa correcta; los archivos inválidos muestran un error comprensible.
 
-## Fase 3 — Grabación y transcripción 🟡
+## Fase 3 — Grabación y transcripción ✅
 - [x] Recorder en Rust (cpal): selección de dispositivo, nivel de entrada, pausa/reanudar, segmentos de 60 s y manifiesto
 - [x] Recuperación de grabaciones interrumpidas (al abrir la app: recuperar o descartar)
 - [x] Permiso de micrófono (Info.plist), indicador permanente (barra roja + título de ventana)
@@ -68,16 +69,18 @@
 - [x] Editor de transcripción + reproductor sincronizado
 - [x] Exportación a TXT y SRT
 - [x] Aceptación (backend real como proceso): audio de 30 min, `kill -9` al 49 %, reapertura → transcripción completa, ordenada, sin duplicados, editable y exportable; timestamps dentro de ±1 s (máx. 0,8 s) frente a una pasada sin cortes
-- [ ] Prueba manual (usuario): grabar con el micrófono, pausar/reanudar, cerrar la app a la fuerza grabando y recuperar
+- [x] Prueba manual (usuario): grabación con micrófono (en desarrollo, lanzar desde Terminal.app: Termius no puede pedir el permiso)
 - [ ] (F9) Empaquetar `whisper-cli` y `ffmpeg` dentro del `.app` (hoy se usan los de Homebrew)
 - **Criterio de aceptación:** grabar 10 min (o importar un audio de 30 min), cerrar la app a la fuerza a mitad de proceso, reabrir y obtener una transcripción completa, editable, con timestamps correctos (±1 s) y exportable.
 
-## Fase 4 — IA local: apuntes y resúmenes
-- [ ] Interfaz `LLMProvider` + OllamaProvider (streaming, salida estructurada, keep_alive)
-- [ ] AI Resource Manager v1 (memoria, un modelo pesado a la vez, prioridades)
-- [ ] Apuntes (breve / intermedio / detallado) con citas por apartado
-- [ ] Resúmenes de una o varias fuentes con map-reduce y detección de contradicciones
-- [ ] Prompts con el contenido delimitado como datos no confiables
+## Fase 4 — IA local: apuntes y resúmenes 🟡
+- [x] Interfaz `LLMProvider` + OllamaProvider (streaming, salida estructurada, keep_alive, solo localhost)
+- [x] AI Resource Manager v1 (memoria disponible, modelo ligero si falta, espera visible, descarga del LLM antes de whisper)
+- [x] Apuntes (breve / intermedio / detallado) con citas por punto
+- [x] Resúmenes de una o varias fuentes con map-reduce y detección de contradicciones (mostradas sin resolver)
+- [x] Prompts con el contenido delimitado como datos no confiables (delimitadores y ids falsos neutralizados)
+- [x] Generación reanudable (checkpoint por bloque) y registro en `model_runs`
+- [ ] Revisión del usuario en la UI (calidad de los apuntes con su material real)
 - **Criterio de aceptación:** apuntes y resumen de un documento y de una transcripción en los que cada apartado cita fragmentos existentes; 0 citas inventadas en el conjunto de prueba; la UI no se bloquea; la memoria no supera el presupuesto medido.
 
 ## Fase 5 — RAG y asistente

@@ -23,6 +23,14 @@ export type SttStatus = S['SttStatusOut']
 export type SttModel = S['ModelOut']
 export type SttLanguage = SttStatus['language']
 export type ExportFile = S['ExportOut']
+export type AiStatus = S['AiStatusOut']
+export type KeepAlive = AiStatus['keep_alive']
+export type GeneratedDoc = S['DocOut']
+export type GeneratedDocDetail = S['DocDetailOut']
+export type DocIn = S['DocIn']
+export type DocKind = GeneratedDoc['kind']
+export type DocDetail = GeneratedDoc['detail']
+export type DocCitation = S['CitationOut']
 export type SourceKind = Source['kind']
 export type SourceStatus = Source['status']
 
@@ -144,6 +152,29 @@ export class ApiClient {
   }
   exportSource(sourceId: string, format: 'txt' | 'srt'): Promise<ExportFile> {
     return this.call('GET', `/api/v1/sources/${id(sourceId)}/export${query({ format })}`)
+  }
+
+  // --- IA local: apuntes y resúmenes
+  aiStatus(): Promise<AiStatus> {
+    return this.call('GET', '/api/v1/ai/status')
+  }
+  updateAiSettings(body: { model?: string; keep_alive?: KeepAlive }): Promise<AiStatus> {
+    return this.call('PUT', '/api/v1/ai/settings', body)
+  }
+  listDocuments(subjectId: string): Promise<GeneratedDoc[]> {
+    return this.call('GET', `/api/v1/subjects/${id(subjectId)}/documents`)
+  }
+  createDocument(subjectId: string, body: DocIn): Promise<GeneratedDoc> {
+    return this.call('POST', `/api/v1/subjects/${id(subjectId)}/documents`, body)
+  }
+  getDocument(docId: string): Promise<GeneratedDocDetail> {
+    return this.call('GET', `/api/v1/documents/${id(docId)}`)
+  }
+  retryDocument(docId: string): Promise<GeneratedDoc> {
+    return this.call('POST', `/api/v1/documents/${id(docId)}/retry`)
+  }
+  deleteDocument(docId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/documents/${id(docId)}`)
   }
 
   // --- Trabajos en segundo plano

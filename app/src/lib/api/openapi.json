@@ -1256,10 +1256,450 @@
           }
         }
       }
+    },
+    "/api/v1/ai/status": {
+      "get": {
+        "tags": ["ai"],
+        "summary": "Ai Status",
+        "operationId": "ai_status_api_v1_ai_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiStatusOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/settings": {
+      "put": {
+        "tags": ["ai"],
+        "summary": "Update Ai Settings",
+        "operationId": "update_ai_settings_api_v1_ai_settings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiSettingsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subjects/{subject_id}/documents": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Create Document",
+        "operationId": "create_document_api_v1_subjects__subject_id__documents_post",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Subject Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["ai"],
+        "summary": "List Documents",
+        "operationId": "list_documents_api_v1_subjects__subject_id__documents_get",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Subject Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocOut"
+                  },
+                  "title": "Response List Documents Api V1 Subjects  Subject Id  Documents Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{doc_id}": {
+      "get": {
+        "tags": ["ai"],
+        "summary": "Get Document",
+        "operationId": "get_document_api_v1_documents__doc_id__get",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocDetailOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["ai"],
+        "summary": "Delete Document",
+        "operationId": "delete_document_api_v1_documents__doc_id__delete",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{doc_id}/retry": {
+      "post": {
+        "tags": ["ai"],
+        "summary": "Retry Document",
+        "operationId": "retry_document_api_v1_documents__doc_id__retry_post",
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AiSettingsIn": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "keep_alive": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["1m", "2m", "5m", "10m"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keep Alive"
+          }
+        },
+        "type": "object",
+        "title": "AiSettingsIn"
+      },
+      "AiStatusOut": {
+        "properties": {
+          "running": {
+            "type": "boolean",
+            "title": "Running"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "light_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Light Model"
+          },
+          "keep_alive": {
+            "type": "string",
+            "enum": ["1m", "2m", "5m", "10m"],
+            "title": "Keep Alive"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/LlmModelOut"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "loaded": {
+            "items": {
+              "$ref": "#/components/schemas/LoadedOut"
+            },
+            "type": "array",
+            "title": "Loaded"
+          },
+          "available_mb": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available Mb"
+          }
+        },
+        "type": "object",
+        "required": [
+          "running",
+          "version",
+          "model",
+          "light_model",
+          "keep_alive",
+          "models",
+          "loaded",
+          "available_mb"
+        ],
+        "title": "AiStatusOut"
+      },
+      "CitationOut": {
+        "properties": {
+          "ref": {
+            "type": "integer",
+            "title": "Ref"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          },
+          "start_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Ms"
+          },
+          "end_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Ms"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_title": {
+            "type": "string",
+            "title": "Source Title"
+          },
+          "source_kind": {
+            "type": "string",
+            "title": "Source Kind"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ref",
+          "text",
+          "page",
+          "start_ms",
+          "end_ms",
+          "source_id",
+          "source_title",
+          "source_kind",
+          "version"
+        ],
+        "title": "CitationOut"
+      },
       "ContentIn": {
         "properties": {
           "text": {
@@ -1277,6 +1717,391 @@
         "type": "object",
         "required": ["text", "base_version"],
         "title": "ContentIn"
+      },
+      "ContradictionOut": {
+        "properties": {
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "claims": {
+            "items": {
+              "$ref": "#/components/schemas/PointOut"
+            },
+            "type": "array",
+            "title": "Claims"
+          }
+        },
+        "type": "object",
+        "required": ["topic", "claims"],
+        "title": "ContradictionOut"
+      },
+      "DocDetailOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "subject_id": {
+            "type": "string",
+            "title": "Subject Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["notes", "summary"],
+            "title": "Kind"
+          },
+          "detail": {
+            "type": "string",
+            "enum": ["brief", "medium", "detailed"],
+            "title": "Detail"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["queued", "running", "ready", "failed", "cancelled"],
+            "title": "Status"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "progress": {
+            "type": "number",
+            "title": "Progress"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/DocSourceOut"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/SectionOut"
+            },
+            "type": "array",
+            "title": "Sections"
+          },
+          "contradictions": {
+            "items": {
+              "$ref": "#/components/schemas/ContradictionOut"
+            },
+            "type": "array",
+            "title": "Contradictions"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationOut"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/DocStatsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "subject_id",
+          "kind",
+          "detail",
+          "title",
+          "status",
+          "model",
+          "error_code",
+          "error_message",
+          "progress",
+          "message",
+          "sources",
+          "created_at",
+          "updated_at",
+          "sections",
+          "contradictions",
+          "citations",
+          "stats"
+        ],
+        "title": "DocDetailOut"
+      },
+      "DocIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["notes", "summary"],
+            "title": "Kind"
+          },
+          "detail": {
+            "type": "string",
+            "enum": ["brief", "medium", "detailed"],
+            "title": "Detail",
+            "default": "medium"
+          },
+          "source_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Source Ids"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": ["kind", "source_ids"],
+        "title": "DocIn"
+      },
+      "DocOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "subject_id": {
+            "type": "string",
+            "title": "Subject Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["notes", "summary"],
+            "title": "Kind"
+          },
+          "detail": {
+            "type": "string",
+            "enum": ["brief", "medium", "detailed"],
+            "title": "Detail"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["queued", "running", "ready", "failed", "cancelled"],
+            "title": "Status"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "progress": {
+            "type": "number",
+            "title": "Progress"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/DocSourceOut"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "subject_id",
+          "kind",
+          "detail",
+          "title",
+          "status",
+          "model",
+          "error_code",
+          "error_message",
+          "progress",
+          "message",
+          "sources",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DocOut"
+      },
+      "DocSourceOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": ["id", "title", "kind"],
+        "title": "DocSourceOut"
+      },
+      "DocStatsOut": {
+        "properties": {
+          "calls": {
+            "type": "integer",
+            "title": "Calls",
+            "default": 0
+          },
+          "proposed_cites": {
+            "type": "integer",
+            "title": "Proposed Cites",
+            "default": 0
+          },
+          "invented_cites": {
+            "type": "integer",
+            "title": "Invented Cites",
+            "default": 0
+          },
+          "dropped_points": {
+            "type": "integer",
+            "title": "Dropped Points",
+            "default": 0
+          },
+          "dropped_contradictions": {
+            "type": "integer",
+            "title": "Dropped Contradictions",
+            "default": 0
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens",
+            "default": 0
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens",
+            "default": 0
+          },
+          "fallback": {
+            "type": "boolean",
+            "title": "Fallback",
+            "default": false
+          },
+          "peak_loaded_mb": {
+            "type": "integer",
+            "title": "Peak Loaded Mb",
+            "default": 0
+          },
+          "budget_mb": {
+            "type": "integer",
+            "title": "Budget Mb",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "DocStatsOut"
       },
       "ExportOut": {
         "properties": {
@@ -1443,6 +2268,44 @@
         ],
         "title": "JobOut"
       },
+      "LlmModelOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "installed": {
+            "type": "boolean",
+            "title": "Installed"
+          },
+          "min_free_mb": {
+            "type": "integer",
+            "title": "Min Free Mb"
+          },
+          "budget_mb": {
+            "type": "integer",
+            "title": "Budget Mb"
+          }
+        },
+        "type": "object",
+        "required": ["name", "installed", "min_free_mb", "budget_mb"],
+        "title": "LlmModelOut"
+      },
+      "LoadedOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "size_mb": {
+            "type": "integer",
+            "title": "Size Mb"
+          }
+        },
+        "type": "object",
+        "required": ["name", "size_mb"],
+        "title": "LoadedOut"
+      },
       "ModelOut": {
         "properties": {
           "id": {
@@ -1505,6 +2368,42 @@
           "download_progress"
         ],
         "title": "ModelOut"
+      },
+      "PointOut": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "refs": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Refs"
+          }
+        },
+        "type": "object",
+        "required": ["text", "refs"],
+        "title": "PointOut"
+      },
+      "SectionOut": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/PointOut"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": ["title", "points"],
+        "title": "SectionOut"
       },
       "SegmentOut": {
         "properties": {
