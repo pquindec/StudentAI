@@ -62,6 +62,9 @@ pub struct Status {
     pub subject_id: Option<String>,
     pub elapsed_ms: u64,
     pub level: f32,
+    /// Ha llegado algún sonido (no solo ceros). macOS entrega silencio absoluto, sin error,
+    /// cuando falta el permiso de micrófono.
+    pub heard: bool,
     pub device: Option<String>,
     pub error: Option<String>,
 }
@@ -93,6 +96,7 @@ enum Ctl {
 struct Shared {
     frames: AtomicU64,
     peak: AtomicU32,
+    heard: AtomicBool,
     paused: AtomicBool,
     dropped: AtomicU64,
     error: Mutex<Option<String>>,
@@ -307,6 +311,9 @@ where
                     .collect();
                 let peak = mono.iter().fold(0f32, |m, s| m.max(s.abs()));
                 let prev = f32::from_bits(shared.peak.load(Ordering::Relaxed));
+                if peak > 0.0 {
+                    shared.heard.store(true, Ordering::Relaxed);
+                }
                 if peak > prev {
                     shared.peak.store(peak.to_bits(), Ordering::Relaxed);
                 }
@@ -501,6 +508,7 @@ fn snapshot(m: &Manifest, shared: &Shared, rate: u32) -> Status {
         subject_id: Some(m.target.subject_id.clone()),
         elapsed_ms: shared.frames.load(Ordering::Relaxed) * 1000 / rate.max(1) as u64,
         level: level.min(1.0),
+        heard: shared.heard.load(Ordering::Relaxed),
         device: Some(m.device.clone()),
         error: shared.error.lock().expect("error lock").clone(),
     }
@@ -525,6 +533,7 @@ impl Recorder {
                 subject_id: None,
                 elapsed_ms: 0,
                 level: 0.0,
+                heard: false,
                 device: None,
                 error: None,
             },

@@ -18,6 +18,7 @@ export interface RecordingStatus {
   subject_id: string | null
   elapsed_ms: number
   level: number
+  heard: boolean
   device: string | null
   error: string | null
 }

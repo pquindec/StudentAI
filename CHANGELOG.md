@@ -13,6 +13,7 @@
 
 ### Corregido durante la fase
 - Las marcas de tiempo se truncaban al segundo (hasta 1,3 s de error) → se redondean (máx. 0,8 s medido).
+- Sin permiso de micrófono, macOS entrega silencio sin error y la grabación parecía funcionar → la barra de grabación avisa si en 3 s no llega ningún sonido.
 - Tras un `kill -9` del backend, whisper seguía vivo y podía coincidir con la reanudación → archivos temporales únicos por tramo, PID registrado y eliminación del huérfano al reanudar; al cerrar la app el backend mata sus procesos hijos.
 
 ## [0.2.0] — 2026-11-03 · Fase 2: asignaturas y fuentes

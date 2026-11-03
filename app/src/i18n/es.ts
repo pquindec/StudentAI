@@ -229,6 +229,8 @@ export const es = {
     recording: 'Grabando',
     paused: 'En pausa',
     level: 'Nivel de entrada',
+    noSignal:
+      'No llega sonido del micrófono. Revisa el permiso en Ajustes del Sistema › Privacidad y seguridad › Micrófono.',
     silentHint:
       'Si el nivel no se mueve al hablar, revisa el permiso en Ajustes del Sistema › Privacidad y seguridad › Micrófono.',
     saved: 'Grabación guardada en la biblioteca.',

@@ -19,6 +19,7 @@ export const IDLE: RecordingStatus = {
   subject_id: null,
   elapsed_ms: 0,
   level: 0,
+  heard: false,
   device: null,
   error: null,
 }

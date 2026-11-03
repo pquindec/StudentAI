@@ -58,7 +58,13 @@ export function RecordingBar() {
       </button>
       <span className="font-mono tabular-nums">{formatDuration(status.elapsed_ms)}</span>
       {!paused && <LevelMeter level={status.level} />}
-      {status.error && <span className="truncate">{status.error}</span>}
+      {status.error ? (
+        <span className="truncate">{status.error}</span>
+      ) : (
+        !paused &&
+        !status.heard &&
+        status.elapsed_ms > 3000 && <span className="font-medium">{es.recording.noSignal}</span>
+      )}
       <div className="ml-auto flex gap-2">
         <Button
           className="!bg-white/15 !text-white hover:!bg-white/25"
