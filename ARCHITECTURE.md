@@ -369,6 +369,8 @@ Herramienta: un script `bench/` que registra `ps`/`vm_stat`/`powermetrics` (este
 
 Un trabajo de prioridad baja en curso **no se interrumpe** (es caro), pero cede el turno entre lotes: los trabajos se dividen en pasos con *checkpoint*.
 
+> **Implementado (F4):** la generación de apuntes/resúmenes comprueba entre partes si hay en cola un trabajo pesado más prioritario (la transcripción de una grabación); si lo hay, vuelve a la cola sin contar como intento y se reanuda desde su checkpoint. La grabación en sí nunca depende de la cola: la hace el núcleo nativo.
+
 **Antes de lanzar un trabajo pesado:**
 1. Lee la memoria disponible (`psutil` + `kern.memorystatus_level` / presión de memoria de macOS).
 2. Si `disponible < requisito_medido_del_modelo + margen de 1.5 GB` → descarga el modelo inactivo (`keep_alive=0` en Ollama), espera y vuelve a comprobar.

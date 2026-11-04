@@ -10,6 +10,7 @@ from pathlib import Path
 
 from app.core import children
 from app.db.connection import connect
+from app.generation.docs import Yielded
 from app.jobs import queue
 from app.jobs.handlers import HANDLERS, JobContext, JobFailed, set_source_status
 from app.pipelines.audio import Cancelled
@@ -98,6 +99,9 @@ class Scheduler:
             set_source_status(db, sid, "processing")
             handler(JobContext(job=dict(job), db=db, data_dir=self.data_dir))
             queue.finish(db, jid, "done")
+        except Yielded:
+            queue.requeue(db, jid, "En pausa: se está transcribiendo una grabación")
+            set_source_status(db, sid, "pending")
         except Cancelled:
             queue.finish(db, jid, "cancelled")
             set_source_status(db, sid, "cancelled", "cancelled", "Procesamiento cancelado")

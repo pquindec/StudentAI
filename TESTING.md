@@ -29,6 +29,11 @@ scripts/check.sh backend    # solo una parte (preferible tras cambios acotados)
 - `npm run tauri dev`: backend `Ready`; la UI obtiene `/system/info` y `/jobs` → 200.
 - **Pendiente:** recorrido manual en la UI (soltar archivos reales, selector, editar texto). La ruta Rust `pick_files`/`import_files` + autorización no tiene prueba automática de extremo a extremo.
 
+## Grabar mientras se genera (2026-11-04)
+- Reportado por el usuario: el botón de grabar estaba desactivado mientras se generaba un resumen. Causa: con 2 asignaturas, el botón exigía elegir una y no lo decía (no dependía del resumen). Además, la transcripción de la grabación sí esperaba a que acabara el resumen (un solo modelo pesado a la vez).
+- Pruebas nuevas: `test_generation_yields_between_parts_and_resumes` y `test_transcription_goes_first_while_a_summary_is_generating` (la transcripción termina antes que el resumen, ceder el turno no cuenta como intento y ninguna parte se repite). pytest 84, vitest 18.
+- Pendiente: comprobación manual del usuario (grabar con un resumen en curso).
+
 ## Ajuste de resúmenes (2026-11-04)
 - Problema reportado por el usuario: el resumen de su clase (82.000 caracteres, 9 partes) se quedó en 0 % durante la primera parte y lo canceló; además los resúmenes tenían el formato de los apuntes.
 - Prueba con su clase real (copia de la BD hecha con `sqlite3 .backup`; copiar solo `app.db` pierde lo que está en el WAL): resumen intermedio en 4 min 29 s, progreso continuo con estimación de tiempo, 6 frases + 5 ideas clave, 0 citas inventadas de 277 propuestas, pico 8,4 GB. Segunda pasada: el modelo repitió las 10 frases del resumen como ideas clave → límite y deduplicación en código; tercera pasada (4 min 44 s): 6 frases + 6 conceptos «Término: definición» distintos, 0 citas inventadas de 334.

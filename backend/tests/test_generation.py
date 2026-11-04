@@ -554,3 +554,63 @@ def test_summary_is_capped_and_key_points_do_not_repeat() -> None:
     out = finish_summary(draft, "brief")
     assert len(out.sections[0]["points"]) == 3
     assert [p["text"] for p in out.sections[1]["points"]] == [keys[1]["text"]]
+
+
+def test_generation_yields_between_parts_and_resumes() -> None:
+    from app.generation.docs import Yielded
+
+    saved: dict[str, Any] = {}
+    sources = [_frags("A", 80, 400)]
+    fake = FakeLLM()
+    job = _job(
+        fake, sources, kind="summary", save=lambda d: saved.update(json.loads(json.dumps(d)))
+    )
+    job.should_yield = lambda: len(fake.requests) == 2  # llega una transcripción tras 2 partes
+    with pytest.raises(Yielded):
+        job.run()
+    assert len(saved["maps"]) == 2
+
+    again = FakeLLM()
+    resumed = _job(again, sources, kind="summary", checkpoint=saved)
+    resumed.run()
+    assert len(again.requests) == len(blocks(sources)) - 2 + 1  # sin repetir las 2 primeras
+
+
+def test_transcription_goes_first_while_a_summary_is_generating(
+    client: TestClient, auth: H, monkeypatch: pytest.MonkeyPatch, settings: Settings
+) -> None:
+    """Una clase que termina de grabarse no espera a que acabe el resumen: el resumen cede el
+    turno entre partes y continúa después."""
+    from app.jobs import queue
+
+    db = connect(settings.db_path)
+
+    class Interrupting(FakeLLM):
+        def chat(self, req: ChatRequest, on_token: Any = None, cancelled: Any = None) -> ChatResult:
+            if len(self.requests) == 1:  # durante la 2.ª parte termina una grabación
+                queue.enqueue(db, "probe", "stt", None, {}, priority=queue.PRIORITY["recording"])
+            return super().chat(req, on_token, cancelled)
+
+    fake = Interrupting()
+    monkeypatch.setattr(llm, "provider", lambda: fake)
+    monkeypatch.setattr(manager, "available_mb", lambda: 10_000)
+    subject = _subject(client, auth)
+    src = _text(client, auth, subject, "Clase larga", "\n\n".join(["x" * 900] * 40))
+    doc = client.post(
+        f"/api/v1/subjects/{subject}/documents",
+        headers=auth,
+        json={"kind": "summary", "source_ids": [src]},
+    ).json()
+    assert _wait(client, auth, doc["id"])["status"] == "ready"
+    probe = db.execute("SELECT finished_at FROM jobs WHERE type = 'probe'").fetchone()
+    gen = db.execute(
+        "SELECT finished_at, attempts FROM jobs WHERE type = 'generate_doc'"
+    ).fetchone()
+    assert probe["finished_at"] < gen["finished_at"]  # la «transcripción» fue antes
+    assert gen["attempts"] == 1  # ceder el turno no cuenta como intento fallido
+    n_blocks = len(
+        json.loads(
+            db.execute("SELECT checkpoint_json FROM jobs WHERE type = 'generate_doc'").fetchone()[0]
+        )["maps"]
+    )
+    assert len(fake.requests) == n_blocks + 1  # ninguna parte se repitió

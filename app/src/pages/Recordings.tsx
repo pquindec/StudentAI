@@ -18,15 +18,36 @@ import { importedSourceId, useRecording } from '../lib/recording'
 import { unitTree } from '../lib/subjects'
 import { useQuery } from '../lib/useQuery'
 
+const SUBJECT_KEY = 'recording.subject'
+
+/** Asignatura de la última grabación (comodidad local; si falla el almacenamiento, no pasa nada). */
+function lastSubject(): string {
+  try {
+    return localStorage.getItem(SUBJECT_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function rememberSubject(id: string) {
+  try {
+    localStorage.setItem(SUBJECT_KEY, id)
+  } catch {
+    // sin almacenamiento local: se elegirá la primera asignatura
+  }
+}
+
 function NewRecording() {
   const rec = useRecording()
   const subjects = useQuery(() => api.listSubjects(false), [])
   const devices = useQuery(() => (native ? native.devices() : Promise.resolve([])), [])
-  const [subjectId, setSubjectId] = useState('')
+  const [subjectId, setSubjectId] = useState(lastSubject)
   const [unitIds, setUnitIds] = useState<string[]>([])
   const [title, setTitle] = useState(() => es.recording.defaultName(new Date()))
   const [deviceId, setDeviceId] = useState('')
-  const effectiveSubject = subjectId || (subjects.data?.length === 1 ? subjects.data[0].id : '')
+  // Siempre hay una asignatura elegida: la de la última grabación o, si no, la primera.
+  const known = subjects.data?.some((s) => s.id === subjectId)
+  const effectiveSubject = (known ? subjectId : subjects.data?.[0]?.id) ?? ''
   const detail = useQuery(
     () => (effectiveSubject ? api.getSubject(effectiveSubject) : Promise.resolve(null)),
     [effectiveSubject],
@@ -143,16 +164,19 @@ function NewRecording() {
         </fieldset>
       )}
       <ErrorText>{rec.error ?? devices.error}</ErrorText>
+      {!title.trim() && <p className="text-xs text-zinc-500">{es.recording.needTitle}</p>}
+      <p className="text-xs text-zinc-500">{es.recording.independent}</p>
       <Button
         variant="primary"
         className="!bg-red-600 hover:!bg-red-700"
         disabled={rec.busy || !effectiveSubject || !title.trim()}
-        onClick={() =>
+        onClick={() => {
+          rememberSubject(effectiveSubject)
           void rec.start(
             { subject_id: effectiveSubject, title: title.trim(), unit_ids: unitIds },
             deviceId || undefined,
           )
-        }
+        }}
       >
         ● {rec.busy ? es.recording.starting : es.recording.start}
       </Button>

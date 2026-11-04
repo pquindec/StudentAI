@@ -204,6 +204,10 @@ def _draft_cites(d: Draft) -> set[str]:
     return {c for s in d.sections for p in s["points"] for c in p["cites"]}
 
 
+class Yielded(Exception):
+    """El trabajo cede el turno a otro más prioritario; se reanuda desde el checkpoint."""
+
+
 @dataclass
 class Job:
     kind: str  # notes | summary
@@ -216,6 +220,8 @@ class Job:
     checkpoint: dict[str, Any]
     save_checkpoint: Callable[[dict[str, Any]], None]
     stats: Stats = field(default_factory=Stats)
+    # Se consulta entre partes: si hay algo más urgente (transcribir una clase), se pausa.
+    should_yield: Callable[[], bool] = lambda: False
 
     def _req(self, system: str, user: str, contradictions: bool, final: bool) -> ChatRequest:
         """final=False solo en las partes intermedias de un resumen (ideas sueltas, cortas)."""
@@ -259,6 +265,8 @@ class Job:
             if key in done:  # hecho antes de un cierre: no se repite
                 drafts.append(Draft(**done[key]))
                 continue
+            if self.should_yield():
+                raise Yielded
             label = f"Leyendo la parte {i + 1} de {len(parts)}"
             if timings:  # estimación con lo que ya ha tardado cada parte
                 left = sum(timings) / len(timings) * (steps - i)
@@ -284,6 +292,8 @@ class Job:
             done[key] = {"sections": draft.sections, "contradictions": draft.contradictions}
             self.checkpoint["stats"] = self.stats.__dict__
             self.save_checkpoint(self.checkpoint)
+        if not single and self.should_yield():
+            raise Yielded
         result = drafts[0] if single else self._reduce(drafts, contra)
         return finish_summary(result, self.detail) if self.kind == "summary" else result
 

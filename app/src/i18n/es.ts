@@ -223,6 +223,9 @@ export const es = {
     defaultDevice: 'Predeterminado del sistema',
     start: 'Empezar a grabar',
     starting: 'Abriendo el micrófono…',
+    needTitle: 'Escribe un título para poder grabar.',
+    independent:
+      'Puedes grabar aunque se esté generando un resumen o unos apuntes: la transcripción de tu clase tiene prioridad.',
     pause: 'Pausar',
     resume: 'Reanudar',
     stop: 'Detener y guardar',

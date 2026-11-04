@@ -12,7 +12,7 @@ from typing import Any
 
 from app.db.connection import tx
 from app.generation.docs import Job as GenJob
-from app.generation.docs import number_citations
+from app.generation.docs import Yielded, number_citations
 from app.jobs import queue
 from app.llm.base import ChatRequest, ChatResult, LLMCancelled, LLMError
 from app.pipelines import audio
@@ -274,6 +274,9 @@ def generate_doc(ctx: JobContext) -> None:
     docs_svc.set_status(ctx.db, doc_id, "running")
     try:
         _generate(ctx, dict(doc))
+    except Yielded:
+        docs_svc.set_status(ctx.db, doc_id, "queued")
+        raise
     except (audio.Cancelled, LLMCancelled) as e:
         docs_svc.set_status(ctx.db, doc_id, "cancelled")
         raise audio.Cancelled from e
@@ -337,6 +340,7 @@ def _generate(ctx: JobContext, doc: dict[str, Any]) -> None:
         report=lambda v, m: ctx.report(v, m),
         checkpoint=json.loads(ctx.job.get("checkpoint_json") or "{}"),
         save_checkpoint=lambda data: queue.save_checkpoint(ctx.db, ctx.job["id"], data),
+        should_yield=lambda: queue.higher_waiting(ctx.db, int(ctx.job["priority"])),
     )
     draft = job.run()
     content, cites = number_citations(draft, segment_of)

@@ -62,6 +62,26 @@ def save_checkpoint(db: sqlite3.Connection, job_id: str, data: dict[str, Any]) -
     db.execute("UPDATE jobs SET checkpoint_json = ? WHERE id = ?", (json.dumps(data), job_id))
 
 
+def higher_waiting(db: sqlite3.Connection, priority: int) -> bool:
+    """¿Hay en cola un trabajo pesado más prioritario (p. ej. transcribir una grabación)?"""
+    row = db.execute(
+        "SELECT 1 FROM jobs WHERE status = 'queued' AND resource_class IN ('stt', 'llm')"
+        " AND priority > ? LIMIT 1",
+        (priority,),
+    ).fetchone()
+    return row is not None
+
+
+def requeue(db: sqlite3.Connection, job_id: str, message: str) -> None:
+    """Devuelve a la cola un trabajo que cede el turno; conserva su checkpoint y no cuenta como
+    intento fallido."""
+    db.execute(
+        "UPDATE jobs SET status = 'queued', attempts = MAX(attempts - 1, 0), started_at = NULL,"
+        " message = ? WHERE id = ?",
+        (message, job_id),
+    )
+
+
 def finish(
     db: sqlite3.Connection,
     job_id: str,

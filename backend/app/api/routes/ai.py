@@ -183,6 +183,17 @@ def _out(db: Db, row: dict[str, Any]) -> DocOut:
     # Un trabajo cancelado en cola o fallido fuera del manejador se refleja en el documento.
     if status in ("queued", "running") and row["job_status"] in ("cancelled", "failed"):
         status, code, message = row["job_status"], row["job_error_code"], row["job_error"]
+    message = row["job_message"] if status in ("queued", "running") else None
+    if status == "queued" and not message:
+        busy = db.execute(
+            "SELECT type FROM jobs WHERE status = 'running' AND resource_class IN ('stt', 'llm')"
+            " AND id IS NOT ? LIMIT 1",
+            (row["job_id"],),
+        ).fetchone()
+        if busy and busy["type"] == "transcribe":
+            message = "Esperando a que termine la transcripción"
+        elif busy:
+            message = "Esperando a que termine otro documento"
     return DocOut(
         id=row["id"],
         subject_id=row["subject_id"],
@@ -194,7 +205,7 @@ def _out(db: Db, row: dict[str, Any]) -> DocOut:
         error_code=code,
         error_message=message,
         progress=float(row["job_progress"] or 0) if status in ("queued", "running") else 1.0,
-        message=row["job_message"] if status in ("queued", "running") else None,
+        message=message,
         sources=[DocSourceOut(**s) for s in svc.doc_sources(db, row["id"])],
         created_at=row["created_at"],
         updated_at=row["updated_at"],

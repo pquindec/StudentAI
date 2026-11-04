@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.2] — 2026-11-04 · Grabar y generar a la vez
+### Corregido
+- El botón «Empezar a grabar» quedaba desactivado sin explicación cuando había varias asignaturas y ninguna elegida. Ahora la asignatura viene preseleccionada (la de la última grabación) y se indica si falta el título.
+- La transcripción de una grabación esperaba a que terminara el resumen o los apuntes en curso. Ahora la generación cede el turno al terminar la parte que está leyendo, la transcripción va primero y la generación continúa sola desde donde iba (sin repetir partes). Si un documento espera, se indica el motivo («Esperando a que termine la transcripción»).
+
 ## [0.4.1] — 2026-11-04 · Resúmenes compactos
 ### Cambiado
 - Los resúmenes ya no tienen el formato de los apuntes: ahora son un texto corrido corto (3, 6 o 10 frases según el nivel) más unas pocas ideas clave que lo complementan, todo con citas.
