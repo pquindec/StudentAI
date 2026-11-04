@@ -50,6 +50,15 @@ Formato único:
 | POST | `/api/v1/chat/messages/{id}/cancel` | Detiene la respuesta |
 | GET | `/api/v1/rag/status` | Modelo de embeddings y si está disponible, búsqueda por vectores, fuentes indexadas y pendientes |
 | GET | `/api/v1/sources/{id}/index` | Estado del índice de una fuente (`none`, `queued`, `indexing`, `ready`, `failed`, chunks, con vector) |
+| GET/POST | `/api/v1/subjects/{id}/exams` | Exámenes de la asignatura / crear `{title?, config, scope?}` → 202, se genera en segundo plano. `config = {count 1..50, types[single\|true_false\|short], difficulty easy\|medium\|hard\|mixed, options 3..5, mode practice\|timed, time_limit_min (obligatorio en timed), penalty 0..1}`; 400 `no_sources`, `invalid_scope` |
+| GET/DELETE | `/api/v1/exams/{id}` | Estado, progreso, métricas de validación e intentos / borrar (cancela la generación) |
+| POST | `/api/v1/exams/{id}/accept` | Con estado `insufficient`: aceptar las `available` preguntas válidas |
+| POST | `/api/v1/exams/{id}/retry` | Reintentar si falló o se canceló |
+| POST | `/api/v1/exams/{id}/attempts` | Empezar un intento (409 `exam_not_ready`). Nunca incluye las respuestas correctas |
+| GET/DELETE | `/api/v1/attempts/{id}` | Intento con preguntas y respuestas; la solución, justificación y evidencia solo aparecen en preguntas comprobadas o tras la corrección. Si pasó la hora límite, se entrega al consultarlo |
+| PUT | `/api/v1/attempts/{id}/answers/{qid}` | `{answer?, set_answer, flagged?, index?}` guarda progreso (409 `attempt_closed`, `time_over`, `already_checked`; 400 `invalid_answer`) |
+| POST | `/api/v1/attempts/{id}/answers/{qid}/check` | Solo modo práctica: corrige esa pregunta y la bloquea |
+| POST | `/api/v1/attempts/{id}/submit` | Entregar: test y V/F se corrigen al momento; las cortas, con la IA en segundo plano (`grading` → `graded`) |
 | GET | `/api/v1/jobs` | Trabajos (`?active=true`) con progreso |
 | POST | `/api/v1/jobs/{id}/cancel` | Cancelar (inmediato si está en cola; cooperativo si está en curso) |
 

@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from app.db.connection import tx
+from app.generation import grading
 from app.generation.docs import Job as GenJob
 from app.generation.docs import Yielded, number_citations
 from app.jobs import queue
@@ -28,6 +29,7 @@ from app.resources import manager as res_manager
 from app.resources.manager import ResourceManager, profile
 from app.services import chat as chat_svc
 from app.services import documents as docs_svc
+from app.services import exams as exams_svc
 from app.services import llm as llm_svc
 from app.services import sources as src_svc
 from app.services import transcription
@@ -495,7 +497,149 @@ def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any
     chat_svc.save_answer(ctx.db, mid, status, final.content, final.citations, choice.model, stats)
 
 
+def generate_exam(ctx: JobContext) -> None:
+    """Examen: preguntas con evidencia literal, duplicados fuera y LLM-juez (reanudable)."""
+    exam_id = str(payload(ctx.job).get("exam_id"))
+    row = ctx.db.execute("SELECT * FROM exams WHERE id = ?", (exam_id,)).fetchone()
+    if row is None:
+        raise audio.Cancelled
+    exam = dict(row)
+    owner = ctx.db.execute(
+        "SELECT owner_id FROM subjects WHERE id = ?", (exam["subject_id"],)
+    ).fetchone()[0]
+    exams_svc.set_status(ctx.db, exam_id, "running")
+    try:
+        prov = llm_svc.provider()
+        info = prov.info()
+        if not info.running:
+            raise JobFailed("llm_unavailable", "Ollama no está en marcha. Abre la app de Ollama.")
+        rm = ResourceManager(prov)
+        choice = rm.acquire(
+            llm_svc.chosen_model(ctx.db),
+            llm_svc.light_model(ctx.db),
+            info.models,
+            report=lambda m: ctx.report(0, m),
+            cancelled=ctx.cancelled,
+        )
+
+        def chat(req: ChatRequest, task: str) -> ChatResult:
+            res = prov.chat(req, cancelled=ctx.cancelled)
+            loaded = rm.after_call(req.model)
+            docs_svc.record_run(
+                ctx.db,
+                ctx.job["id"],
+                req.model,
+                task,
+                res.input_tokens,
+                res.output_tokens,
+                res.duration_ms,
+                loaded,
+            )
+            return res
+
+        similarity = None
+        if rag_index.embeddings_available(prov) is None:
+
+            def similarity(stem: str, others: list[str]) -> list[float]:
+                vecs = prov.embed(rag_index.EMBED_MODEL, [stem, *others])
+                return [_cosine(vecs[0], v) for v in vecs[1:]]
+
+        stats = exams_svc.run_generation(
+            ctx.db,
+            exam,
+            chat,
+            choice.model,
+            llm_svc.keep_alive(ctx.db),
+            owner,
+            report=ctx.report,
+            checkpoint=json.loads(ctx.job.get("checkpoint_json") or "{}"),
+            save_checkpoint=lambda data: queue.save_checkpoint(ctx.db, ctx.job["id"], data),
+            should_yield=lambda: queue.higher_waiting(ctx.db, int(ctx.job["priority"])),
+            similarity=similarity,
+        )
+        log.info("Examen %s: %s", exam_id, {k: stats[k] for k in ("proposed", "valid")})
+    except Yielded:
+        exams_svc.set_status(ctx.db, exam_id, "queued")
+        raise
+    except (audio.Cancelled, LLMCancelled) as e:
+        exams_svc.set_status(ctx.db, exam_id, "cancelled")
+        raise audio.Cancelled from e
+    except LLMError as e:
+        exams_svc.set_status(ctx.db, exam_id, "failed", e.code, e.message)
+        raise JobFailed(e.code, e.message) from e
+    except JobFailed as e:
+        exams_svc.set_status(ctx.db, exam_id, "failed", e.code, e.message)
+        raise
+    except Exception:
+        exams_svc.set_status(ctx.db, exam_id, "failed", "internal_error", "Error inesperado")
+        raise
+
+
+def _cosine(a: list[float], b: list[float]) -> float:
+    dot = sum(x * y for x, y in zip(a, b, strict=False))
+    na = sum(x * x for x in a) ** 0.5
+    nb = sum(y * y for y in b) ** 0.5
+    return dot / (na * nb) if na and nb else 0.0
+
+
+def grade_attempt(ctx: JobContext) -> None:
+    """Respuestas cortas corregidas por la IA con rúbrica y evidencia; luego, la nota."""
+    aid = str(payload(ctx.job).get("attempt_id"))
+    att = ctx.db.execute("SELECT * FROM exam_attempts WHERE id = ?", (aid,)).fetchone()
+    if att is None:
+        raise audio.Cancelled
+    pending = ctx.db.execute(
+        "SELECT q.*, a.answer_json AS given FROM attempt_answers a"
+        " JOIN exam_questions q ON q.id = a.question_id"
+        " WHERE a.attempt_id = ? AND q.type = 'short' AND a.graded_by IS NULL"
+        " AND a.answer_json IS NOT NULL",
+        (aid,),
+    ).fetchall()
+    prov = llm_svc.provider()
+    info = prov.info()
+    if not info.running:
+        raise JobFailed("llm_unavailable", "Ollama no está en marcha. Abre la app de Ollama.")
+    rm = ResourceManager(prov)
+    choice = rm.acquire(
+        llm_svc.chosen_model(ctx.db),
+        llm_svc.light_model(ctx.db),
+        info.models,
+        report=lambda m: ctx.report(0, m),
+        cancelled=ctx.cancelled,
+    )
+    ev = exams_svc.evidence(ctx.db, [q["id"] for q in pending])
+    for i, q in enumerate(pending):
+        ctx.report(i / max(1, len(pending)), f"Corrigiendo respuesta {i + 1} de {len(pending)}")
+        req = ChatRequest(
+            model=choice.model,
+            messages=grading.grade_messages(
+                dict(q), [e["quote"] for e in ev[q["id"]]], str(json.loads(q["given"]))
+            ),
+            schema=grading.GRADE_SCHEMA,
+            max_tokens=400,
+            temperature=0.0,
+            keep_alive=llm_svc.keep_alive(ctx.db),
+        )
+        pts, feedback = 0.0, "No se pudo corregir automáticamente."
+        for _ in range(2):
+            res = prov.chat(req, cancelled=ctx.cancelled)
+            try:
+                pts, feedback = grading.parse_grade(res.text)
+                break
+            except (ValueError, json.JSONDecodeError):
+                continue
+        rm.after_call(choice.model)
+        ctx.db.execute(
+            "UPDATE attempt_answers SET points = ?, is_correct = ?, feedback = ?, graded_by = 'ai'"
+            " WHERE attempt_id = ? AND question_id = ?",
+            (pts, int(pts >= 1), feedback, aid, q["id"]),
+        )
+    exams_svc.finalize(ctx.db, aid)
+
+
 HANDLERS: dict[str, Callable[[JobContext], None]] = {
+    "generate_exam": generate_exam,
+    "grade_attempt": grade_attempt,
     "chat_answer": chat_answer,
     "generate_doc": generate_doc,
     "index_source": index_source,

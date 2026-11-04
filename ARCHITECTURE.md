@@ -320,6 +320,7 @@ guarda como «no encontrado». Sin reranker: el Recall@5 ya es 1,0 (BENCHMARKS �
 6. Persistir preguntas + evidencias (con página o timestamp)
 Corrección: objetivas = deterministas; abiertas o cortas = LLM con rúbrica + evidencia, marcadas "corregido por IA"
 ```
+**Implementado (Fase 6):** `generation/exam.py`, `generation/grading.py`, `services/exams.py`, handlers `generate_exam` y `grade_attempt`. Detalles: lotes de fragmentos consecutivos (~1.800 caracteres) repartidos en proporción a cada fuente; se generan ~1,4 × las pedidas; la cita debe aparecer literalmente (mismas palabras en orden, sin importar mayúsculas ni signos, ≥ 4 palabras) y se guardan sus offsets; se rechazan «todas/ninguna de las anteriores», opciones repetidas y respuestas fuera de rango; duplicados por Jaccard ≥ 0,7 o coseno de embeddings ≥ 0,92; el juez (lotes de 5) solo deja pasar `supported` sin ambigüedad ni otro distractor correcto. Tipos: opción múltiple, V/F y respuesta corta. Trabajo reanudable con checkpoints y que cede el turno a la transcripción.
 
 ### 6.7 Apuntes y resúmenes
 Estrategia *map-reduce* sobre los chunks del scope: resumen por fuente o sección con citas, y luego una síntesis global que conserva las citas. Detección de **contradicciones**: el LLM compara afirmaciones de fuentes distintas sobre el mismo concepto y las muestra lado a lado, **sin resolverlas**.

@@ -573,6 +573,162 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/subjects/{subject_id}/exams': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Exams */
+    get: operations['list_exams_api_v1_subjects__subject_id__exams_get']
+    put?: never
+    /** Create Exam */
+    post: operations['create_exam_api_v1_subjects__subject_id__exams_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/exams/{exam_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Exam */
+    get: operations['get_exam_api_v1_exams__exam_id__get']
+    put?: never
+    post?: never
+    /** Delete Exam */
+    delete: operations['delete_exam_api_v1_exams__exam_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/exams/{exam_id}/accept': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Accept Fewer */
+    post: operations['accept_fewer_api_v1_exams__exam_id__accept_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/exams/{exam_id}/retry': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Retry Exam */
+    post: operations['retry_exam_api_v1_exams__exam_id__retry_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/exams/{exam_id}/attempts': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Start Attempt */
+    post: operations['start_attempt_api_v1_exams__exam_id__attempts_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/attempts/{attempt_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Attempt */
+    get: operations['get_attempt_api_v1_attempts__attempt_id__get']
+    put?: never
+    post?: never
+    /** Delete Attempt */
+    delete: operations['delete_attempt_api_v1_attempts__attempt_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/attempts/{attempt_id}/answers/{question_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Save Answer */
+    put: operations['save_answer_api_v1_attempts__attempt_id__answers__question_id__put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/attempts/{attempt_id}/answers/{question_id}/check': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Check Answer */
+    post: operations['check_answer_api_v1_attempts__attempt_id__answers__question_id__check_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/attempts/{attempt_id}/submit': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Submit */
+    post: operations['submit_api_v1_attempts__attempt_id__submit_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -605,6 +761,112 @@ export interface components {
       loaded: components['schemas']['LoadedOut'][]
       /** Available Mb */
       available_mb: number | null
+    }
+    /** AnswerIn */
+    AnswerIn: {
+      /** Answer */
+      answer?: number | boolean | string | null
+      /**
+       * Set Answer
+       * @default false
+       */
+      set_answer: boolean
+      /** Flagged */
+      flagged?: boolean | null
+      /** Index */
+      index?: number | null
+    }
+    /** AnswerStateOut */
+    AnswerStateOut: {
+      /** Question Id */
+      question_id: string
+      /** Answer */
+      answer?: unknown
+      /** Flagged */
+      flagged: boolean
+      /** Checked */
+      checked: boolean
+      /** Is Correct */
+      is_correct?: boolean | null
+      /** Points */
+      points?: number | null
+      /** Feedback */
+      feedback?: string | null
+      /** Graded By */
+      graded_by?: ('auto' | 'ai') | null
+      /** Correct Answer */
+      correct_answer?: unknown
+      /** Justification */
+      justification?: string | null
+      /**
+       * Rubric
+       * @default []
+       */
+      rubric: string[]
+      /**
+       * Evidence
+       * @default []
+       */
+      evidence: components['schemas']['CitationOut'][]
+    }
+    /** AttemptOut */
+    AttemptOut: {
+      /** Id */
+      id: string
+      /** Exam Id */
+      exam_id: string
+      /** Exam Title */
+      exam_title: string
+      /**
+       * Mode
+       * @enum {string}
+       */
+      mode: 'practice' | 'timed'
+      /** Penalty */
+      penalty: number
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'in_progress' | 'grading' | 'graded'
+      /** Started At */
+      started_at: string
+      /** Deadline At */
+      deadline_at: string | null
+      /** Finished At */
+      finished_at: string | null
+      /** Current Index */
+      current_index: number
+      /** Score */
+      score: number | null
+      /** Max Score */
+      max_score: number | null
+      /** Progress Message */
+      progress_message: string | null
+      /** Questions */
+      questions: components['schemas']['QuestionOut'][]
+      /** Answers */
+      answers: components['schemas']['AnswerStateOut'][]
+      /** Weak Topics */
+      weak_topics: components['schemas']['WeakTopicOut'][]
+    }
+    /** AttemptSummaryOut */
+    AttemptSummaryOut: {
+      /** Id */
+      id: string
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'in_progress' | 'grading' | 'graded'
+      /** Started At */
+      started_at: string
+      /** Finished At */
+      finished_at: string | null
+      /** Score */
+      score: number | null
+      /** Max Score */
+      max_score: number | null
     }
     /** ChatStatsOut */
     ChatStatsOut: {
@@ -832,6 +1094,132 @@ export interface components {
        */
       budget_mb: number
     }
+    /** ExamConfig */
+    ExamConfig: {
+      /**
+       * Count
+       * @default 10
+       */
+      count: number
+      /**
+       * Types
+       * @default [
+       *       "single"
+       *     ]
+       */
+      types: ('single' | 'true_false' | 'short')[]
+      /**
+       * Difficulty
+       * @default mixed
+       * @enum {string}
+       */
+      difficulty: 'easy' | 'medium' | 'hard' | 'mixed'
+      /**
+       * Options
+       * @default 4
+       */
+      options: number
+      /**
+       * Mode
+       * @default practice
+       * @enum {string}
+       */
+      mode: 'practice' | 'timed'
+      /** Time Limit Min */
+      time_limit_min?: number | null
+      /**
+       * Penalty
+       * @default 0
+       */
+      penalty: number
+    }
+    /** ExamIn */
+    ExamIn: {
+      /** Title */
+      title?: string | null
+      config: components['schemas']['ExamConfig']
+      /**
+       * @default {
+       *       "unit_ids": [],
+       *       "source_ids": [],
+       *       "exclude_source_ids": []
+       *     }
+       */
+      scope: components['schemas']['ExamScopeIn']
+    }
+    /** ExamOut */
+    ExamOut: {
+      /** Id */
+      id: string
+      /** Subject Id */
+      subject_id: string
+      /** Title */
+      title: string
+      config: components['schemas']['ExamConfig']
+      scope: components['schemas']['Scope']
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'queued' | 'running' | 'insufficient' | 'ready' | 'failed' | 'cancelled'
+      /** Requested */
+      requested: number
+      /** Available */
+      available: number
+      /** Questions */
+      questions: number
+      /** Model */
+      model: string | null
+      /** Progress */
+      progress: number
+      /** Message */
+      message: string | null
+      /** Error Message */
+      error_message: string | null
+      stats: components['schemas']['ExamStatsOut']
+      /** Attempts */
+      attempts: components['schemas']['AttemptSummaryOut'][]
+      /** Created At */
+      created_at: string
+    }
+    /** ExamScopeIn */
+    ExamScopeIn: {
+      /**
+       * Unit Ids
+       * @default []
+       */
+      unit_ids: string[]
+      /**
+       * Source Ids
+       * @default []
+       */
+      source_ids: string[]
+      /**
+       * Exclude Source Ids
+       * @default []
+       */
+      exclude_source_ids: string[]
+    }
+    /** ExamStatsOut */
+    ExamStatsOut: {
+      /**
+       * Proposed
+       * @default 0
+       */
+      proposed: number
+      /**
+       * Valid
+       * @default 0
+       */
+      valid: number
+      /**
+       * Rejected
+       * @default {}
+       */
+      rejected: {
+        [key: string]: number
+      }
+    }
     /** ExportOut */
     ExportOut: {
       /** Filename */
@@ -964,6 +1352,25 @@ export interface components {
       text: string
       /** Refs */
       refs: number[]
+    }
+    /** QuestionOut */
+    QuestionOut: {
+      /** Id */
+      id: string
+      /**
+       * Type
+       * @enum {string}
+       */
+      type: 'single' | 'true_false' | 'short'
+      /** Stem */
+      stem: string
+      /** Options */
+      options: string[]
+      /**
+       * Difficulty
+       * @enum {string}
+       */
+      difficulty: 'easy' | 'medium' | 'hard'
     }
     /** RagStatusOut */
     RagStatusOut: {
@@ -1456,6 +1863,21 @@ export interface components {
       char_count: number
       /** Created At */
       created_at: string
+    }
+    /** WeakTopicOut */
+    WeakTopicOut: {
+      /** Source Id */
+      source_id: string | null
+      /** Source Title */
+      source_title: string
+      /** Units */
+      units: string[]
+      /** Questions */
+      questions: number
+      /** Correct */
+      correct: number
+      /** Ratio */
+      ratio: number
     }
   }
   responses: never
@@ -2859,6 +3281,384 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['SourceIndexOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_exams_api_v1_subjects__subject_id__exams_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ExamOut'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_exam_api_v1_subjects__subject_id__exams_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ExamIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ExamOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_exam_api_v1_exams__exam_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        exam_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ExamOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_exam_api_v1_exams__exam_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        exam_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  accept_fewer_api_v1_exams__exam_id__accept_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        exam_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ExamOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  retry_exam_api_v1_exams__exam_id__retry_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        exam_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ExamOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  start_attempt_api_v1_exams__exam_id__attempts_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        exam_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AttemptOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_attempt_api_v1_attempts__attempt_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        attempt_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AttemptOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_attempt_api_v1_attempts__attempt_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        attempt_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  save_answer_api_v1_attempts__attempt_id__answers__question_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        attempt_id: string
+        question_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AnswerIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AnswerStateOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  check_answer_api_v1_attempts__attempt_id__answers__question_id__check_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        attempt_id: string
+        question_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AnswerStateOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  submit_api_v1_attempts__attempt_id__submit_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        attempt_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AttemptOut']
         }
       }
       /** @description Validation Error */

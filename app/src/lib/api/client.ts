@@ -37,6 +37,14 @@ export type ChatMessage = S['MessageOut']
 export type ChatScope = S['Scope']
 export type RagStatus = S['RagStatusOut']
 export type SourceIndex = S['SourceIndexOut']
+export type Exam = S['ExamOut']
+export type ExamIn = S['ExamIn']
+export type ExamConfig = S['ExamConfig']
+export type Attempt = S['AttemptOut']
+export type AttemptQuestion = S['QuestionOut']
+export type AnswerState = S['AnswerStateOut']
+export type AnswerIn = S['AnswerIn']
+export type WeakTopic = S['WeakTopicOut']
 export type SourceKind = Source['kind']
 export type SourceStatus = Source['status']
 
@@ -213,6 +221,44 @@ export class ApiClient {
   }
   sourceIndex(sourceId: string): Promise<SourceIndex> {
     return this.call('GET', `/api/v1/sources/${id(sourceId)}/index`)
+  }
+
+  // --- Exámenes
+  listExams(subjectId: string): Promise<Exam[]> {
+    return this.call('GET', `/api/v1/subjects/${id(subjectId)}/exams`)
+  }
+  createExam(subjectId: string, body: ExamIn): Promise<Exam> {
+    return this.call('POST', `/api/v1/subjects/${id(subjectId)}/exams`, body)
+  }
+  getExam(examId: string): Promise<Exam> {
+    return this.call('GET', `/api/v1/exams/${id(examId)}`)
+  }
+  acceptExam(examId: string): Promise<Exam> {
+    return this.call('POST', `/api/v1/exams/${id(examId)}/accept`)
+  }
+  retryExam(examId: string): Promise<Exam> {
+    return this.call('POST', `/api/v1/exams/${id(examId)}/retry`)
+  }
+  deleteExam(examId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/exams/${id(examId)}`)
+  }
+  startAttempt(examId: string): Promise<Attempt> {
+    return this.call('POST', `/api/v1/exams/${id(examId)}/attempts`)
+  }
+  getAttempt(attemptId: string): Promise<Attempt> {
+    return this.call('GET', `/api/v1/attempts/${id(attemptId)}`)
+  }
+  saveAnswer(attemptId: string, questionId: string, body: AnswerIn): Promise<AnswerState> {
+    return this.call('PUT', `/api/v1/attempts/${id(attemptId)}/answers/${id(questionId)}`, body)
+  }
+  checkAnswer(attemptId: string, questionId: string): Promise<AnswerState> {
+    return this.call('POST', `/api/v1/attempts/${id(attemptId)}/answers/${id(questionId)}/check`)
+  }
+  submitAttempt(attemptId: string): Promise<Attempt> {
+    return this.call('POST', `/api/v1/attempts/${id(attemptId)}/submit`)
+  }
+  deleteAttempt(attemptId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/attempts/${id(attemptId)}`)
   }
 
   // --- Trabajos en segundo plano

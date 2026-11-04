@@ -1,0 +1,551 @@
+{
+  "corpus": {
+    "status": "ready",
+    "available": 20,
+    "saved": 27,
+    "kept": 20,
+    "literal_evidence": "27/27",
+    "seconds": 478,
+    "stats": {
+      "batches": 6,
+      "batches_used": 6,
+      "proposed": 30,
+      "valid": 27,
+      "rejected": {
+        "respuesta_invalida": 2,
+        "juez_no_respaldada": 1
+      }
+    },
+    "calls": {
+      "exam:generate": {
+        "n": 6,
+        "ms": 322202,
+        "max_loaded_mb": 8366
+      },
+      "exam:judge": {
+        "n": 6,
+        "ms": 143259,
+        "max_loaded_mb": 8328
+      }
+    },
+    "types": {
+      "single": 8,
+      "true_false": 6,
+      "short": 6
+    },
+    "questions": [
+      {
+        "kept": true,
+        "type": "true_false",
+        "difficulty": "easy",
+        "stem": "Una pirámide invertida, con más pruebas manuales o de interfaz que unitarias, se conoce como 'cono de helado'.",
+        "options": [
+          "Verdadero",
+          "Falso"
+        ],
+        "answer": true,
+        "rubric": [],
+        "justification": "El fragmento B1 afirma explícitamente que una pirámide invertida con más pruebas manuales o de interfaz se denomina 'cono de helado'.",
+        "evidence": [
+          "Una pirámide invertida, con más pruebas manuales o de interfaz que unitarias, se conoce como cono de helado"
+        ],
+        "source": "Calidad",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "short",
+        "difficulty": "medium",
+        "stem": "¿Qué metáfora acuñó Ward Cunningham para describir el coste futuro de elegir una solución rápida hoy y cómo afecta esto a los cambios posteriores?",
+        "options": [],
+        "answer": "Acuñó la metáfora de la 'deuda técnica', la cual genera intereses porque cada cambio posterior en el código afectado resulta más lento y arriesgado.",
+        "rubric": [
+          "Identificar a Ward Cunningham como autor de la metáfora.",
+          "Nombrar la metáfora como 'deuda técnica'.",
+          "Explicar que genera intereses.",
+          "Mencionar que los cambios posteriores son más lentos y arriesgados."
+        ],
+        "justification": "La respuesta extrae explícitamente la definición de deuda técnica, su autor y sus consecuencias mencionadas en el fragmento B2.",
+        "evidence": [
+          "La deuda técnica es una metáfora acuñada por Ward Cunningham para describir el coste futuro de elegir hoy una solución rápida en lugar de una mejor. Como la deuda financiera, genera intereses: cada cambio posterior en el código afectado resulta más lento y arriesgado"
+        ],
+        "source": "Calidad",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "single",
+        "difficulty": "medium",
+        "stem": "¿Qué problema específico se menciona como la desventaja más citada de la arquitectura en capas?",
+        "options": [
+          "La imposibilidad de separar las responsabilidades entre niveles.",
+          "El sumidero de arquitectura, donde las peticiones atraviesan todas las capas sin aportar lógica real.",
+          "La dificultad para que equipos nuevos entiendan el sistema.",
+          "La falta de interfaces claras entre la presentación y la lógica de negocio."
+        ],
+        "answer": 1,
+        "rubric": [],
+        "justification": "El texto define explícitamente el 'sumidero de arquitectura' como la desventaja más citada de este estilo, donde las peticiones cruzan capas sin procesamiento real.",
+        "evidence": [
+          "Su desventaja más citada es el llamado sumidero de arquitectura, cuando las peticiones atraviesan todas las capas sin que ninguna aporte lógica real"
+        ],
+        "source": "Arquitectura",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "true_false",
+        "difficulty": "easy",
+        "stem": "Un registro de decisiones de arquitectura (ADR) debe ser un documento extenso y detallado para ser efectivo.",
+        "options": [
+          "Verdadero",
+          "Falso"
+        ],
+        "answer": false,
+        "rubric": [],
+        "justification": "El texto afirma que un ADR es un 'documento breve', por lo que la afirmación de que debe ser extenso es falsa.",
+        "evidence": [
+          "Un registro de decisiones de arquitectura, conocido por sus siglas en inglés ADR, es un documento breve que recoge una decisión importante"
+        ],
+        "source": "Arquitectura",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "true_false",
+        "difficulty": "easy",
+        "stem": "Un patrón de diseño es código listo para copiar y pegar directamente en un proyecto.",
+        "options": [
+          "Verdadero",
+          "Falso"
+        ],
+        "answer": false,
+        "rubric": [],
+        "justification": "El texto afirma explícitamente que un patrón no es código para copiar, sino una solución conceptual.",
+        "evidence": [
+          "Un patrón no es código para copiar, sino una solución probada a un problema recurrente dentro de un contexto determinado, junto con sus ventajas e inconvenientes"
+        ],
+        "source": "Patrones de diseño",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "single",
+        "difficulty": "easy",
+        "stem": "¿Cuál es la consecuencia principal de una mala arquitectura según el texto?",
+        "options": [
+          "Los sistemas no pueden tener requisitos funcionales diferentes.",
+          "La lógica de negocio depende directamente de las bases de datos reales en producción.",
+          "Las capas de código deben comunicarse libremente entre sí sin restricciones.",
+          "El equipo debe reescribir el sistema cada pocos meses para entregar nuevas funcionalidades."
+        ],
+        "answer": 3,
+        "rubric": [],
+        "justification": "El texto indica que una buena arquitectura evita tener que reescribir el sistema frecuentemente; por tanto, la necesidad de reescritura constante es el resultado de una arquitectura deficiente.",
+        "evidence": [
+          "Una buena arquitectura permite que el equipo entregue funcionalidades nuevas sin tener que reescribir el sistema cada pocos meses"
+        ],
+        "source": "Arquitectura",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "short",
+        "difficulty": "easy",
+        "stem": "¿Qué afirma el principio de sustitución de Liskov formulado por Barbara Liskov en 1987?",
+        "options": [],
+        "answer": "Los objetos de una subclase deben poder reemplazar a los de su clase base sin alterar la corrección del programa.",
+        "rubric": [
+          "Objetos de subclase reemplazan a los de la clase base.",
+          "No debe alterarse la corrección del programa."
+        ],
+        "justification": "La respuesta correcta resume exactamente la definición proporcionada en el texto para este principio.",
+        "evidence": [
+          "El principio de sustitución de Liskov, formulado por Barbara Liskov en mil novecientos ochenta y siete, afirma que los objetos de una subclase deben poder reemplazar a los de su clase base sin alterar la corrección del programa"
+        ],
+        "source": "Principios",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "short",
+        "difficulty": "easy",
+        "stem": "¿Qué estructura recomienda la pirámide de pruebas popularizada por Mike Cohn y en qué se basa esta recomendación?",
+        "options": [],
+        "answer": "Recomienda tener muchas pruebas unitarias rápidas en la base, un número menor de pruebas de integración en el centro y pocas pruebas de extremo a extremo en la cima.",
+        "rubric": [
+          "Mencionar las pruebas unitarias en la base (muchas y rápidas).",
+          "Mencionar las pruebas de integración en el centro (número menor).",
+          "Mencionar las pruebas de extremo a extremo en la cima (pocas).",
+          "Identificar correctamente a Mike Cohn como popularizador."
+        ],
+        "justification": "La respuesta se basa directamente en la descripción de la pirámide de pruebas atribuida a Mike Cohn en el fragmento B1.",
+        "evidence": [
+          "La pirámide de pruebas, popularizada por Mike Cohn, recomienda tener muchas pruebas unitarias rápidas en la base, un número menor de pruebas de integración en el centro y pocas pruebas de extremo a extremo en la cima"
+        ],
+        "source": "Calidad",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "single",
+        "difficulty": "easy",
+        "stem": "¿Qué recomendación se sugiere para equipos pequeños o productos que aún buscan su modelo de negocio antes de adoptar microservicios?",
+        "options": [
+          "Utilizar un monolito modular como opción inicial.",
+          "Desplegar los servicios de forma distribuida sin una estructura previa.",
+          "Implementar el patrón Saga desde el inicio del proyecto.",
+          "Adoptar inmediatamente la arquitectura de microservicios para ganar agilidad."
+        ],
+        "answer": 0,
+        "rubric": [],
+        "justification": "El texto indica explícitamente que para equipos pequeños o productos en búsqueda de modelo de negocio, un monolito modular es una mejor opción inicial.",
+        "evidence": [
+          "Para equipos pequeños o productos que aún buscan su modelo de negocio, un monolito modular suele ser una mejor opción inicial"
+        ],
+        "source": "Microservicios",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "true_false",
+        "difficulty": "easy",
+        "stem": "El teorema CAP afirma que un sistema distribuido puede garantizar simultáneamente consistencia, disponibilidad y tolerancia a particiones.",
+        "options": [
+          "Verdadero",
+          "Falso"
+        ],
+        "answer": false,
+        "rubric": [],
+        "justification": "La afirmación es falsa porque el texto establece claramente que un sistema no puede garantizar las tres propiedades a la vez, sino que debe elegir entre dos de ellas cuando ocurre una partición.",
+        "evidence": [
+          "El teorema CAP, enunciado por Eric Brewer, sostiene que un sistema distribuido no puede garantizar simultáneamente consistencia, disponibilidad y tolerancia a particiones"
+        ],
+        "source": "Distribuidos",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "single",
+        "difficulty": "medium",
+        "stem": "¿Qué establece el principio D (inversión de dependencias) en la arquitectura SOLID?",
+        "options": [
+          "Que los módulos de alto nivel deben depender directamente de los de bajo nivel.",
+          "Que las interfaces deben ser segregadas para reducir su tamaño.",
+          "Que una clase debe tener un solo motivo para cambiar.",
+          "Que ambos niveles, alto y bajo, deben depender de abstracciones."
+        ],
+        "answer": 3,
+        "rubric": [],
+        "justification": "El texto especifica que la inversión de dependencias requiere que ambos niveles dependan de abstracciones, descartando la dependencia directa del alto al bajo.",
+        "evidence": [
+          "la D es la inversión de dependencias, que establece que los módulos de alto nivel no deben depender de los de bajo nivel, sino ambos de abstracciones"
+        ],
+        "source": "Principios",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "single",
+        "difficulty": "medium",
+        "stem": "¿Cuál es la diferencia principal entre el patrón Saga en 'coreografía' y en 'orquestación'?",
+        "options": [
+          "En la orquestación los servicios son independientes, mientras que en la coreografía están acoplados.",
+          "En la coreografía cada servicio publica eventos y reacciona a los de otros sin coordinador; en la orquestación un componente indica qué operación ejecutar.",
+          "En la coreografía hay un coordinador central, mientras que en la orquestación no.",
+          "La coreografía permite transacciones ACID, pero la orquestación no."
+        ],
+        "answer": 1,
+        "rubric": [],
+        "justification": "El texto define la coreografía como un sistema donde los servicios publican eventos sin coordinador central, y la orquestación como aquella donde un componente indica a cada servicio qué operación ejecutar.",
+        "evidence": [
+          "En la coreografía, cada servicio publica eventos y reacciona a los eventos de los demás, sin un coordinador central. En la orquestación, un componente orquestador indica a cada servicio qué operación ejecutar y cuándo"
+        ],
+        "source": "Microservicios",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "short",
+        "difficulty": "medium",
+        "stem": "¿Por qué el patrón Singleton es considerado a menudo un antipatrón hoy en día?",
+        "options": [],
+        "answer": "Se considera un antipatrón porque introduce estado global oculto, dificulta las pruebas unitarias y acopla el código a una implementación concreta.",
+        "rubric": [
+          "Introduce estado global oculto",
+          "Dificulta las pruebas unitarias",
+          "Acopla el código a una implementación concreta"
+        ],
+        "justification": "La respuesta resume los tres motivos específicos mencionados en el texto para considerar al Singleton como antipatrón.",
+        "evidence": [
+          "Aunque es fácil de implementar, hoy se considera a menudo un antipatrón, porque introduce estado global oculto, dificulta las pruebas unitarias y acopla el código a una implementación concreta"
+        ],
+        "source": "Patrones de diseño",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "single",
+        "difficulty": "medium",
+        "stem": "Según el teorema CAP descrito en el texto, ante una partición de red inevitable, ¿qué dos propiedades debe elegir un sistema distribuido?",
+        "options": [
+          "Consistencia y Disponibilidad",
+          "Tolerancia a fallos y Escalabilidad",
+          "Disponibilidad y Tolerancia a particiones",
+          "Consistencia y Tolerancia a particiones"
+        ],
+        "answer": 0,
+        "rubric": [],
+        "justification": "La opción correcta refleja la conclusión del texto: ante una partición, no se puede tener las tres propiedades, por lo que la elección real es entre consistencia y disponibilidad.",
+        "evidence": [
+          "Como las particiones de red son inevitables en la práctica, la elección real ante una partición es entre consistencia y disponibilidad"
+        ],
+        "source": "Distribuidos",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "true_false",
+        "difficulty": "easy",
+        "stem": "Los principios SOLID fueron agrupados por Robert C. Martin.",
+        "options": [
+          "Verdadero",
+          "Falso"
+        ],
+        "answer": true,
+        "rubric": [],
+        "justification": "El texto indica explícitamente que Robert C. Martin fue quien agrupó estos principios.",
+        "evidence": [
+          "Los principios SOLID fueron agrupados por Robert C. Martin"
+        ],
+        "source": "Principios",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "single",
+        "difficulty": "easy",
+        "stem": "¿Qué característica distingue principalmente a las pruebas de extremo a extremo en la pirámide de pruebas según el texto?",
+        "options": [
+          "Son la base fundamental sobre la que se construyen las pruebas unitarias.",
+          "Son rápidas y baratas de mantener.",
+          "Se ejecutan varias veces al día automáticamente sin intervención humana.",
+          "Aportan confianza, pero son lentas, frágiles y costosas de mantener."
+        ],
+        "answer": 3,
+        "rubric": [],
+        "justification": "El fragmento B1 describe explícitamente las pruebas de extremo a extremo como lentas, frágiles y costosas, a pesar de aportar confianza.",
+        "evidence": [
+          "Las pruebas de extremo a extremo aportan confianza, pero son lentas, frágiles y costosas de mantener"
+        ],
+        "source": "Calidad",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "true_false",
+        "difficulty": "easy",
+        "stem": "El patrón Circuit Breaker tiene tres estados: cerrado, abierto y semiabierto.",
+        "options": [
+          "Verdadero",
+          "Falso"
+        ],
+        "answer": true,
+        "rubric": [],
+        "justification": "El texto enumera explícitamente los tres estados del patrón Circuit Breaker como cerrado, abierto y semiabierto.",
+        "evidence": [
+          "Tiene tres estados: cerrado, en el que las llamadas pasan con normalidad; abierto, en el que las llamadas fallan inmediatamente sin intentar contactar al servicio remoto; y semiabierto, en el que se permiten algunas llamadas de prueba para comprobar si el servicio se ha recuperado"
+        ],
+        "source": "Microservicios",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "single",
+        "difficulty": "medium",
+        "stem": "Según el texto, ¿cuál es la diferencia principal entre el patrón Adapter y el patrón Facade?",
+        "options": [
+          "Adapter convierte una interfaz existente en la que espera el cliente, mientras que Facade ofrece una nueva interfaz simplificada sobre un subsistema complejo.",
+          "Adapter evita la fuga de memoria mientras que Facade introduce estado global oculto.",
+          "Adapter encapsula algoritmos intercambiables mientras que Facade gestiona relaciones uno a muchos.",
+          "Adapter es un patrón de comportamiento y Facade es un patrón estructural."
+        ],
+        "answer": 0,
+        "rubric": [],
+        "justification": "La opción correcta refleja exactamente la distinción de intención explicada en el texto, mientras que las otras opciones mezclan conceptos de otros patrones (Strategy, Observer) o atributos incorrectos.",
+        "evidence": [
+          "Se diferencia del patrón Facade en la intención: Adapter convierte una interfaz existente en la que espera el cliente, mientras que Facade ofrece una interfaz nueva y simplificada sobre un subsistema complejo"
+        ],
+        "source": "Patrones de diseño",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "short",
+        "difficulty": "easy",
+        "stem": "¿En qué año se publicó el libro 'Patrones de diseño' y en cuántas familias se clasifican los patrones descritos en él?",
+        "options": [],
+        "answer": "El libro se publicó en 1994 y los patrones se clasifican en tres familias: creacionales, estructurales y de comportamiento.",
+        "rubric": [
+          "Año de publicación: 1994",
+          "Número de familias: 3",
+          "Nombres de las familias: creacionales, estructurales, de comportamiento"
+        ],
+        "justification": "La respuesta extrae directamente el año y la clasificación de familias del primer párrafo del texto.",
+        "evidence": [
+          "Los patrones de diseño del libro de la Banda de los Cuatro, publicado en mil novecientos noventa y cuatro, se clasifican en tres familias: creacionales, estructurales y de comportamiento"
+        ],
+        "source": "Patrones de diseño",
+        "literal": true
+      },
+      {
+        "kept": true,
+        "type": "short",
+        "difficulty": "medium",
+        "stem": "¿Qué implicación práctica tiene la consistencia eventual para las aplicaciones que dependen de ella?",
+        "options": [],
+        "answer": "Las aplicaciones deben diseñarse para tolerar lecturas desactualizadas, por ejemplo mostrando un contador de 'me gusta' aproximado.",
+        "rubric": [
+          "Deben diseñarse para tolerar lecturas desactualizadas.",
+          "El texto cita el ejemplo específico del contador de 'me gusta' aproximado."
+        ],
+        "justification": "La respuesta correcta resume la necesidad de tolerancia a datos inconsistentes durante el intervalo de convergencia y menciona el ejemplo dado en el texto.",
+        "evidence": [
+          "Las aplicaciones que la usan deben diseñarse para tolerar lecturas desactualizadas, por ejemplo mostrando un contador de 'me gusta' aproximado"
+        ],
+        "source": "Distribuidos",
+        "literal": true
+      },
+      {
+        "kept": false,
+        "type": "true_false",
+        "difficulty": "easy",
+        "stem": "En la arquitectura hexagonal, el núcleo de la aplicación define puertos que son interfaces y se conecta con el exterior mediante adaptadores.",
+        "options": [
+          "Verdadero",
+          "Falso"
+        ],
+        "answer": true,
+        "rubric": [],
+        "justification": "El texto describe exactamente esta estructura: el núcleo define puertos (interfaces) y el mundo exterior se conecta mediante adaptadores.",
+        "evidence": [
+          "El núcleo de la aplicación define puertos, que son interfaces, y el mundo exterior se conecta mediante adaptadores"
+        ],
+        "source": "Arquitectura",
+        "literal": true
+      },
+      {
+        "kept": false,
+        "type": "single",
+        "difficulty": "medium",
+        "stem": "¿Cuál es la diferencia clave entre la entrega continua y el despliegue continuo según la definición del texto?",
+        "options": [
+          "La entrega continua implica integrar cambios varias veces al día.",
+          "En el despliegue continuo cada cambio que supera las pruebas llega a producción automáticamente, mientras que en la entrega continua puede requerir aprobación manual.",
+          "El despliegue continuo solo aplica a pruebas de extremo a extremo.",
+          "En la entrega continua no se requieren pruebas automáticas."
+        ],
+        "answer": 1,
+        "rubric": [],
+        "justification": "El texto establece claramente que la entrega continua permite un estado desplegable pero puede requerir aprobación manual, mientras que el despliegue continuo envía automáticamente los cambios aprobados.",
+        "evidence": [
+          "La entrega continua va un paso más allá: el software está siempre en un estado desplegable, aunque el paso a producción requiera una aprobación manual. En el despliegue continuo, en cambio, cada cambio que supera las pruebas llega a producción automáticamente"
+        ],
+        "source": "Calidad",
+        "literal": true
+      },
+      {
+        "kept": false,
+        "type": "short",
+        "difficulty": "medium",
+        "stem": "¿Por qué el ejemplo clásico de violación del principio de sustitución de Liskov implica que un Cuadrado no debe heredar de Rectángulo?",
+        "options": [],
+        "answer": "Al cambiar el ancho de un cuadrado también cambia su alto, lo que rompe las expectativas del código que trabaja con rectángulos.",
+        "rubric": [
+          "Cambiar el ancho afecta al alto en un cuadrado.",
+          "Esto rompe las expectativas del código diseñado para rectángulos."
+        ],
+        "justification": "La respuesta correcta explica la causa de la violación descrita en el texto: la modificación simultánea de ancho y alto rompe la compatibilidad con la clase base.",
+        "evidence": [
+          "El ejemplo clásico de violación es hacer que Cuadrado herede de Rectángulo: al cambiar el ancho de un cuadrado también cambia su alto, lo que rompe las expectativas del código que trabaja con rectángulos"
+        ],
+        "source": "Principios",
+        "literal": true
+      },
+      {
+        "kept": false,
+        "type": "true_false",
+        "difficulty": "medium",
+        "stem": "El patrón base de datos por servicio permite realizar transacciones ACID que abarquen varios microservicios.",
+        "options": [
+          "Verdadero",
+          "Falso"
+        ],
+        "answer": false,
+        "rubric": [],
+        "justification": "El texto afirma que el patrón base de datos por servicio impide usar transacciones ACID que abarquen varios servicios.",
+        "evidence": [
+          "Esto preserva la independencia de despliegue, pero impide usar transacciones ACID que abarquen varios servicios"
+        ],
+        "source": "Microservicios",
+        "literal": true
+      },
+      {
+        "kept": false,
+        "type": "single",
+        "difficulty": "easy",
+        "stem": "¿Qué patrón de diseño encapsula una familia de algoritmos intercambiables detrás de una interfaz común para permitir que el cliente elija el algoritmo en tiempo de ejecución?",
+        "options": [
+          "Singleton",
+          "Observer",
+          "Adapter",
+          "Strategy"
+        ],
+        "answer": 3,
+        "rubric": [],
+        "justification": "El texto define explícitamente al patrón Strategy con estas características, mientras que los otros patrones tienen funciones distintas (Singleton: única instancia; Observer: notificación uno a muchos; Adapter: interfaces incompatibles).",
+        "evidence": [
+          "El patrón Strategy encapsula una familia de algoritmos intercambiables detrás de una interfaz común, de modo que el cliente puede elegir el algoritmo en tiempo de ejecución"
+        ],
+        "source": "Patrones de diseño",
+        "literal": true
+      },
+      {
+        "kept": false,
+        "type": "true_false",
+        "difficulty": "easy",
+        "stem": "La idempotencia es una propiedad que asegura que una operación produce el mismo resultado independientemente de cuántas veces se ejecute.",
+        "options": [
+          "Verdadero",
+          "Falso"
+        ],
+        "answer": true,
+        "rubric": [],
+        "justification": "La afirmación es verdadera ya que coincide exactamente con la definición de idempotencia proporcionada en el texto sobre operaciones repetibles sin cambios de resultado.",
+        "evidence": [
+          "La idempotencia es la propiedad de una operación que produce el mismo resultado aunque se ejecute varias veces"
+        ],
+        "source": "Distribuidos",
+        "literal": true
+      },
+      {
+        "kept": false,
+        "type": "short",
+        "difficulty": "medium",
+        "stem": "¿Por qué es fundamental la idempotencia en los sistemas distribuidos y cómo se implementa comúnmente para manejarla?",
+        "options": [],
+        "answer": "Es fundamental porque los reintentos son inevitables (el cliente no sabe si la petición se procesó). Se implementa comúnmente enviando una clave de idempotencia con cada petición para que el servidor detecte y descarte duplicados.",
+        "rubric": [
+          "Explica la causa: los reintentos son inevitables debido a la incertidumbre del cliente sobre el procesamiento.",
+          "Describe la solución técnica: envío de una clave de idempotencia con la petición."
+        ],
+        "justification": "La respuesta integra correctamente la razón de ser (reintentos) y el mecanismo de implementación (clave de idempotencia) descritos en el fragmento F3.",
+        "evidence": [
+          "En sistemas distribuidos es fundamental porque los reintentos son inevitables: si un cliente no recibe respuesta, no sabe si la petición se procesó. Una técnica común es enviar una clave de idempotencia con cada petición de pago, de modo que el servidor pueda detectar y descartar los duplicados"
+        ],
+        "source": "Distribuidos",
+        "literal": true
+      }
+    ]
+  }
+}

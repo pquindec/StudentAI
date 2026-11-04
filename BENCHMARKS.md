@@ -111,6 +111,23 @@ Script: `bench/bench_rag.py --distractors <app.db>` (resultados en `bench/result
 - **Reranker: no se incluye.** El Recall@5 ya es 1,0; un reranker añadiría ~0,6 GB y latencia sin margen medible.
 - Limitación: las preguntas comparten vocabulario con el texto (por eso BM25 sale perfecto). Con preguntas muy reformuladas pesa más el vector; el híbrido conserva ambos.
 
+## 7. Aceptación de la Fase 6 (exámenes, pipeline real, 2026-11-04)
+
+Script: `bench/bench_exam.py [--real <app.db> --out <ruta>]` (corpus en `bench/results/exam.json`; el examen sobre una clase real del usuario solo se escribe fuera del repositorio). Examen de 20 preguntas: test (4 opciones), V/F y respuesta corta, dificultad mezclada, `qwen3.5:9b`.
+
+| Pasada | Material | Evidencia literal | Rechazadas (motivo) | Ambiguas/incorrectas (revisión manual de las 20) | Tiempo | Pico |
+|---|---|---|---|---|---|---|
+| 1 | Corpus (8 temas) | 24/24 | 6 de 30 (4 respuesta inválida, 2 cita no literal) | 0/20 | 4 min 57 s | 8,4 GB |
+| 1 | Clase real (transcripción) | 23/23 | 10 de 33 (6 respuesta inválida, 4 cita no literal) | 7/20 (35 %) | 7 min 58 s | 8,3 GB |
+| 2 | Corpus | 27/27 | 3 de 30 | 1/20 (5 %) | 7 min 58 s | 8,4 GB |
+| 2 | Clase real | 22/22 | 8 de 30 (6 juez, 2 cita no literal) | 4/20 (20 %) | 9 min 42 s | 8,4 GB |
+
+- **Evidencia literal: 100 % en las cuatro pasadas** (cada cita comprobada por offsets en su segmento).
+- Fallos de la pasada 1 en la clase real: preguntas sobre opiniones del profesor, datos del enunciado que no estaban en la cita, distractores también verdaderos y rúbricas que pedían cosas fuera de la cita. Pasada 2: reglas más estrictas en el generador y el juez, y el juez ve la rúbrica.
+- Fallos restantes (transcripción): mezclar dos momentos de la clase, el audio de un vídeo en inglés mal transcrito y citas débiles que el juez de 9B aún aprueba.
+- Probado y descartado: exigir que las palabras de la respuesta aparezcan en la cita (no discrimina; rechaza preguntas buenas, sobre todo con material en inglés).
+- **Limitación conocida aceptada por el usuario:** en transcripciones de clase el criterio de ≤ 5 % no se alcanza con el modelo local (20 %); en material escrito, sí. Cada pregunta muestra su evidencia para que el estudiante lo vea. Mejora prevista: juez más potente (Claude, con consentimiento) en la Fase 8.
+
 ## 5. Resumen de decisiones
 
 | Componente | Por defecto | Alternativa | Descartado |

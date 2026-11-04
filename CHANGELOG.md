@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.0] — 2026-11-04 · Fase 6: exámenes
+### Añadido
+- Página **Exámenes**: crea un examen por asignatura eligiendo número de preguntas (1–50), tipos (opción múltiple, verdadero/falso, respuesta corta), dificultad, opciones por pregunta (3–5), temas o fuentes, modo (práctica o con tiempo) y penalización por fallo.
+- Generación en segundo plano con el modelo local. Cada pregunta guarda la frase **literal** de tus fuentes que la respalda (se comprueba carácter a carácter); se descartan las que citan algo que no está en el texto, las de opciones repetidas o «todas/ninguna de las anteriores» y las duplicadas. Un segundo paso (modelo-juez) descarta las ambiguas o con otra opción también correcta.
+- Si no hay material para todas: «Tus fuentes permiten 14 de las 20 preguntas» con opción «Generar con 14» o descartar.
+- Hacer el examen: una pregunta a la vez, cuadrícula de navegación, marcar para revisar, progreso guardado (se puede salir y continuar) y temporizador en modo con tiempo (la hora límite la impone el backend; al acabar se entrega con lo respondido). En modo práctica, «Comprobar» corrige cada pregunta al momento.
+- Corrección: test y V/F al instante (con penalización si se eligió); respuestas cortas con la IA local y una rúbrica, marcadas «Corregida por IA». Resultado con nota sobre 10, tu respuesta frente a la correcta, explicación, evidencia con enlace a la fuente, rendimiento por fuente y material de repaso con las frases de lo que fallaste.
+- Historial de intentos por examen.
+- Migración `0006_exams.sql`. Sin dependencias nuevas.
+### Limitaciones conocidas
+- En clases transcritas, ~1 de cada 5 preguntas puede ser dudosa (en material escrito, ≤ 1 de 20). Todas muestran la frase que las respalda.
+### Seguridad
+- La API no revela la respuesta correcta antes de comprobar o entregar. La respuesta del estudiante va delimitada como datos al corregir con IA (no puede dar instrucciones al corrector).
+
 ## [0.5.1] — 2026-11-04 · Ajustes del asistente tras la prueba
 ### Corregido
 - Preguntar «vuca» o «Vuca» daba «no encontrado» y «VUCA» sí respondía. Había tres causas: la transcripción escribió la sigla como suena («biuca»), el modelo de embeddings distingue mayúsculas y la explicación ocupaba varios fragmentos seguidos. Ahora:

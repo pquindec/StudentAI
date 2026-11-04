@@ -13,8 +13,9 @@
 | 2 — Asignaturas y fuentes | ✅ Completada y verificada por el usuario (2026-11-03) |
 | 3 — Grabación y transcripción | ✅ Aprobada por el usuario (2026-11-03) |
 | 4 — IA local: apuntes y resúmenes | ✅ Aprobada por el usuario (2026-11-04) |
-| 5 — RAG y asistente | 🟡 Implementada, pendiente de tu revisión (2026-11-04) |
-| 6–10 | ⏳ No iniciadas |
+| 5 — RAG y asistente | ✅ Aprobada por el usuario (2026-11-04) |
+| 6 — Exámenes | ✅ Completada (2026-11-04) — evidencia literal 100 %; en transcripciones 20 % de preguntas dudosas (limitación aceptada, ver BENCHMARKS §7) |
+| 7–10 | ⏳ No iniciadas |
 
 ### Tareas nuevas surgidas de la Fase 0.5
 - [x] (F1) Usar Ollama **oficial** en desarrollo (el de Homebrew no tiene salida estructurada); documentarlo en INSTALLATION.md
@@ -90,16 +91,16 @@
 - [x] ScopeResolver (fuente / varias / tema con subtemas / asignatura / biblioteca, con exclusiones) aplicado en SQL
 - [x] Chat con streaming, citas con enlace a página o timestamp, respuesta "no encontrado"
 - [x] Pruebas de prompt injection (documentos con instrucciones maliciosas)
-- [ ] Revisión del usuario en la UI
+- [x] Revisión del usuario en la UI (siglas sin distinguir mayúsculas y lista de grabaciones, ajustadas tras su prueba)
 - **Criterio de aceptación:** Recall@5 ≥ 0.8 en el conjunto de preguntas de prueba; todas las citas apuntan a fragmentos reales; una pregunta fuera del scope devuelve "no encontrado"; 0 fugas entre asignaturas en las pruebas.
 
 ## Fase 6 — Exámenes
-- [ ] Configuración (número, tipos, dificultad, temas, fuentes, tiempo, penalización, número de opciones, modo)
-- [ ] Generador + validación literal de la evidencia + deduplicación + LLM-juez
-- [ ] Aviso de "fuentes insuficientes"
-- [ ] Interfaz de examen (una pregunta a la vez, navegación, marcar, guardar progreso, temporizador)
-- [ ] Corrección automática y con rúbrica, explicaciones, temas débiles, material de repaso
-- [ ] Historial de intentos
+- [x] Configuración (número, tipos, dificultad, temas, fuentes, tiempo, penalización, número de opciones, modo)
+- [x] Generador + validación literal de la evidencia + deduplicación + LLM-juez
+- [x] Aviso de "fuentes insuficientes"
+- [x] Interfaz de examen (una pregunta a la vez, navegación, marcar, guardar progreso, temporizador)
+- [x] Corrección automática y con rúbrica, explicaciones, temas débiles, material de repaso
+- [x] Historial de intentos
 - **Criterio de aceptación:** en un examen de 20 preguntas, el 100 % de las preguntas guardadas tiene una evidencia literal verificable; una revisión manual de una muestra confirma ≤ 5 % de preguntas ambiguas o incorrectas.
 
 ## Fase 7 — Flashcards y seguimiento
