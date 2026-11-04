@@ -31,6 +31,12 @@ export type DocIn = S['DocIn']
 export type DocKind = GeneratedDoc['kind']
 export type DocDetail = GeneratedDoc['detail']
 export type DocCitation = S['CitationOut']
+export type ChatThread = S['ThreadOut']
+export type ChatThreadDetail = S['ThreadDetailOut']
+export type ChatMessage = S['MessageOut']
+export type ChatScope = S['Scope']
+export type RagStatus = S['RagStatusOut']
+export type SourceIndex = S['SourceIndexOut']
 export type SourceKind = Source['kind']
 export type SourceStatus = Source['status']
 
@@ -175,6 +181,38 @@ export class ApiClient {
   }
   deleteDocument(docId: string): Promise<void> {
     return this.call('DELETE', `/api/v1/documents/${id(docId)}`)
+  }
+
+  // --- Asistente (búsqueda en tus fuentes)
+  listThreads(): Promise<ChatThread[]> {
+    return this.call('GET', '/api/v1/chat/threads')
+  }
+  createThread(scope: ChatScope, title?: string): Promise<ChatThread> {
+    return this.call('POST', '/api/v1/chat/threads', { scope, title })
+  }
+  getThread(threadId: string): Promise<ChatThreadDetail> {
+    return this.call('GET', `/api/v1/chat/threads/${id(threadId)}`)
+  }
+  updateThread(threadId: string, body: { title?: string; scope?: ChatScope }): Promise<ChatThread> {
+    return this.call('PATCH', `/api/v1/chat/threads/${id(threadId)}`, body)
+  }
+  deleteThread(threadId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/chat/threads/${id(threadId)}`)
+  }
+  ask(threadId: string, text: string): Promise<ChatMessage> {
+    return this.call('POST', `/api/v1/chat/threads/${id(threadId)}/messages`, { text })
+  }
+  getMessage(messageId: string): Promise<ChatMessage> {
+    return this.call('GET', `/api/v1/chat/messages/${id(messageId)}`)
+  }
+  cancelMessage(messageId: string): Promise<ChatMessage> {
+    return this.call('POST', `/api/v1/chat/messages/${id(messageId)}/cancel`)
+  }
+  ragStatus(): Promise<RagStatus> {
+    return this.call('GET', '/api/v1/rag/status')
+  }
+  sourceIndex(sourceId: string): Promise<SourceIndex> {
+    return this.call('GET', `/api/v1/sources/${id(sourceId)}/index`)
   }
 
   // --- Trabajos en segundo plano

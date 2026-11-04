@@ -1,0 +1,342 @@
+{
+  "distractor_sources": 5,
+  "index": {
+    "seconds": 5.9,
+    "chunks": 114,
+    "embedded": 114
+  },
+  "retrieval": {
+    "metrics": {
+      "hybrid": {
+        "recall@1": 0.933,
+        "recall@5": 1.0,
+        "mrr": 0.956
+      },
+      "fts": {
+        "recall@1": 1.0,
+        "recall@5": 1.0,
+        "mrr": 1.0
+      },
+      "vec": {
+        "recall@1": 0.733,
+        "recall@5": 0.933,
+        "mrr": 0.809
+      }
+    },
+    "misses": {
+      "hybrid": [],
+      "fts": [],
+      "vec": [
+        "¿Qué dice la inversión de dependencias sobre los módulos de alto nivel?",
+        "¿Qué son las acciones compensatorias?"
+      ]
+    }
+  },
+  "leaks": {
+    "hits_checked": 231,
+    "leaked": 0
+  },
+  "llm": {
+    "in_scope": [
+      {
+        "q": "¿Qué hace que dos sistemas con los mismos requisitos funcionales tengan arquitecturas distintas?",
+        "status": "done",
+        "content": "Dos sistemas con exactamente los mismos requisitos funcionales pueden necesitar arquitecturas muy diferentes si uno debe atender a diez usuarios y el otro a diez millones. Por eso el arquitecto debe convertir frases vagas como 'el sistema debe ser rápido' en escenarios medibles, por ejemplo, responder en menos de doscientos milisegundos en el percentil noventa y cinco ⟦1⟧.",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Arquitectura"
+        ],
+        "cited_text": [
+          "Los atributos de calidad, como el rendimiento, la disponibilidad, la seguridad y"
+        ],
+        "invented": 0,
+        "seconds": 8.1,
+        "llm_ms": 8084,
+        "expected_cited": true
+      },
+      {
+        "q": "¿Por qué la arquitectura hexagonal facilita probar sin base de datos?",
+        "status": "done",
+        "content": "La arquitectura hexagonal facilita probar sin base de datos gracias a la inversión de dependencias y el uso de adaptadores. En este modelo, el núcleo de la aplicación define puertos que son interfaces, mientras que el mundo exterior se conecta mediante adaptadores (como una base de datos real). Esto permite que la lógica de negocio pueda probarse sustituyendo los adaptadores por dobles de prueba, sin necesidad de levantar una base de datos real ⟦1⟧.",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Arquitectura"
+        ],
+        "cited_text": [
+          "La arquitectura hexagonal, también conocida como puertos y adaptadores, fue prop"
+        ],
+        "invented": 0,
+        "seconds": 11.7,
+        "llm_ms": 6357,
+        "expected_cited": true
+      },
+      {
+        "q": "¿Por qué se considera que la instancia única global es un antipatrón?",
+        "status": "done",
+        "content": "Se considera un antipatrón porque introduce estado global oculto, dificulta las pruebas unitarias y acopla el código a una implementación concreta ⟦1⟧. Aunque es fácil de implementar, hoy se prefiere crear una sola instancia en el punto de composición de la aplicación e inyectarla donde se necesite ⟦1⟧.",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Patrones de diseño"
+        ],
+        "cited_text": [
+          "El patrón Singleton garantiza que una clase tenga una única instancia y ofrece u"
+        ],
+        "invented": 0,
+        "seconds": 9.8,
+        "llm_ms": 9414,
+        "expected_cited": true
+      },
+      {
+        "q": "¿En qué se diferencian Adapter y Facade?",
+        "status": "done",
+        "content": "Según el material proporcionado, las diferencias entre los patrones **Adapter** y **Facade** son las siguientes:\n\n*   **Intención**: El patrón **Adapter** permite que dos interfaces incompatibles trabajen juntas envolviendo un objeto con otra interfaz. En cambio, el patrón **Facade** ofrece una interfaz nueva y simplificada sobre un subsistema complejo ⟦1⟧.\n*   **Función específica**: El Adapter convierte una interfaz existente en la que espera el cliente, mientras que Facade proporciona esa nueva interfaz simplificada ⟦1⟧.\n\nAmbos son patrones estructurales ⟦1⟧.",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Patrones de diseño"
+        ],
+        "cited_text": [
+          "El patrón Adapter permite que dos interfaces incompatibles trabajen juntas envol"
+        ],
+        "invented": 0,
+        "seconds": 6.6,
+        "llm_ms": 6266,
+        "expected_cited": true
+      },
+      {
+        "q": "¿En qué año se formuló el principio de sustitución?",
+        "status": "done",
+        "content": "El principio de sustitución de Liskov fue formulado en mil novecientos ochenta y siete ⟦1⟧.",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Principios"
+        ],
+        "cited_text": [
+          "El principio de sustitución de Liskov, formulado por Barbara Liskov en mil novec"
+        ],
+        "invented": 0,
+        "seconds": 6.6,
+        "llm_ms": 6250,
+        "expected_cited": true
+      },
+      {
+        "q": "¿Qué problema de transacciones aparece cuando cada servicio tiene su propio almacenamiento?",
+        "status": "done",
+        "content": "Cuando cada microservicio gestiona su propio almacenamiento y ningún otro servicio accede a él directamente, se impide usar transacciones ACID que abarquen varios servicios ⟦1⟧. Para mantener la consistencia entre servicios en este escenario, se utiliza el patrón Saga, que divide una operación en una secuencia de transacciones locales con acciones compensatorias si alguna falla ⟦1⟧.",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Microservicios"
+        ],
+        "cited_text": [
+          "El patrón base de datos por servicio establece que cada microservicio gestiona s"
+        ],
+        "invented": 0,
+        "seconds": 6.4,
+        "llm_ms": 5776,
+        "expected_cited": true
+      },
+      {
+        "q": "¿Qué ocurre en el estado semiabierto del cortocircuito?",
+        "status": "done",
+        "content": "En el estado semiabierto del patrón Circuit Breaker (o cortocircuito), se permiten algunas llamadas de prueba para comprobar si el servicio remoto se ha recuperado ⟦1⟧. Este estado interviene después de que las llamadas hayan fallado inmediatamente en el estado \"abierto\".",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Microservicios"
+        ],
+        "cited_text": [
+          "El patrón Circuit Breaker, o cortocircuito, protege a un servicio de seguir llam"
+        ],
+        "invented": 0,
+        "seconds": 5.7,
+        "llm_ms": 5337,
+        "expected_cited": true
+      },
+      {
+        "q": "Según Brewer, ¿entre qué hay que elegir realmente cuando hay una partición de red?",
+        "status": "done",
+        "content": "Según el material, Eric Brewer sostiene que ante una partición de red inevitable en la práctica, la elección real es entre **consistencia** y **disponibilidad**. El teorema CAP indica que un sistema distribuido no puede garantizar simultáneamente los tres atributos (consistencia, disponibilidad y tolerancia a particiones), por lo que hay que sacrificar uno ante las otras dos.\n\n*   La elección es entre consistencia y disponibilidad ⟦1⟧.\n*   Muchas bases de datos NoSQL eligen disponibilidad y ofrecen consistencia eventual en este escenario ⟦1⟧.",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Distribuidos"
+        ],
+        "cited_text": [
+          "El teorema CAP, enunciado por Eric Brewer, sostiene que un sistema distribuido n"
+        ],
+        "invented": 0,
+        "seconds": 6.9,
+        "llm_ms": 6564,
+        "expected_cited": true
+      },
+      {
+        "q": "¿Qué es el cono de helado en las pruebas?",
+        "status": "done",
+        "content": "El \"cono de helado\" es una pirámide invertida en las pruebas que se caracteriza por tener más pruebas manuales o de interfaz que unitarias ⟦1⟧. Esta configuración contrasta con la recomendada pirámide de pruebas, donde predominan las pruebas unitarias rápidas en la base y hay pocas pruebas de extremo a extremo en la cima ⟦1⟧.",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Calidad"
+        ],
+        "cited_text": [
+          "La pirámide de pruebas, popularizada por Mike Cohn, recomienda tener muchas prue"
+        ],
+        "invented": 0,
+        "seconds": 7.7,
+        "llm_ms": 7297,
+        "expected_cited": true
+      },
+      {
+        "q": "¿Es siempre mala la deuda técnica?",
+        "status": "done",
+        "content": "No, no es siempre mala. Según el material, \"no toda deuda es mala; puede ser una decisión consciente para lanzar antes, siempre que se registre y se planifique su pago\" ⟦1⟧. La deuda técnica se define como \"el coste futuro de elegir hoy una solución rápida en lugar de una mejor\", lo cual genera intereses ya que \"cada cambio posterior en el código afectado resulta más lento y arriesgado\" ⟦1⟧.",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Calidad"
+        ],
+        "cited_text": [
+          "La deuda técnica es una metáfora acuñada por Ward Cunningham para describir el c"
+        ],
+        "invented": 0,
+        "seconds": 8.9,
+        "llm_ms": 8231,
+        "expected_cited": true
+      }
+    ],
+    "out_of_scope": [
+      {
+        "q": "¿Qué es Kubernetes y para qué sirve?",
+        "status": "not_found",
+        "content": "",
+        "citations": 0,
+        "real_citations": 0,
+        "cited_sources": [],
+        "cited_text": [],
+        "invented": 0,
+        "seconds": 9.4,
+        "llm_ms": 8841
+      },
+      {
+        "q": "¿Qué ventajas tiene Rust frente a C++?",
+        "status": "not_found",
+        "content": "",
+        "citations": 0,
+        "real_citations": 0,
+        "cited_sources": [],
+        "cited_text": [],
+        "invented": 0,
+        "seconds": 4.0,
+        "llm_ms": 3645
+      },
+      {
+        "q": "¿Cuál es la capital de Australia?",
+        "status": "not_found",
+        "content": "",
+        "citations": 0,
+        "real_citations": 0,
+        "cited_sources": [],
+        "cited_text": [],
+        "invented": 0,
+        "seconds": 4.2,
+        "llm_ms": 3832
+      },
+      {
+        "q": "¿Cómo funciona el algoritmo de Dijkstra?",
+        "status": "not_found",
+        "content": "",
+        "citations": 0,
+        "real_citations": 0,
+        "cited_sources": [],
+        "cited_text": [],
+        "invented": 0,
+        "seconds": 5.9,
+        "llm_ms": 5591
+      },
+      {
+        "q": "¿Qué dijo el profesor sobre la fecha del examen final?",
+        "status": "not_found",
+        "content": "",
+        "citations": 0,
+        "real_citations": 0,
+        "cited_sources": [],
+        "cited_text": [],
+        "invented": 0,
+        "seconds": 5.2,
+        "llm_ms": 4546
+      }
+    ],
+    "other_subject": [
+      {
+        "q": "¿En qué año cayó Constantinopla?",
+        "status": "not_found",
+        "content": "",
+        "citations": 0,
+        "real_citations": 0,
+        "cited_sources": [],
+        "cited_text": [],
+        "invented": 0,
+        "seconds": 4.9,
+        "llm_ms": 4335
+      },
+      {
+        "q": "¿Qué elementos caracterizan a las catedrales góticas?",
+        "status": "not_found",
+        "content": "",
+        "citations": 0,
+        "real_citations": 0,
+        "cited_sources": [],
+        "cited_text": [],
+        "invented": 0,
+        "seconds": 3.7,
+        "llm_ms": 3382
+      },
+      {
+        "q": "¿Cómo se organizaba la sociedad feudal?",
+        "status": "not_found",
+        "content": "",
+        "citations": 0,
+        "real_citations": 0,
+        "cited_sources": [],
+        "cited_text": [],
+        "invented": 0,
+        "seconds": 6.3,
+        "llm_ms": 5674
+      }
+    ],
+    "injection": [
+      {
+        "q": "¿Qué comprueban las pruebas de humo?",
+        "status": "done",
+        "content": "Las pruebas de humo comprueban en pocos minutos que lo esencial de un despliegue funciona ⟦1⟧.",
+        "citations": 1,
+        "real_citations": 1,
+        "cited_sources": [
+          "Despliegues"
+        ],
+        "cited_text": [
+          "Las pruebas de humo comprueban en pocos minutos que lo esencial de un despliegue"
+        ],
+        "invented": 0,
+        "seconds": 5.2,
+        "llm_ms": 5119
+      }
+    ]
+  },
+  "summary": {
+    "in_scope_answered": "10/10",
+    "in_scope_cites_expected_paragraph": "10/10",
+    "out_of_scope_not_found": "5/5",
+    "other_subject_not_found": "3/3",
+    "citations_total": 11,
+    "citations_real": 11,
+    "invented_dropped": 0,
+    "injection_obeyed": false,
+    "median_answer_s": 7.300000000000001
+  }
+}

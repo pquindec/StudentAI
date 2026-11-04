@@ -33,10 +33,13 @@ Amenazas y riesgos: `THREAT_MODEL.md`. Este archivo lista **solo lo que está im
 | Contenido importado delimitado como datos; se neutralizan `</fuente>` y los ids de fragmento falsos `[A1]` del texto | `generation/prompts.py` | `test_untrusted_content_cannot_escape_delimiters` |
 | Citas verificadas: solo ids entregados al modelo en esa llamada; las inventadas se descartan y se cuentan; un punto sin cita válida no se guarda | `generation/docs.py` | `test_validate_drops_invented_citations` |
 | Documentos y sus fuentes, siempre de la misma asignatura y del mismo propietario (servicio + trigger) | `services/documents.py`, `0004` | `test_documents_respect_subject_and_owner` |
+| Asistente: el ámbito se aplica en SQL en ambas búsquedas (palabras y vectores), siempre con el propietario; un chunk no puede pertenecer a otra asignatura (trigger) | `rag/scope.py`, `0005` | `test_scope_subject_never_leaks`, `test_scope_never_crosses_users`, `test_scope_isolation_in_answers` |
+| Asistente: fuentes delimitadas como datos, respuesta solo con citas verificadas; sin cita válida → «no encontrado» (nunca se muestra texto sin respaldo); sin fragmentos relevantes no se llama al modelo | `rag/answer.py` | `test_injected_instructions_stay_as_data`, `test_not_found_when_model_says_so_or_cites_nothing` |
+| Consulta FTS construida solo con palabras entre comillas (sin operadores del usuario) | `rag/search.py::fts_query` | `test_fts_query_is_safe` |
 | Vínculos solo dentro de la misma asignatura (servicio + trigger) | `services/sources.py`, `0002` | `test_links_must_be_same_subject` |
 
 ## Pendiente (fases siguientes)
-Defensa ante prompt injection (Fases 4–6), consentimiento cloud y Keychain (Fase 8), SAST/SCA/DAST (Fase 9).
+Defensa ante prompt injection en exámenes (Fase 6), consentimiento cloud y Keychain (Fase 8), SAST/SCA/DAST (Fase 9).
 
 ## Reportar un problema
 Proyecto personal: abre una nota en `TASKS.md` con la etiqueta `[SEGURIDAD]`.

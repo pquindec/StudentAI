@@ -451,6 +451,128 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/chat/threads': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Threads */
+    get: operations['list_threads_api_v1_chat_threads_get']
+    put?: never
+    /** Create Thread */
+    post: operations['create_thread_api_v1_chat_threads_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/chat/threads/{thread_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Thread */
+    get: operations['get_thread_api_v1_chat_threads__thread_id__get']
+    put?: never
+    post?: never
+    /** Delete Thread */
+    delete: operations['delete_thread_api_v1_chat_threads__thread_id__delete']
+    options?: never
+    head?: never
+    /** Update Thread */
+    patch: operations['update_thread_api_v1_chat_threads__thread_id__patch']
+    trace?: never
+  }
+  '/api/v1/chat/threads/{thread_id}/messages': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Ask */
+    post: operations['ask_api_v1_chat_threads__thread_id__messages_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/chat/messages/{message_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Message */
+    get: operations['get_message_api_v1_chat_messages__message_id__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/chat/messages/{message_id}/cancel': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Cancel Message */
+    post: operations['cancel_message_api_v1_chat_messages__message_id__cancel_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/rag/status': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Rag Status */
+    get: operations['rag_status_api_v1_rag_status_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/sources/{source_id}/index': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Source Index */
+    get: operations['source_index_api_v1_sources__source_id__index_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -483,6 +605,30 @@ export interface components {
       loaded: components['schemas']['LoadedOut'][]
       /** Available Mb */
       available_mb: number | null
+    }
+    /** ChatStatsOut */
+    ChatStatsOut: {
+      /** Search Mode */
+      search_mode?: string | null
+      /** Search Ms */
+      search_ms?: number | null
+      /**
+       * Proposed Cites
+       * @default 0
+       */
+      proposed_cites: number
+      /**
+       * Invented Cites
+       * @default 0
+       */
+      invented_cites: number
+      /** Duration Ms */
+      duration_ms?: number | null
+      /**
+       * Fallback
+       * @default false
+       */
+      fallback: boolean
     }
     /** CitationOut */
     CitationOut: {
@@ -755,6 +901,41 @@ export interface components {
       /** Size Mb */
       size_mb: number
     }
+    /** MessageIn */
+    MessageIn: {
+      /** Text */
+      text: string
+    }
+    /** MessageOut */
+    MessageOut: {
+      /** Id */
+      id: string
+      /** Thread Id */
+      thread_id: string
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'user' | 'assistant'
+      /** Content */
+      content: string
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'queued' | 'streaming' | 'done' | 'not_found' | 'failed' | 'cancelled'
+      /** Error */
+      error: string | null
+      /** Model */
+      model: string | null
+      /** Progress Message */
+      progress_message: string | null
+      /** Created At */
+      created_at: string
+      /** Citations */
+      citations: components['schemas']['CitationOut'][]
+      stats: components['schemas']['ChatStatsOut']
+    }
     /** ModelOut */
     ModelOut: {
       /** Id */
@@ -783,6 +964,37 @@ export interface components {
       text: string
       /** Refs */
       refs: number[]
+    }
+    /** RagStatusOut */
+    RagStatusOut: {
+      /** Embed Model */
+      embed_model: string
+      /** Embed Ready */
+      embed_ready: boolean
+      /** Embed Problem */
+      embed_problem: string | null
+      /** Vector Search */
+      vector_search: boolean
+      /** Sources */
+      sources: number
+      /** Indexed */
+      indexed: number
+      /** Pending */
+      pending: number
+    }
+    /**
+     * Scope
+     * @description subject_id=None busca en toda la biblioteca del usuario.
+     */
+    Scope: {
+      /** Subject Id */
+      subject_id?: string | null
+      /** Unit Ids */
+      unit_ids?: string[]
+      /** Source Ids */
+      source_ids?: string[]
+      /** Exclude Source Ids */
+      exclude_source_ids?: string[]
     }
     /** SectionOut */
     SectionOut: {
@@ -885,6 +1097,20 @@ export interface components {
       segments: components['schemas']['SegmentOut'][]
       /** Versions */
       versions: components['schemas']['VersionInfo'][]
+    }
+    /** SourceIndexOut */
+    SourceIndexOut: {
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'none' | 'queued' | 'indexing' | 'ready' | 'failed'
+      /** Chunks */
+      chunks: number
+      /** Embedded */
+      embedded: number
+      /** Error */
+      error: string | null
     }
     /** SourceListOut */
     SourceListOut: {
@@ -1105,6 +1331,55 @@ export interface components {
        * @default []
        */
       session_ids: string[]
+    }
+    /** ThreadDetailOut */
+    ThreadDetailOut: {
+      /** Id */
+      id: string
+      /** Subject Id */
+      subject_id: string | null
+      /** Title */
+      title: string
+      scope: components['schemas']['Scope']
+      /** Created At */
+      created_at: string
+      /** Updated At */
+      updated_at: string
+      /** Messages */
+      messages: components['schemas']['MessageOut'][]
+    }
+    /** ThreadIn */
+    ThreadIn: {
+      /**
+       * @default {
+       *       "unit_ids": [],
+       *       "source_ids": [],
+       *       "exclude_source_ids": []
+       *     }
+       */
+      scope: components['schemas']['Scope']
+      /** Title */
+      title?: string | null
+    }
+    /** ThreadOut */
+    ThreadOut: {
+      /** Id */
+      id: string
+      /** Subject Id */
+      subject_id: string | null
+      /** Title */
+      title: string
+      scope: components['schemas']['Scope']
+      /** Created At */
+      created_at: string
+      /** Updated At */
+      updated_at: string
+    }
+    /** ThreadPatch */
+    ThreadPatch: {
+      /** Title */
+      title?: string | null
+      scope?: components['schemas']['Scope'] | null
     }
     /** TranscribeIn */
     TranscribeIn: {
@@ -2277,6 +2552,313 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['DocOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_threads_api_v1_chat_threads_get: {
+    parameters: {
+      query?: {
+        subject_id?: string | null
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ThreadOut'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_thread_api_v1_chat_threads_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ThreadIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ThreadOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_thread_api_v1_chat_threads__thread_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        thread_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ThreadDetailOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_thread_api_v1_chat_threads__thread_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        thread_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_thread_api_v1_chat_threads__thread_id__patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        thread_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ThreadPatch']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ThreadOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  ask_api_v1_chat_threads__thread_id__messages_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        thread_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MessageIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MessageOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_message_api_v1_chat_messages__message_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        message_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MessageOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  cancel_message_api_v1_chat_messages__message_id__cancel_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        message_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MessageOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  rag_status_api_v1_rag_status_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['RagStatusOut']
+        }
+      }
+    }
+  }
+  source_index_api_v1_sources__source_id__index_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SourceIndexOut']
         }
       }
       /** @description Validation Error */

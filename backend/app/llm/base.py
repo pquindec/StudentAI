@@ -74,7 +74,13 @@ class LLMProvider(Protocol):
         req: ChatRequest,
         on_token: Callable[[int], None] | None = None,
         cancelled: Callable[[], bool] | None = None,
+        on_text: Callable[[str], None] | None = None,
     ) -> ChatResult:
-        """Genera en streaming. `on_token` recibe el número de tokens generados hasta ahora;
-        `cancelled` se consulta durante la generación y, si es cierto, se corta (LLMCancelled)."""
+        """Genera en streaming. `on_token` recibe el número de tokens generados hasta ahora y
+        `on_text` el texto acumulado; `cancelled` se consulta durante la generación y, si es
+        cierto, se corta (LLMCancelled)."""
+        ...
+
+    def embed(self, model: str, texts: list[str]) -> list[list[float]]:
+        """Vectores (embeddings) de los textos, en el mismo orden."""
         ...

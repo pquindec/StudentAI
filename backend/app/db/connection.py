@@ -26,8 +26,12 @@ def connect(path: Path) -> sqlite3.Connection:
 
 
 @contextmanager
-def tx(conn: sqlite3.Connection, immediate: bool = False) -> Iterator[sqlite3.Connection]:
-    """Transacción explícita (la conexión está en modo autocommit)."""
+def tx(conn: sqlite3.Connection, immediate: bool = True) -> Iterator[sqlite3.Connection]:
+    """Transacción explícita (la conexión está en modo autocommit).
+
+    Por defecto IMMEDIATE: toma el bloqueo de escritura al empezar (esperando busy_timeout).
+    Con BEGIN diferido, una transacción que lee y luego escribe falla al instante con
+    «database is locked» si otro trabajo escribió entre medias (WAL no reintenta ese caso)."""
     conn.execute("BEGIN IMMEDIATE" if immediate else "BEGIN")
     try:
         yield conn

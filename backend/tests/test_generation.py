@@ -67,6 +67,7 @@ class FakeLLM:
         req: ChatRequest,
         on_token: Callable[[int], None] | None = None,
         cancelled: Callable[[], bool] | None = None,
+        on_text: Callable[[str], None] | None = None,
     ) -> ChatResult:
         self.requests.append(req)
         self._loaded = [LoadedModel(req.model, 7000)]

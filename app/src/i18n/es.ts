@@ -359,6 +359,51 @@ export const es = {
     quickSummary: 'Resumen',
     quickHint: 'Generar con IA local',
   },
+  chat: {
+    title: 'Asistente',
+    subtitle:
+      'Pregunta sobre tus fuentes. Solo responde con lo que hay en ellas y cita cada frase.',
+    newThread: 'Nueva conversación',
+    threads: 'Conversaciones',
+    noThreads: 'Aún no hay conversaciones.',
+    scope: 'Buscar en',
+    library: 'Toda la biblioteca',
+    onlySources: 'Solo estas fuentes',
+    allSources: 'Todas las fuentes de la asignatura',
+    placeholder: 'Escribe tu pregunta… (Intro para enviar, Mayús+Intro para salto de línea)',
+    send: 'Preguntar',
+    stop: 'Detener',
+    you: 'Tú',
+    assistant: 'Asistente',
+    thinking: 'Buscando en tus fuentes…',
+    notFound:
+      'No he encontrado la respuesta en las fuentes de este ámbito. Prueba a reformular la pregunta o a buscar en más fuentes.',
+    cancelled: 'Respuesta detenida.',
+    failed: 'No se pudo responder.',
+    empty: 'Haz una pregunta sobre el material de tus asignaturas.',
+    needSources: 'Primero añade fuentes con texto a alguna asignatura.',
+    scopeChanged: 'Las siguientes preguntas buscarán en el nuevo ámbito.',
+    indexing: (n: number) =>
+      n === 1
+        ? 'Preparando 1 fuente para la búsqueda…'
+        : `Preparando ${n} fuentes para la búsqueda…`,
+    wordsOnly: (why: string) => `Búsqueda solo por palabras: ${why}.`,
+    discarded: (n: number) =>
+      n === 1 ? '1 cita no existía y se descartó.' : `${n} citas no existían y se descartaron.`,
+    deleteThread: 'Borrar conversación',
+    model: (m: string) => `Respondido con ${m}`,
+  },
+  searchIndex: {
+    label: 'Búsqueda',
+    none: 'Sin indexar',
+    queued: 'En cola para la búsqueda',
+    indexing: 'Preparando la búsqueda…',
+    ready: (chunks: number, embedded: number) =>
+      embedded === chunks
+        ? `Lista para el asistente (${chunks} fragmentos)`
+        : `Lista solo por palabras (${chunks} fragmentos)`,
+    failed: 'No se pudo preparar la búsqueda',
+  },
   comingSoon: {
     title: 'Próximamente',
     body: (phase: number) => `Esta sección se construye en la fase ${phase} del proyecto.`,

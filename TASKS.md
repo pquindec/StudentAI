@@ -12,8 +12,9 @@
 | 1 — Estructura y entorno | ✅ Completada (2026-11-03) |
 | 2 — Asignaturas y fuentes | ✅ Completada y verificada por el usuario (2026-11-03) |
 | 3 — Grabación y transcripción | ✅ Aprobada por el usuario (2026-11-03) |
-| 4 — IA local: apuntes y resúmenes | 🟡 Implementada (2026-11-03) — falta la revisión del usuario en la UI |
-| 5–10 | ⏳ No iniciadas |
+| 4 — IA local: apuntes y resúmenes | ✅ Aprobada por el usuario (2026-11-04) |
+| 5 — RAG y asistente | 🟡 Implementada, pendiente de tu revisión (2026-11-04) |
+| 6–10 | ⏳ No iniciadas |
 
 ### Tareas nuevas surgidas de la Fase 0.5
 - [x] (F1) Usar Ollama **oficial** en desarrollo (el de Homebrew no tiene salida estructurada); documentarlo en INSTALLATION.md
@@ -73,22 +74,23 @@
 - [ ] (F9) Empaquetar `whisper-cli` y `ffmpeg` dentro del `.app` (hoy se usan los de Homebrew)
 - **Criterio de aceptación:** grabar 10 min (o importar un audio de 30 min), cerrar la app a la fuerza a mitad de proceso, reabrir y obtener una transcripción completa, editable, con timestamps correctos (±1 s) y exportable.
 
-## Fase 4 — IA local: apuntes y resúmenes 🟡
+## Fase 4 — IA local: apuntes y resúmenes ✅
 - [x] Interfaz `LLMProvider` + OllamaProvider (streaming, salida estructurada, keep_alive, solo localhost)
 - [x] AI Resource Manager v1 (memoria disponible, modelo ligero si falta, espera visible, descarga del LLM antes de whisper)
 - [x] Apuntes (breve / intermedio / detallado) con citas por punto
 - [x] Resúmenes de una o varias fuentes con map-reduce y detección de contradicciones (mostradas sin resolver)
 - [x] Prompts con el contenido delimitado como datos no confiables (delimitadores y ids falsos neutralizados)
 - [x] Generación reanudable (checkpoint por bloque) y registro en `model_runs`
-- [ ] Revisión del usuario en la UI (calidad de los apuntes con su material real)
+- [x] Revisión del usuario en la UI (resúmenes compactos y grabar mientras se genera, ajustados tras su prueba)
 - **Criterio de aceptación:** apuntes y resumen de un documento y de una transcripción en los que cada apartado cita fragmentos existentes; 0 citas inventadas en el conjunto de prueba; la UI no se bloquea; la memoria no supera el presupuesto medido.
 
 ## Fase 5 — RAG y asistente
-- [ ] Chunking por tipo de fuente con trazabilidad
-- [ ] Embeddings + sqlite-vec + FTS5 + RRF; evaluación del reranker
-- [ ] ScopeResolver (fuente / varias / tema / asignatura / biblioteca, con exclusiones) aplicado en SQL
-- [ ] Chat con streaming, citas con enlace a página o timestamp, respuesta "no encontrado"
-- [ ] Pruebas de prompt injection (documentos con instrucciones maliciosas)
+- [x] Chunking por tipo de fuente con trazabilidad (segmentos, página, tiempo, sección)
+- [x] Embeddings + sqlite-vec + FTS5 + RRF; evaluación del reranker (no se incluye: Recall@5 = 1,0)
+- [x] ScopeResolver (fuente / varias / tema con subtemas / asignatura / biblioteca, con exclusiones) aplicado en SQL
+- [x] Chat con streaming, citas con enlace a página o timestamp, respuesta "no encontrado"
+- [x] Pruebas de prompt injection (documentos con instrucciones maliciosas)
+- [ ] Revisión del usuario en la UI
 - **Criterio de aceptación:** Recall@5 ≥ 0.8 en el conjunto de preguntas de prueba; todas las citas apuntan a fragmentos reales; una pregunta fuera del scope devuelve "no encontrado"; 0 fugas entre asignaturas en las pruebas.
 
 ## Fase 6 — Exámenes

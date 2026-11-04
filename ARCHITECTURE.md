@@ -280,14 +280,14 @@ Pegar / nota manual → source kind=paste|note
 
 ### 6.4 Indexación (RAG)
 ```
-normalize (unicode NFC, espacios, guiones de fin de línea)
-→ chunking según el tipo:
-    audio: ventanas de ~60–90 s de segmentos, solapamiento de 1 segmento, conserva start/end_ms
-    PDF:   por sección/página, ~400–600 tokens, conserva page_from/to
-    DOCX/MD: por encabezado (section_path), se subdivide si es largo
-→ embeddings (modelo multilingüe vía Ollama, por lotes)
-→ INSERT chunks + FTS5 + vec0 en UNA transacción → index_status=ready
+nueva versión de una fuente → index_source (clase embed, prioridad batch, deduplicado)
+→ chunking sobre los segmentos (rag/chunking.py): ~1.000 caracteres (máx. 1.600), un título
+  abre chunk nuevo, audio ≤ 120 s por chunk; conserva seg_from/to, páginas, ms y sección
+→ chunks + FTS5 (triggers) en UNA transacción → vectores qwen3-embedding:0.6b por lotes de 16
+  (si Ollama o el modelo faltan, o hay < 1,5 GB libres: solo palabras, embedded = 0)
+→ source_index = ready. Al arrancar se encola lo que falte o quedara a medias.
 ```
+Implementado en la Fase 5. Sin solapamiento entre chunks: la cita apunta a segmentos, no a chunks.
 
 ### 6.5 Consulta con el asistente
 ```
@@ -298,6 +298,11 @@ scope (UI) → ScopeResolver → conjunto de source_ids permitidos (filtrado en 
 → respuesta + referencias (documento, página, sección o timestamp con enlace al reproductor)
 → si la recuperación tiene baja puntuación: "No encuentro esto en tus fuentes"
 ```
+Implementado (Fase 5): top 30 por BM25 y top 30 por coseno → RRF k=60 → 6 chunks. Si ninguna
+palabra coincide y ningún vector está a distancia ≤ 0,55, no se llama al modelo («no encontrado»).
+Los fragmentos son los segmentos de esos chunks con ids `A12`; se envían las 3 últimas preguntas
+y respuestas (sin fragmentos). Una respuesta sin ninguna cita válida, o `NO_ENCONTRADO`, se
+guarda como «no encontrado». Sin reranker: el Recall@5 ya es 1,0 (BENCHMARKS §6).
 
 ### 6.6 Generación de exámenes (funcionalidad crítica)
 ```

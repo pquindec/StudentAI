@@ -43,6 +43,13 @@ Formato único:
 | GET | `/api/v1/documents/{id}` | Apartados → puntos con `refs`, contradicciones, citas (texto literal, página o tiempo, fuente) y métricas |
 | POST | `/api/v1/documents/{id}/retry` | Reintenta si falló o se canceló (409 si no) |
 | DELETE | `/api/v1/documents/{id}` | Borra (y cancela si se está generando) |
+| GET/POST | `/api/v1/chat/threads` | Conversaciones del asistente (más recientes primero) / crear `{scope?, title?}` → 201. `scope = {subject_id?, unit_ids[], source_ids[], exclude_source_ids[]}`; sin `subject_id` = toda la biblioteca. Los ids deben ser del usuario y de la asignatura (400 `invalid_scope`) |
+| GET/PATCH/DELETE | `/api/v1/chat/threads/{id}` | Detalle con mensajes y citas / cambiar título o ámbito / borrar (cancela la respuesta en curso) |
+| POST | `/api/v1/chat/threads/{id}/messages` | `{text}` → 202 con el mensaje de respuesta (`queued`); 409 `answer_in_progress` si aún responde |
+| GET | `/api/v1/chat/messages/{id}` | Estado (`queued`, `streaming` con texto parcial, `done`, `not_found`, `failed`, `cancelled`), contenido con referencias `⟦n⟧`, citas y métricas. La UI lo consulta cada 400 ms mientras responde |
+| POST | `/api/v1/chat/messages/{id}/cancel` | Detiene la respuesta |
+| GET | `/api/v1/rag/status` | Modelo de embeddings y si está disponible, búsqueda por vectores, fuentes indexadas y pendientes |
+| GET | `/api/v1/sources/{id}/index` | Estado del índice de una fuente (`none`, `queued`, `indexing`, `ready`, `failed`, chunks, con vector) |
 | GET | `/api/v1/jobs` | Trabajos (`?active=true`) con progreso |
 | POST | `/api/v1/jobs/{id}/cancel` | Cancelar (inmediato si está en cola; cooperativo si está en curso) |
 

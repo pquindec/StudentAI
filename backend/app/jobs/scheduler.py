@@ -14,6 +14,7 @@ from app.generation.docs import Yielded
 from app.jobs import queue
 from app.jobs.handlers import HANDLERS, JobContext, JobFailed, set_source_status
 from app.pipelines.audio import Cancelled
+from app.rag import index as rag_index
 from app.services import transcription
 
 log = logging.getLogger(__name__)
@@ -42,6 +43,9 @@ class Scheduler:
             n = transcription.enqueue_waiting(db, self.data_dir)
             if n:
                 log.info("Encolando %d transcripción(es) pendiente(s)", n)
+            n = rag_index.backfill(db)
+            if n:
+                log.info("Encolando %d fuente(s) para indexar", n)
         finally:
             db.close()
         self._task = asyncio.create_task(self._loop(), name="job-scheduler")

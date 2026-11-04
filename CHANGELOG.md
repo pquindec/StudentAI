@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0] — 2026-11-04 · Fase 5: búsqueda en tus fuentes y asistente
+### Añadido
+- Página **Asistente**: conversaciones que responden solo con tus fuentes. Cada frase lleva su cita (texto literal, página o minuto; «Abrir fuente» salta al momento del audio). Si la respuesta no está en las fuentes, lo dice («No he encontrado la respuesta…») en lugar de inventar.
+- Ámbito de búsqueda por conversación: toda la biblioteca, una asignatura o algunas de sus fuentes (la API admite también temas con sus subtemas y exclusiones). Se aplica en la base de datos: una asignatura nunca ve fragmentos de otra.
+- Respuesta en directo mientras se genera, botón «Detener» e historial de las últimas preguntas para repreguntar.
+- Índice de búsqueda automático: cada fuente con texto se trocea (sin perder página, tiempo ni sección) y se indexa por palabras (FTS5) y por significado (`qwen3-embedding:0.6b`, sqlite-vec), con fusión RRF. Se reindexa al editar; al arrancar se indexa lo que falte. Sin el modelo de embeddings sigue funcionando por palabras.
+- Estado del índice en el detalle de cada fuente.
+- Migración `0005_rag_chat.sql` y dependencia `sqlite-vec` 0.1.9 (MIT/Apache-2.0).
+### Corregido
+- Error intermitente «database is locked» al guardar un documento mientras otro trabajo escribía en la base de datos (ahora más probable al indexar en paralelo). Las transacciones toman el bloqueo de escritura al empezar y esperan su turno.
+### Seguridad
+- Documentos con instrucciones maliciosas probados contra el asistente: se tratan como datos; citas inventadas descartadas; sin cita válida no se muestra la respuesta.
+
 ## [0.4.2] — 2026-11-04 · Grabar y generar a la vez
 ### Corregido
 - El botón «Empezar a grabar» quedaba desactivado sin explicación cuando había varias asignaturas y ninguna elegida. Ahora la asignatura viene preseleccionada (la de la última grabación) y se indica si falta el título.

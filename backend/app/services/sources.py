@@ -8,6 +8,7 @@ from typing import Any
 from app.core.errors import bad_request, from_integrity_error, not_found
 from app.db.connection import tx
 from app.pipelines.extract.document import segment
+from app.rag.index import request_index
 
 
 def get_source(db: sqlite3.Connection, user: str, source_id: str) -> dict[str, Any]:
@@ -103,6 +104,7 @@ def add_version(db: sqlite3.Connection, source_id: str, text: str, origin: str) 
             for s in segment(text)
         ],
     )
+    request_index(db, source_id)
     return version
 
 

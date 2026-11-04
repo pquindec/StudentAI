@@ -26,8 +26,15 @@ class NoLLM:
     def unload(self, model: str) -> None:
         pass
 
-    def chat(self, req: object, on_token: object = None, cancelled: object = None) -> object:
+    def chat(
+        self, req: object, on_token: object = None, cancelled: object = None, on_text: object = None
+    ) -> object:
         raise AssertionError("chat no esperado")
+
+    def embed(self, model: str, texts: list[str]) -> list[list[float]]:
+        from app.llm.base import LLMError
+
+        raise LLMError("llm_unavailable", "Ollama no está en marcha")
 
 
 @pytest.fixture(autouse=True)

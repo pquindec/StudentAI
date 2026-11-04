@@ -4,6 +4,7 @@ import json
 import logging
 import shutil
 import sqlite3
+import time
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -18,7 +19,13 @@ from app.llm.base import ChatRequest, ChatResult, LLMCancelled, LLMError
 from app.pipelines import audio
 from app.pipelines.extract.document import to_markdown
 from app.pipelines.extract.runner import ExtractFailed, run_isolated
+from app.rag import answer as rag_answer
+from app.rag import index as rag_index
+from app.rag import search as rag_search
+from app.rag.scope import Scope
+from app.resources import manager as res_manager
 from app.resources.manager import ResourceManager, profile
+from app.services import chat as chat_svc
 from app.services import documents as docs_svc
 from app.services import llm as llm_svc
 from app.services import sources as src_svc
@@ -358,8 +365,127 @@ def _generate(ctx: JobContext, doc: dict[str, Any]) -> None:
     docs_svc.save_result(ctx.db, doc["id"], content, cites, choice.model, stats)
 
 
+def index_source(ctx: JobContext) -> None:
+    """Chunks + vectores de la versión actual (la fuente va en el payload, no en el trabajo)."""
+    sid = str(payload(ctx.job).get("source_id"))
+    rag_index.index_source(
+        ctx.db,
+        sid,
+        llm_svc.provider(),
+        memory=lambda: res_manager.available_mb(),  # se resuelve al llamar (pruebas)
+        report=ctx.report,
+        cancelled=ctx.cancelled,
+    )
+
+
+def chat_answer(ctx: JobContext) -> None:
+    """Respuesta del asistente: busca en el ámbito del hilo, genera en streaming y verifica las
+    citas. Sin fragmentos relevantes no se llama al modelo («no encontrado»)."""
+    data = payload(ctx.job)
+    mid, qid = str(data.get("message_id")), str(data.get("question_id"))
+    row = ctx.db.execute(
+        "SELECT m.thread_id, t.owner_id, t.scope_json, q.content AS question"
+        " FROM chat_messages m JOIN chat_threads t ON t.id = m.thread_id"
+        " JOIN chat_messages q ON q.id = ? WHERE m.id = ?",
+        (qid, mid),
+    ).fetchone()
+    if row is None:
+        raise audio.Cancelled  # se borró la conversación mientras esperaba
+    stats: dict[str, Any] = {}
+    try:
+        _answer(ctx, dict(row), mid, stats)
+    except (audio.Cancelled, LLMCancelled) as e:
+        ctx.db.execute(
+            "UPDATE chat_messages SET status = 'cancelled', stats_json = ? WHERE id = ?",
+            (json.dumps(stats), mid),
+        )
+        raise audio.Cancelled from e
+    except LLMError as e:
+        chat_svc.save_answer(ctx.db, mid, "failed", "", [], None, stats, e.message)
+        raise JobFailed(e.code, e.message) from e
+    except JobFailed as e:
+        chat_svc.save_answer(ctx.db, mid, "failed", "", [], None, stats, e.message)
+        raise
+    except Exception:
+        chat_svc.save_answer(ctx.db, mid, "failed", "", [], None, stats, "Error inesperado")
+        raise
+
+
+def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any]) -> None:
+    prov = llm_svc.provider()
+    info = prov.info()
+    if not info.running:
+        raise JobFailed("llm_unavailable", "Ollama no está en marcha. Abre la app de Ollama.")
+    ctx.report(0.1, "Buscando en tus fuentes")
+    scope = Scope.model_validate(json.loads(row["scope_json"] or "{}"))
+    embedder = prov if rag_index.embeddings_available(prov) is None else None
+    t0 = time.monotonic()
+    found = rag_search.search(ctx.db, row["owner_id"], scope, row["question"], embedder)
+    stats.update(
+        search_ms=int((time.monotonic() - t0) * 1000),
+        search_mode=found.mode,
+        chunks=[h.chunk_id for h in found.hits],
+        notes=found.notes,
+    )
+    if not found.relevant:
+        chat_svc.save_answer(ctx.db, mid, "not_found", "", [], None, stats)
+        return
+    context = rag_answer.build_context(ctx.db, found.hits)
+    rm = ResourceManager(prov)
+    choice = rm.acquire(
+        llm_svc.chosen_model(ctx.db),
+        llm_svc.light_model(ctx.db),
+        info.models,
+        report=lambda m: ctx.report(0.2, m),
+        cancelled=ctx.cancelled,
+    )
+    ctx.report(0.3, "Redactando la respuesta")
+    history = chat_svc.history(ctx.db, row["thread_id"], mid)
+    req = ChatRequest(
+        model=choice.model,
+        messages=rag_answer.build_messages(row["question"], history, context.block),
+        max_tokens=1200,
+        temperature=0.1,
+        keep_alive=llm_svc.keep_alive(ctx.db),
+    )
+    last_t, last_text = [0.0], [""]
+
+    def on_text(raw: str) -> None:
+        now = time.monotonic()
+        shown = rag_answer.live_text(raw)
+        if now - last_t[0] >= 0.25 and shown != last_text[0]:
+            chat_svc.set_live(ctx.db, mid, shown)
+            last_t[0], last_text[0] = now, shown
+
+    res = prov.chat(req, cancelled=ctx.cancelled, on_text=on_text)
+    loaded = rm.after_call(req.model)
+    docs_svc.record_run(
+        ctx.db,
+        ctx.job["id"],
+        req.model,
+        "chat:answer",
+        res.input_tokens,
+        res.output_tokens,
+        res.duration_ms,
+        loaded,
+    )
+    final = rag_answer.finalize(res.text, context.segment_of)
+    stats.update(
+        proposed_cites=final.proposed,
+        invented_cites=final.invented,
+        input_tokens=res.input_tokens,
+        output_tokens=res.output_tokens,
+        duration_ms=res.duration_ms,
+        fallback=choice.fallback,
+    )
+    status = "done" if final.found else "not_found"
+    chat_svc.save_answer(ctx.db, mid, status, final.content, final.citations, choice.model, stats)
+
+
 HANDLERS: dict[str, Callable[[JobContext], None]] = {
+    "chat_answer": chat_answer,
     "generate_doc": generate_doc,
+    "index_source": index_source,
     "extract_document": extract_document,
     "prepare_audio": prepare_audio,
     "transcribe": transcribe,

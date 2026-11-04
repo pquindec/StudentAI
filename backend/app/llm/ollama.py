@@ -89,6 +89,7 @@ class OllamaProvider:
         req: ChatRequest,
         on_token: Callable[[int], None] | None = None,
         cancelled: Callable[[], bool] | None = None,
+        on_text: Callable[[str], None] | None = None,
     ) -> ChatResult:
         body: dict[str, Any] = {
             "model": req.model,
@@ -122,6 +123,8 @@ class OllamaProvider:
                 produced += 1
                 if on_token and produced % 16 == 0:
                     on_token(produced)
+                if on_text and produced % 4 == 0:
+                    on_text("".join(parts))
                 if chunk.get("done"):
                     final = chunk
                     break
@@ -133,3 +136,12 @@ class OllamaProvider:
             output_tokens=final.get("eval_count", produced),
             duration_ms=int((time.monotonic() - start) * 1000),
         )
+
+    def embed(self, model: str, texts: list[str]) -> list[list[float]]:
+        body = {"model": model, "input": texts, "keep_alive": "2m", "truncate": True}
+        with self._open("/api/embed", body, timeout=120) as resp:
+            data = json.loads(resp.read())
+        vectors: list[list[float]] = data.get("embeddings") or []
+        if len(vectors) != len(texts):
+            raise LLMError("bad_output", "Ollama devolvió un número de vectores inesperado")
+        return vectors

@@ -5,6 +5,7 @@ import { RecoveryDialog } from './components/RecoveryDialog'
 import { Sidebar, type Section } from './components/Sidebar'
 import { useBackendStatus } from './lib/backendStatus'
 import { NavContext, type Route, sectionOf } from './lib/nav'
+import { Assistant } from './pages/Assistant'
 import { ComingSoon } from './pages/ComingSoon'
 import { Dashboard } from './pages/Dashboard'
 import { DocumentView } from './pages/DocumentView'
@@ -18,7 +19,6 @@ import { Subjects } from './pages/Subjects'
 
 /** Fase del plan (TASKS.md) en la que se construye cada sección pendiente. */
 const PHASE: Partial<Record<Section, number>> = {
-  assistant: 5,
   exams: 6,
   flashcards: 7,
   stats: 7,
@@ -55,6 +55,8 @@ function Page({ route, status }: { route: Route; status: ReturnType<typeof useBa
       return <SourceDetail key={`${route.id}-${route.at ?? ''}`} id={route.id} at={route.at} />
     case 'document':
       return <DocumentView key={route.id} id={route.id} />
+    case 'assistant':
+      return <Assistant />
     case 'notes':
     case 'summaries':
       return <Documents key={route.name} kind={route.name === 'notes' ? 'notes' : 'summary'} />

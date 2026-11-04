@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Unit } from './api'
+import { isAnswering, scopeFor, splitRefs } from './chat'
 import { formatBytes, formatDuration } from './format'
 import { unitTree } from './subjects'
 
@@ -36,5 +37,31 @@ describe('formato', () => {
     expect(formatDuration(65_000)).toBe('1:05')
     expect(formatDuration(3_725_000)).toBe('1:02:05')
     expect(formatDuration(null)).toBe('—')
+  })
+})
+
+describe('asistente', () => {
+  it('separa el texto de las referencias y agrupa las seguidas', () => {
+    expect(splitRefs('Uno ⟦1⟧. Dos ⟦2⟧⟦3⟧⟦2⟧ fin')).toEqual([
+      { text: 'Uno ' },
+      { refs: [1] },
+      { text: '. Dos ' },
+      { refs: [2, 3] },
+      { text: ' fin' },
+    ])
+    expect(splitRefs('sin citas')).toEqual([{ text: 'sin citas' }])
+    expect(splitRefs('')).toEqual([])
+  })
+
+  it('el ámbito sin asignatura es toda la biblioteca', () => {
+    expect(scopeFor('', ['x'])).toEqual({
+      subject_id: null,
+      source_ids: [],
+      unit_ids: [],
+      exclude_source_ids: [],
+    })
+    expect(scopeFor('s1', ['a']).source_ids).toEqual(['a'])
+    expect(isAnswering({ status: 'streaming' })).toBe(true)
+    expect(isAnswering({ status: 'not_found' })).toBe(false)
   })
 })

@@ -180,6 +180,29 @@ function LinksForm({ source, onDone }: { source: Source; onDone: () => void }) {
   )
 }
 
+/** Estado de la fuente en el índice del asistente (se refresca mientras se prepara). */
+function IndexRow({ id, version }: { id: string; version: number | null | undefined }) {
+  const q = useQuery(() => api.sourceIndex(id), [id, version])
+  const st = q.data
+  const busy = st?.status === 'queued' || st?.status === 'indexing'
+  const { reload } = q
+  useEffect(() => {
+    if (!busy) return
+    const t = window.setInterval(() => void reload(), 1500)
+    return () => window.clearInterval(t)
+  }, [busy, reload])
+  if (!st) return null
+  const text =
+    st.status === 'ready'
+      ? es.searchIndex.ready(st.chunks, st.embedded)
+      : st.status === 'none'
+        ? es.searchIndex.none
+        : es.searchIndex[st.status]
+  return (
+    <Row label={es.searchIndex.label} value={<span title={st.error ?? undefined}>{text}</span>} />
+  )
+}
+
 export function SourceDetail({ id, at }: { id: string; at?: number }) {
   const navigate = useNavigate()
   const source = useQuery(() => api.getSource(id), [id])
@@ -357,6 +380,7 @@ export function SourceDetail({ id, at }: { id: string; at?: number }) {
             <h2 className="mb-3 text-sm font-medium">{es.source.details}</h2>
             <dl className="space-y-2 text-sm">
               <Row label={es.library.status} value={<StatusBadge status={s.status} />} />
+              {ready && <IndexRow id={s.id} version={s.version} />}
               {s.original_name && <Row label={es.source.originalName} value={s.original_name} />}
               {s.size_bytes != null && (
                 <Row label={es.source.size} value={formatBytes(s.size_bytes)} />

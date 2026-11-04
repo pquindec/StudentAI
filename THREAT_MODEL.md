@@ -27,8 +27,8 @@ Método: STRIDE por frontera de confianza. Se revisa al final de cada fase.
 | T7 | I | Fuga de datos en logs | Logs sin contenido de fuentes ni cuerpos de petición | ✅ F1 (regla) |
 | T8 | T | Corrupción de BD por migración fallida | Transacción por migración + copia previa | ✅ F1 |
 | T9 | T/D | Archivos maliciosos (zip bomb DOCX, PDF malformado, extensión falsa, path traversal) | Magic bytes, límites, rutas UUID, extracción en subproceso con timeout y RLIMIT_CPU | ✅ F2 |
-| T10 | T | Prompt injection en documentos o transcripciones | Fuentes delimitadas como datos (delimitadores e ids falsos neutralizados), sin herramientas, salida con esquema, citas verificadas, scope en SQL | ✅ F4 para apuntes/resúmenes (prueba real en TESTING.md) · ⏳ F5–F6 chat y exámenes |
-| T11 | I | Fuga entre asignaturas | Filtro obligatorio por `subject_id`/`owner_id` en SQL | ⏳ F5 |
+| T10 | T | Prompt injection en documentos o transcripciones | Fuentes delimitadas como datos (delimitadores e ids falsos neutralizados), sin herramientas, salida con esquema, citas verificadas, scope en SQL | ✅ F4 apuntes/resúmenes · ✅ F5 asistente (documento malicioso en `bench_rag.py` y `test_injected_instructions_stay_as_data`) · ⏳ F6 exámenes |
+| T11 | I | Fuga entre asignaturas | Ámbito traducido a SQL con el propietario siempre incluido (FTS y vectores), trigger que impide chunks de otra asignatura, ids del ámbito validados contra el usuario | ✅ F5 (0 fugas, ver TESTING.md) |
 | T12 | I | Envío no consentido a la nube | Consentimiento con vista previa + auditoría | ⏳ F8 |
 | T13 | I | Robo de claves API | Keychain de macOS | ⏳ F8 |
 | T14 | S/I | Cualquier proceso local usa Ollama (puerto 11434 sin autenticación) | Riesgo aceptado: Ollama no recibe datos persistentes; solo prompts efímeros | ⚠️ Aceptado |
