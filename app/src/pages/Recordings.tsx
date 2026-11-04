@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { LevelMeter } from '../components/RecordingBar'
 import { SttPanel } from '../components/SttPanel'
 import {
@@ -218,6 +218,14 @@ function SavedRecordings() {
     () => api.listSources({ kind: 'recording', limit: 20 }),
     [rec.lastResult?.recording_id],
   )
+  // Mientras se transcribe alguna, se refresca hasta que pase a «Listo» (o falle).
+  const busy = list.data?.items.some((s) => s.status === 'pending' || s.status === 'processing')
+  const { reload } = list
+  useEffect(() => {
+    if (!busy) return
+    const t = window.setInterval(() => void reload(), 2000)
+    return () => window.clearInterval(t)
+  }, [busy, reload])
   return (
     <Card>
       <h2 className="mb-3 font-medium">{es.recording.list}</h2>

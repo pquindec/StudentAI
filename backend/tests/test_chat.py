@@ -337,3 +337,32 @@ def test_ollama_embed(embed_server: OllamaProvider) -> None:
     assert embed_server.embed("m", ["a", "b"]) == [[0.1, 0.2], [0.1, 0.2]]
     with pytest.raises(LLMError, match="vectores"):
         embed_server.embed("m", ["corto", "b"])
+
+
+def test_next_chunk_is_added_and_uncited_answer_is_retried(
+    client: TestClient, auth: H, fake: FakeChat, lib: dict[str, str]
+) -> None:
+    long = "\n\n".join(
+        [f"El sistema caótico número {i} " + "x " * 450 for i in range(3)]
+        + ["Definición buscada: las cuatro dimensiones del entorno. " + "y " * 400]
+    )
+    _source(client, auth, lib["bio"], "Clase larga", long)
+    calls: list[list[str]] = []
+
+    def reply(ids: list[str]) -> str:
+        calls.append(ids)  # en el reintento, los ids vienen de la primera llamada
+        return "Respuesta sin citas." if len(calls) == 1 else f"Con cita [{calls[0][0]}]."
+
+    fake.reply = reply
+    tid = _thread(client, auth, subject_id=lib["bio"])
+    m = _ask(client, auth, tid, "sistema caótico número 2")
+    assert m["status"] == "done" and len(calls) == 2 and m["content"].endswith("⟦1⟧.")
+    retry = fake.requests[-1].messages
+    assert retry[-2].role == "assistant" and "no lleva citas" in retry[-1].content
+    # El chunk siguiente al más relevante también llegó al modelo.
+    assert "Definición buscada" in fake.requests[0].messages[-1].content
+
+
+def test_missing_terms_are_flagged() -> None:
+    assert answer.missing_terms("¿Qué es vuca?", "biuca es un entorno") == ["vuca"]
+    assert answer.missing_terms("¿Qué es el entorno?", "un ENTORNO volátil") == []

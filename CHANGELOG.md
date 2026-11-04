@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.1] — 2026-11-04 · Ajustes del asistente tras la prueba
+### Corregido
+- Preguntar «vuca» o «Vuca» daba «no encontrado» y «VUCA» sí respondía. Había tres causas: la transcripción escribió la sigla como suena («biuca»), el modelo de embeddings distingue mayúsculas y la explicación ocupaba varios fragmentos seguidos. Ahora:
+  - las palabras cortas que no aparecen tal cual en ninguna fuente se buscan también en mayúsculas (posibles siglas);
+  - al fragmento más relevante se le añade el siguiente de la misma fuente;
+  - se avisa al modelo de que las mayúsculas no importan y de que la transcripción puede escribir mal un término;
+  - si el modelo responde sin ninguna cita, se le pide una vez que cite antes de dar «no encontrado».
+- La lista de grabaciones se quedaba en «Procesando» al terminar la transcripción hasta cambiar de pantalla. Ahora se refresca sola mientras haya alguna en proceso.
+
 ## [0.5.0] — 2026-11-04 · Fase 5: búsqueda en tus fuentes y asistente
 ### Añadido
 - Página **Asistente**: conversaciones que responden solo con tus fuentes. Cada frase lleva su cita (texto literal, página o minuto; «Abrir fuente» salta al momento del audio). Si la respuesta no está en las fuentes, lo dice («No he encontrado la respuesta…») en lugar de inventar.

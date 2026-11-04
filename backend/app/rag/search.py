@@ -52,7 +52,7 @@ class SearchResult:
     notes: list[str] = field(default_factory=list)
 
 
-def _fold(text: str) -> str:
+def fold(text: str) -> str:
     table = str.maketrans("áéíóúüàèìòùñç", "aeiouuaeiounc")
     return text.lower().translate(table)
 
@@ -61,13 +61,34 @@ def fts_query(question: str) -> str | None:
     """Palabras significativas entre comillas unidas con OR; las largas, también por prefijo
     (plural, género: «célula» encuentra «células»)."""
     terms: list[str] = []
-    for w in _WORD.findall(_fold(question)):
+    for w in _WORD.findall(fold(question)):
         if w in STOPWORDS or (len(w) < 3 and not w.isdigit()):
             continue
         terms.append(f'"{w}"')
         if len(w) >= 7:
             terms.append(f'"{w[:-2]}"*')
     return " OR ".join(dict.fromkeys(terms)) or None
+
+
+_SHORT = re.compile(r"\b[^\W\d_]{2,6}\b", re.UNICODE)
+
+
+def acronym_variant(db: sqlite3.Connection, question: str) -> str:
+    """El modelo de embeddings distingue mayúsculas: «vuca» y «VUCA» dan vectores distintos.
+    Las palabras cortas que no aparecen tal cual en ninguna fuente (posibles siglas, o términos
+    que la transcripción escribió de otra forma) se prueban también en mayúsculas."""
+
+    def up(m: re.Match[str]) -> str:
+        w = m.group(0)
+        f = fold(w)
+        if w.isupper() or f in STOPWORDS:
+            return w
+        found = db.execute(
+            "SELECT 1 FROM chunks_fts WHERE chunks_fts MATCH ? LIMIT 1", (f'"{f}"',)
+        ).fetchone()
+        return w if found else w.upper()
+
+    return _SHORT.sub(up, question)
 
 
 def load_vec(db: sqlite3.Connection) -> bool:
@@ -131,24 +152,32 @@ def search(
     if use_fts and q:
         fts_ids = _fts(db, q, where, params)
 
-    vec_hits: list[tuple[int, float]] = []
+    vec_lists: list[list[tuple[int, float]]] = []
     if use_vec and provider is not None:
         if not load_vec(db):
             notes.append("vec_unavailable")
         else:
+            queries = [question]
+            variant = acronym_variant(db, question)
+            if variant != question:
+                queries.append(variant)
+                notes.append("acronym_variant")
             try:
-                [qv] = provider.embed(EMBED_MODEL, [QUERY_PREFIX + question])
-                vec_hits = _vec(db, pack(qv), where, params)
+                vectors = provider.embed(EMBED_MODEL, [QUERY_PREFIX + q for q in queries])
+                vec_lists = [_vec(db, pack(v), where, params) for v in vectors]
             except LLMError as e:
                 notes.append(f"embed_failed:{e.code}")
+    vec_hits = [h for lst in vec_lists for h in lst]
 
     hits: dict[int, Hit] = {}
     for rank, cid in enumerate(fts_ids, 1):
         hits[cid] = Hit(cid, "", 1 / (RRF_K + rank), fts_rank=rank)
-    for rank, (cid, dist) in enumerate(vec_hits, 1):
-        h = hits.setdefault(cid, Hit(cid, "", 0.0))
-        h.score += 1 / (RRF_K + rank)
-        h.vec_rank, h.distance = rank, dist
+    for lst in vec_lists:
+        for rank, (cid, dist) in enumerate(lst, 1):
+            h = hits.setdefault(cid, Hit(cid, "", 0.0))
+            h.score += 1 / (RRF_K + rank)
+            if h.distance is None or dist < h.distance:
+                h.vec_rank, h.distance = rank, dist
     top = sorted(hits.values(), key=lambda h: -h.score)[:top_k]
     if top:
         marks = ",".join("?" * len(top))

@@ -1,5 +1,6 @@
 """Manejadores de trabajos. Se ejecutan en un hilo; cada uno abre su propia conexión."""
 
+import dataclasses
 import json
 import logging
 import shutil
@@ -457,19 +458,30 @@ def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any
             chat_svc.set_live(ctx.db, mid, shown)
             last_t[0], last_text[0] = now, shown
 
-    res = prov.chat(req, cancelled=ctx.cancelled, on_text=on_text)
-    loaded = rm.after_call(req.model)
-    docs_svc.record_run(
-        ctx.db,
-        ctx.job["id"],
-        req.model,
-        "chat:answer",
-        res.input_tokens,
-        res.output_tokens,
-        res.duration_ms,
-        loaded,
-    )
+    def call(r: ChatRequest, task: str) -> ChatResult:
+        out = prov.chat(r, cancelled=ctx.cancelled, on_text=on_text)
+        loaded = rm.after_call(r.model)
+        docs_svc.record_run(
+            ctx.db,
+            ctx.job["id"],
+            r.model,
+            task,
+            out.input_tokens,
+            out.output_tokens,
+            out.duration_ms,
+            loaded,
+        )
+        return out
+
+    res = call(req, "chat:answer")
     final = rag_answer.finalize(res.text, context.segment_of)
+    retried = False
+    if not final.found and rag_answer.needs_citations(res.text):
+        # Escribió una respuesta pero sin ninguna cita válida: se le pide una vez que cite.
+        retried = True
+        again = dataclasses.replace(req, messages=req.messages + rag_answer.cite_retry(res.text))
+        res = call(again, "chat:answer_retry")
+        final = rag_answer.finalize(res.text, context.segment_of)
     stats.update(
         proposed_cites=final.proposed,
         invented_cites=final.invented,
@@ -477,6 +489,7 @@ def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any
         output_tokens=res.output_tokens,
         duration_ms=res.duration_ms,
         fallback=choice.fallback,
+        retried=retried,
     )
     status = "done" if final.found else "not_found"
     chat_svc.save_answer(ctx.db, mid, status, final.content, final.citations, choice.model, stats)

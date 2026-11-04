@@ -14,7 +14,7 @@ from app.generation.docs import BLOCK_CHARS
 from app.generation.prompts import neutralize, render_block
 from app.llm.base import Message
 from app.pipelines.extract.document import format_time_mark
-from app.rag.search import Hit
+from app.rag.search import STOPWORDS, Hit, fold
 from app.services.documents import letter
 
 NOT_FOUND = "NO_ENCONTRADO"
@@ -33,7 +33,13 @@ propio ni inventes datos, fechas, nombres, fórmulas o ejemplos.
 3. Tras cada frase pon entre corchetes el identificador del fragmento que la respalda, por \
 ejemplo [A12] o [A12][B3]. Usa solo identificadores que aparezcan en los datos.
 4. Si los fragmentos no contienen la respuesta, responde exactamente {NOT_FOUND} y nada más.
-5. Responde en español, claro y breve (unas 150 palabras como mucho salvo que se pida más). \
+5. Las mayúsculas no importan: «vuca», «Vuca» y «VUCA» son el mismo término. Las \
+transcripciones de clase pueden escribir mal algunas palabras (errores de reconocimiento de voz, \
+por ejemplo una sigla escrita como suena). Si un fragmento trata claramente del término \
+preguntado aunque esté escrito de otra forma, úsalo para responder. Nombra el término como lo \
+escribe el estudiante (en mayúsculas si es una sigla), nunca con la grafía errónea de la \
+transcripción, y no comentes cómo está escrito.
+6. Responde en español, claro y breve (unas 150 palabras como mucho salvo que se pida más). \
 Texto normal, sin JSON; puedes usar listas con guiones."""
 
 _CITE = re.compile(r"\[\s*([A-Z]{1,2}\d+(?:\s*[,;]\s*[A-Z]{1,2}\d+)*)\s*\]")
@@ -63,12 +69,28 @@ def _where(page: int | None, start_ms: int | None) -> str:
     return f"p. {page}" if page is not None else ""
 
 
+def _with_next(db: sqlite3.Connection, hits: list[Hit]) -> list[Hit]:
+    """Añade el chunk siguiente al más relevante: en una clase la explicación suele continuar
+    («la palabra VUCA… voy a poner ejemplos» y la definición viene después)."""
+    if not hits:
+        return hits
+    top = hits[0]
+    row = db.execute(
+        "SELECT n.id FROM chunks c JOIN chunks n ON n.source_id = c.source_id"
+        " AND n.version_id = c.version_id AND n.ordinal = c.ordinal + 1 WHERE c.id = ?",
+        (top.chunk_id,),
+    ).fetchone()
+    if row is None or any(h.chunk_id == row[0] for h in hits):
+        return hits
+    return [top, Hit(int(row[0]), top.source_id, 0.0), *hits[1:]]
+
+
 def build_context(db: sqlite3.Connection, hits: list[Hit]) -> Context:
     """Segmentos de los chunks recuperados, agrupados por fuente (por orden de relevancia)."""
     letters: dict[str, str] = {}
     titles: dict[str, str] = {}
     frags: dict[str, dict[int, tuple[str, str, str, int]]] = {}
-    for h in hits:
+    for h in _with_next(db, hits):
         ch = db.execute(
             "SELECT c.version_id, c.seg_from, c.seg_to, s.title FROM chunks c"
             " JOIN sources s ON s.id = c.source_id WHERE c.id = ?",
@@ -111,14 +133,31 @@ def build_messages(question: str, history: list[tuple[str, str]], block: str) ->
     for q, a in history[-HISTORY_TURNS:]:
         msgs.append(Message("user", q))
         msgs.append(Message("assistant", strip_refs(a)))
+    missing = missing_terms(question, block)
+    hint = (
+        "\nTérminos de la pregunta que no aparecen escritos así en los fragmentos (pueden ser"
+        " siglas que la transcripción escribió como suenan): "
+        + ", ".join(f"{w} ({w.upper()})" for w in missing)
+        if missing
+        else ""
+    )
     msgs.append(
         Message(
             "user",
             f"Fragmentos del material:\n\n{block}\n\n"
-            f"Pregunta del estudiante: {neutralize(question)}",
+            f"Pregunta del estudiante: {neutralize(question)}{neutralize(hint)}",
         )
     )
     return msgs
+
+
+def missing_terms(question: str, block: str) -> list[str]:
+    """Palabras significativas de la pregunta que no están en los fragmentos (sin distinguir
+    mayúsculas ni acentos): suelen ser siglas o términos que la transcripción escribió mal."""
+    text = fold(block)
+    words = re.findall(r"\w+", fold(question))
+    out = [w for w in words if len(w) >= 3 and w not in STOPWORDS and not w.isdigit()]
+    return [w for w in dict.fromkeys(out) if w not in text][:5]
 
 
 def live_text(raw: str) -> str:
@@ -127,6 +166,24 @@ def live_text(raw: str) -> str:
     if NOT_FOUND.startswith(t[: len(NOT_FOUND)]) or t.startswith(NOT_FOUND):
         return ""
     return plain(_SPACE_PUNCT.sub(r"\1", _PARTIAL.sub("", _CITE.sub("", t))).strip())
+
+
+def needs_citations(raw: str) -> bool:
+    """Hay texto de respuesta (no «no encontrado») pero ninguna marca de cita."""
+    t = raw.strip()
+    return bool(t) and not t.startswith(NOT_FOUND) and not _CITE.search(t)
+
+
+def cite_retry(raw: str) -> list[Message]:
+    return [
+        Message("assistant", raw),
+        Message(
+            "user",
+            "Tu respuesta no lleva citas. Repítela poniendo tras cada frase el identificador del"
+            " fragmento que la respalda, por ejemplo [A12]. Si los fragmentos no contienen la"
+            f" respuesta, responde exactamente {NOT_FOUND}.",
+        ),
+    ]
 
 
 @dataclass

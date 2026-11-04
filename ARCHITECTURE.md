@@ -302,7 +302,7 @@ Implementado (Fase 5): top 30 por BM25 y top 30 por coseno → RRF k=60 → 6 ch
 palabra coincide y ningún vector está a distancia ≤ 0,55, no se llama al modelo («no encontrado»).
 Los fragmentos son los segmentos de esos chunks con ids `A12`; se envían las 3 últimas preguntas
 y respuestas (sin fragmentos). Una respuesta sin ninguna cita válida, o `NO_ENCONTRADO`, se
-guarda como «no encontrado». Sin reranker: el Recall@5 ya es 1,0 (BENCHMARKS §6).
+guarda como «no encontrado». Sin reranker: el Recall@5 ya es 1,0 (BENCHMARKS §6). Ajustes de la 0.5.1: búsqueda adicional en mayúsculas de las palabras cortas que no existen tal cual (siglas mal transcritas), chunk siguiente al más relevante y un reintento si la respuesta no trae ninguna cita.
 
 ### 6.6 Generación de exámenes (funcionalidad crítica)
 ```

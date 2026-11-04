@@ -297,3 +297,25 @@ def test_fts_query_is_safe() -> None:
     assert search.fts_query("de la que") is None
     q = search.fts_query('mitocondrias" OR 1=1) NEAR(* -- ')
     assert q is not None and '""' not in q and "NEAR" not in q
+
+
+def test_short_unknown_words_are_also_searched_as_acronyms(
+    db: sqlite3.Connection, library: dict[str, str]
+) -> None:
+    # «adn» existe en las fuentes (no cambia); «vuca» no aparece tal cual → posible sigla.
+    assert search.acronym_variant(db, "¿qué es vuca y el adn?") == "¿qué es VUCA y el adn?"
+    assert search.acronym_variant(db, "Vuca") == "VUCA"
+    assert search.acronym_variant(db, "VUCA") == "VUCA"
+
+    class CaseSensitive(FakeEmbedder):
+        """Como el modelo real: la sigla en minúsculas no se parece a su texto."""
+
+        def embed(self, model: str, texts: list[str]) -> list[list[float]]:
+            q = [t.removeprefix(index.QUERY_PREFIX) for t in texts]
+            return [bow("biuca volatilidad" if t.isupper() else "zzzz qqqq") for t in q]
+
+    s = make_subject(db, "Economía")
+    sid = add(db, s, "Entorno", "La palabra biuca: volatilidad, incertidumbre, complejidad.")
+    run_index(db, FakeEmbedder())
+    res = search.search(db, "local", Scope(subject_id=s), "vuca", CaseSensitive())
+    assert ids(db, res) == {sid} and "acronym_variant" in res.notes
