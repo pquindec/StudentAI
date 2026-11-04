@@ -788,6 +788,11 @@ export interface components {
     SectionOut: {
       /** Title */
       title: string
+      /**
+       * Prose
+       * @default false
+       */
+      prose: boolean
       /** Points */
       points: components['schemas']['PointOut'][]
     }

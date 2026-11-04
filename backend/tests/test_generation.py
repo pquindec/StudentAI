@@ -72,17 +72,23 @@ class FakeLLM:
         self._loaded = [LoadedModel(req.model, 7000)]
         ids = list(dict.fromkeys(ID.findall("\n".join(m.content for m in req.messages))))
         cites = ids[:2] + (["Z99"] if self.invent else [])
-        out: dict[str, Any] = {
-            "sections": [
-                {
-                    "title": f"Tema {len(self.requests)}",
-                    "points": [
-                        {"text": "Idea respaldada", "cites": cites},
-                        {"text": "Idea sin respaldo", "cites": ["Q1"]},
-                    ],
-                }
-            ]
-        }
+        points = [
+            {"text": "Idea respaldada", "cites": cites},
+            {"text": "Idea sin respaldo", "cites": ["Q1"]},
+        ]
+        props = (req.schema or {}).get("properties", {})
+        out: dict[str, Any]
+        if "summary" in props:  # resumen final: texto corrido + ideas clave
+            out = {
+                "summary": points,
+                "key_points": [{"text": "Concepto: definición breve", "cites": cites}],
+            }
+        elif "points" in props:  # ideas de una parte de un resumen largo
+            out = {"points": points}
+        else:
+            out = {"sections": [{"title": f"Tema {len(self.requests)}", "points": points}]}
+        if on_token:
+            on_token(16)
         if req.schema and "contradictions" in req.schema["properties"]:
             out["contradictions"] = self.contradictions or []
         return ChatResult(json.dumps(out), 100, 50, 10)
@@ -161,7 +167,7 @@ def _job(fake: FakeLLM, sources: list[SourceText], kind: str = "notes", **kw: An
         model="qwen3.5:9b",
         keep_alive="2m",
         sources=sources,
-        chat=lambda req, task: fake.chat(req),
+        chat=lambda req, task, on_token=None: fake.chat(req, on_token),
         report=lambda v, m: None,
         checkpoint=kw.get("checkpoint", {}),
         save_checkpoint=kw.get("save", lambda d: None),
@@ -177,6 +183,11 @@ def test_map_reduce_keeps_only_real_citations() -> None:
     # Solo la llamada final pide contradicciones (resumen de 2 fuentes).
     assert "contradictions" in (fake.requests[-1].schema or {})["properties"]
     assert all("contradictions" not in (r.schema or {})["properties"] for r in maps)
+    # Resumen: cada parte devuelve ideas sueltas cortas; el final, texto corrido + ideas clave.
+    assert all(set((r.schema or {})["properties"]) == {"points"} for r in maps)
+    assert all(r.max_tokens == 700 for r in maps)
+    assert {"summary", "key_points"} <= set((fake.requests[-1].schema or {})["properties"])
+    assert draft.sections[0]["title"] == "Resumen" and draft.sections[0]["prose"]
     cited = {c for s in draft.sections for p in s["points"] for c in p["cites"]}
     real = {f.id for s in big for f in s.fragments}
     assert cited and cited <= real
@@ -188,7 +199,7 @@ def test_generation_resumes_from_checkpoint() -> None:
     calls = {"n": 0}
     fake = FakeLLM()
 
-    def crashing(req: ChatRequest, task: str) -> ChatResult:
+    def crashing(req: ChatRequest, task: str, on_token: object = None) -> ChatResult:
         calls["n"] += 1
         if calls["n"] == 3:
             raise KeyboardInterrupt  # cierre forzado a mitad
@@ -387,6 +398,10 @@ def test_summary_end_to_end(client: TestClient, auth: H, fake_llm: FakeLLM) -> N
     assert texts <= {"UML se publicó en 1994.", "Otro párrafo.", "UML apareció en 1995."}
     assert {c["source_title"] for c in cites.values()} == {"Tema 1", "Tema 2"}
     assert doc["contradictions"][0]["topic"] == "Año"
+    assert [(s["title"], s["prose"]) for s in doc["sections"]] == [
+        ("Resumen", True),
+        ("Ideas clave", False),
+    ]
     assert doc["stats"]["invented_cites"] >= 1 and doc["stats"]["dropped_points"] >= 1
     # El contenido de la fuente llegó delimitado como datos.
     user_msg = fake_llm.requests[0].messages[-1].content
@@ -487,7 +502,7 @@ def test_truncated_answer_is_retried_shorter() -> None:
     fake = FakeLLM()
     calls: list[ChatRequest] = []
 
-    def chat(req: ChatRequest, task: str) -> ChatResult:
+    def chat(req: ChatRequest, task: str, on_token: object = None) -> ChatResult:
         calls.append(req)
         if len(calls) == 1:
             raise LLMError("llm_truncated", "cortada")
@@ -506,3 +521,36 @@ def test_manager_unloads_model_before_exceeding_budget() -> None:
     assert rm.after_call("qwen3.5:9b") == 7900 and fake.unloaded == []
     fake._loaded = [LoadedModel("qwen3.5:9b", 8300)]  # +300 superaría 8500
     assert rm.after_call("qwen3.5:9b") == 8300 and fake.unloaded == ["qwen3.5:9b"]
+
+
+def test_progress_moves_within_a_part() -> None:
+    fake = FakeLLM()
+    seen: list[tuple[float, str]] = []
+    job = _job(fake, [_frags("A", 80, 400)], kind="summary")
+    job.report = lambda v, m: seen.append((v, m))
+    job.run()
+    values = [v for v, _ in seen]
+    assert values == sorted(values) and len(values) > len(blocks(job.sources)) + 1
+    assert any("quedan ~" in m for _, m in seen)  # estimación tras la primera parte
+
+
+def test_summary_is_capped_and_key_points_do_not_repeat() -> None:
+    from app.generation.docs import Draft, finish_summary
+
+    sent = [
+        {"text": f"La idea número {i} explica el concepto central {i}", "cites": ["A1"]}
+        for i in range(12)
+    ]
+    keys = [
+        {"text": "La idea número 0 explica el concepto central 0", "cites": ["A1"]},
+        {"text": "VUCA: volatilidad, incertidumbre, complejidad y ambigüedad", "cites": ["A2"]},
+    ]
+    draft = Draft(
+        sections=[
+            {"title": "Resumen", "points": sent, "prose": True},
+            {"title": "Ideas clave", "points": keys, "prose": False},
+        ]
+    )
+    out = finish_summary(draft, "brief")
+    assert len(out.sections[0]["points"]) == 3
+    assert [p["text"] for p in out.sections[1]["points"]] == [keys[1]["text"]]

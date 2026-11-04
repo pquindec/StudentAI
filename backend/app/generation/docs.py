@@ -9,9 +9,11 @@
 
 import json
 import logging
+import re
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
-from typing import Any
+from typing import Any, Protocol
 
 from app.generation import prompts
 from app.llm.base import ChatRequest, ChatResult, LLMError, Message
@@ -61,7 +63,15 @@ class Draft:
     contradictions: list[dict[str, Any]] = field(default_factory=list)
 
 
-Chat = Callable[[ChatRequest, str], ChatResult]  # (petición, etiqueta de la tarea)
+# Salida de las llamadas de un resumen: ideas de una parte, y el resumen final.
+SUMMARY_MAP_TOKENS = 700
+SUMMARY_TOKENS = {"brief": 1000, "medium": 1600, "detailed": 2400}
+
+
+class Chat(Protocol):
+    def __call__(
+        self, req: ChatRequest, task: str, on_token: Callable[[int], None] | None = None
+    ) -> ChatResult: ...
 
 
 def blocks(sources: list[SourceText], budget: int = BLOCK_CHARS) -> list[list[SourceText]]:
@@ -113,6 +123,19 @@ def validate(data: Any, allowed: set[str], stats: Stats, letter_of: Callable[[st
     if not isinstance(data, dict):
         raise LLMError("bad_output", "El modelo devolvió una respuesta no válida")
     draft = Draft()
+    # Formas del resumen: texto corrido + ideas clave (final) o ideas sueltas (por parte).
+    if "summary" in data or "key_points" in data:
+        for key, title, prose in (
+            ("summary", "Resumen", True),
+            ("key_points", "Ideas clave", False),
+        ):
+            points = _clean_points(data.get(key), allowed, stats)
+            if points:
+                draft.sections.append({"title": title, "points": points, "prose": prose})
+    elif "points" in data:
+        points = _clean_points(data.get("points"), allowed, stats)
+        if points:
+            draft.sections.append({"title": "", "points": points})
     for s in data.get("sections") or []:
         if not isinstance(s, dict):
             continue
@@ -133,12 +156,19 @@ def validate(data: Any, allowed: set[str], stats: Stats, letter_of: Callable[[st
     return draft
 
 
-def _ask(chat: Chat, req: ChatRequest, task: str, allowed: set[str], stats: Stats) -> Draft:
+def _ask(
+    chat: Chat,
+    req: ChatRequest,
+    task: str,
+    allowed: set[str],
+    stats: Stats,
+    on_token: Callable[[int], None] | None = None,
+) -> Draft:
     """Una llamada con salida estructurada; reintenta una vez si el JSON no es válido o si la
     respuesta se cortó por longitud (pidiendo entonces una versión más corta)."""
     for attempt in (1, 2):
         try:
-            result = chat(req, task)
+            result = chat(req, task, on_token)
         except LLMError as e:
             if e.code != "llm_truncated" or attempt == 2:
                 raise
@@ -162,7 +192,8 @@ def _partials(drafts: list[Draft]) -> str:
     lines = []
     for d in drafts:
         for s in d.sections:
-            lines.append(f"## {prompts.neutralize(s['title'])}")
+            if s["title"]:
+                lines.append(f"## {prompts.neutralize(s['title'])}")
             for p in s["points"]:
                 cites = "".join(f"[{c}]" for c in p["cites"])
                 lines.append(f"- {prompts.neutralize(p['text'])} {cites}")
@@ -186,14 +217,29 @@ class Job:
     save_checkpoint: Callable[[dict[str, Any]], None]
     stats: Stats = field(default_factory=Stats)
 
-    def _req(self, system: str, user: str, contradictions: bool) -> ChatRequest:
+    def _req(self, system: str, user: str, contradictions: bool, final: bool) -> ChatRequest:
+        """final=False solo en las partes intermedias de un resumen (ideas sueltas, cortas)."""
+        summary = self.kind == "summary"
+        shape = ("summary" if final else "points") if summary else "sections"
+        if summary:
+            tokens = SUMMARY_TOKENS[self.detail] if final else SUMMARY_MAP_TOKENS
+        else:
+            tokens = MAX_TOKENS[self.detail]
         return ChatRequest(
             model=self.model,
             messages=[Message("system", system), Message("user", user)],
-            schema=prompts.schema(contradictions),
-            max_tokens=MAX_TOKENS[self.detail],
+            schema=prompts.schema(contradictions, shape),
+            max_tokens=tokens,
             keep_alive=self.keep_alive,
         )
+
+    def _progress(self, start: float, span: float, label: str, limit: int) -> Callable[[int], None]:
+        """Avance continuo mientras el modelo escribe (no solo al terminar cada parte)."""
+
+        def on_token(n: int) -> None:
+            self.report(start + span * min(n / max(limit, 1), 0.95), label)
+
+        return on_token
 
     def run(self) -> Draft:
         parts = blocks(self.sources)
@@ -206,25 +252,40 @@ class Job:
         if stats0:
             self.stats = Stats(**stats0)
         drafts: list[Draft] = []
+        steps = len(parts) + (0 if single else 1)
+        timings: list[float] = []
         for i, block in enumerate(parts):
             key = str(i)
             if key in done:  # hecho antes de un cierre: no se repite
                 drafts.append(Draft(**done[key]))
                 continue
-            self.report(i / (len(parts) + 1), f"Leyendo la parte {i + 1} de {len(parts)}")
+            label = f"Leyendo la parte {i + 1} de {len(parts)}"
+            if timings:  # estimación con lo que ya ha tardado cada parte
+                left = sum(timings) / len(timings) * (steps - i)
+                label += f" · quedan ~{max(1, round(left / 60))} min"
+            self.report(i / steps, label)
+            began = time.monotonic()
             allowed = {f.id for s in block for f in s.fragments}
-            system = prompts.system_prompt(self.kind, self.detail, contra and single)
-            user = prompts.map_user(_render(block), i + 1, len(parts))
-            draft = _ask(
-                self.chat, self._req(system, user, contra and single), "map", allowed, self.stats
+            system = prompts.system_prompt(
+                self.kind, self.detail, contra and single, partial=not single
             )
+            user = prompts.map_user(_render(block), i + 1, len(parts))
+            req = self._req(system, user, contra and single, final=single)
+            draft = _ask(
+                self.chat,
+                req,
+                "map",
+                allowed,
+                self.stats,
+                self._progress(i / steps, 1 / steps, label, req.max_tokens),
+            )
+            timings.append(time.monotonic() - began)
             drafts.append(draft)
             done[key] = {"sections": draft.sections, "contradictions": draft.contradictions}
             self.checkpoint["stats"] = self.stats.__dict__
             self.save_checkpoint(self.checkpoint)
-        if single:
-            return drafts[0]
-        return self._reduce(drafts, contra)
+        result = drafts[0] if single else self._reduce(drafts, contra)
+        return finish_summary(result, self.detail) if self.kind == "summary" else result
 
     def _reduce(self, drafts: list[Draft], contra: bool) -> Draft:
         """Une los resultados parciales; si no caben juntos, por grupos (jerárquico)."""
@@ -240,25 +301,59 @@ class Job:
                 groups[-1].append(d)
                 size += n
             last = len(groups) == 1
-            self.report(
-                len(drafts) / (len(drafts) + 1),
-                "Redactando el documento final" if last else "Uniendo resultados parciales",
-            )
+            label = "Redactando el documento final" if last else "Uniendo resultados parciales"
+            start = len(drafts) / (len(drafts) + 1)
+            self.report(start, label)
             merged = []
             for g in groups:
                 if len(g) == 1 and not last:
                     merged.append(g[0])
                     continue
                 allowed = set().union(*(_draft_cites(d) for d in g))
-                system = prompts.system_prompt(self.kind, self.detail, contra and last)
-                req = self._req(system, prompts.reduce_user(_partials(g)), contra and last)
-                merged.append(_ask(self.chat, req, "reduce", allowed, self.stats))
+                summary = self.kind == "summary"
+                system = prompts.system_prompt(
+                    self.kind, self.detail, contra and last, partial=summary and not last
+                )
+                user = prompts.reduce_user(_partials(g), summary=summary and last)
+                req = self._req(system, user, contra and last, final=last or not summary)
+                progress = self._progress(start, 1 - start, label, req.max_tokens)
+                merged.append(_ask(self.chat, req, "reduce", allowed, self.stats, progress))
             if last:
                 return merged[0]
             if len(merged) >= len(drafts):  # sin progreso: no debería ocurrir
                 raise LLMError("too_long", "El material es demasiado largo para unirlo")
             drafts = merged
             level += 1
+
+
+def _norm(text: str) -> set[str]:
+    return {w for w in re.findall(r"\w+", text.lower()) if len(w) > 3}
+
+
+def _similar(a: str, b: str) -> bool:
+    """Misma idea dicha casi igual: comparten la gran mayoría de las palabras con contenido."""
+    wa, wb = _norm(a), _norm(b)
+    return bool(wa and wb) and len(wa & wb) / min(len(wa), len(wb)) >= 0.7
+
+
+def finish_summary(draft: Draft, detail: str) -> Draft:
+    """Garantiza en código lo que el modelo no siempre respeta: la longitud del resumen y que
+    las ideas clave no repitan sus frases."""
+    sentences, keys, _ = prompts.SUMMARY_SIZE[detail]
+    text = next((s for s in draft.sections if s.get("prose")), None)
+    key = next((s for s in draft.sections if s["title"] == "Ideas clave"), None)
+    sections = []
+    if text:
+        text["points"] = text["points"][:sentences]
+        sections.append(text)
+    if key:
+        said = [p["text"] for p in text["points"]] if text else []
+        fresh = [p for p in key["points"] if not any(_similar(p["text"], t) for t in said)]
+        if fresh:
+            key["points"] = fresh[:keys]
+            sections.append(key)
+    draft.sections = sections or draft.sections
+    return draft
 
 
 def number_citations(
@@ -280,6 +375,7 @@ def number_citations(
         "sections": [
             {
                 "title": s["title"],
+                "prose": bool(s.get("prose")),
                 "points": [{"text": p["text"], "refs": conv(p["cites"])} for p in s["points"]],
             }
             for s in draft.sections

@@ -130,6 +130,7 @@ class PointOut(BaseModel):
 
 class SectionOut(BaseModel):
     title: str
+    prose: bool = False  # True: se muestra como texto corrido (el resumen)
     points: list[PointOut]
 
 

@@ -2393,6 +2393,11 @@
             "type": "string",
             "title": "Title"
           },
+          "prose": {
+            "type": "boolean",
+            "title": "Prose",
+            "default": false
+          },
           "points": {
             "items": {
               "$ref": "#/components/schemas/PointOut"

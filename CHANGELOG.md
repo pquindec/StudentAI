@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1] — 2026-11-04 · Resúmenes compactos
+### Cambiado
+- Los resúmenes ya no tienen el formato de los apuntes: ahora son un texto corrido corto (3, 6 o 10 frases según el nivel) más unas pocas ideas clave que lo complementan, todo con citas.
+- Las ideas clave son conceptos para estudiar con su definición breve («VUCA: …»). La longitud del resumen y que las ideas clave no repitan sus frases se garantizan en el código, no solo en el prompt (el modelo copiaba las mismas frases en ambas partes).
+- En clases transcritas se priorizan definiciones, conceptos centrales y lo que el profesor destaca; se ignoran saludos, avisos, bromas y repeticiones.
+- Resúmenes de material largo más rápidos: cada parte aporta solo sus ideas más relevantes (salida corta) antes de redactar el resumen final.
+- La barra de progreso avanza mientras el modelo escribe cada parte y muestra el tiempo restante estimado («quedan ~3 min»). Antes se quedaba en 0 % durante la primera parte y parecía bloqueada.
+
 ## [0.4.0] — 2026-11-03 · Fase 4: IA local, apuntes y resúmenes
 ### Añadido
 - Proveedor `LLMProvider` + Ollama local (streaming, salida con JSON Schema, `keep_alive`, cancelación a mitad de respuesta). Solo se conecta a `127.0.0.1`.

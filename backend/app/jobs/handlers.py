@@ -306,8 +306,10 @@ def _generate(ctx: JobContext, doc: dict[str, Any]) -> None:
     budget = profile(choice.model).budget_mb
     peak = {"mb": 0}
 
-    def chat(req: ChatRequest, task: str) -> ChatResult:
-        res = prov.chat(req, cancelled=ctx.cancelled)
+    def chat(
+        req: ChatRequest, task: str, on_token: Callable[[int], None] | None = None
+    ) -> ChatResult:
+        res = prov.chat(req, on_token=on_token, cancelled=ctx.cancelled)
         loaded = rm.after_call(req.model)
         if loaded:
             peak["mb"] = max(peak["mb"], loaded)

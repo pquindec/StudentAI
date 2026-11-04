@@ -170,14 +170,25 @@ export function DocumentView({ id }: { id: string }) {
               {d.sections.map((s, i) => (
                 <section key={i}>
                   <h2 className="mb-2 font-semibold">{s.title}</h2>
-                  <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed">
-                    {s.points.map((p, j) => (
-                      <li key={j}>
-                        {p.text}
-                        <Refs refs={p.refs} {...refsProps} />
-                      </li>
-                    ))}
-                  </ul>
+                  {s.prose ? (
+                    <p className="text-[15px] leading-relaxed">
+                      {s.points.map((p, j) => (
+                        <span key={j}>
+                          {p.text}
+                          <Refs refs={p.refs} {...refsProps} />{' '}
+                        </span>
+                      ))}
+                    </p>
+                  ) : (
+                    <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed">
+                      {s.points.map((p, j) => (
+                        <li key={j}>
+                          {p.text}
+                          <Refs refs={p.refs} {...refsProps} />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </section>
               ))}
             </Card>
