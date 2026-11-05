@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { es } from '../i18n/es'
-import { api, type SttLanguage, type SttStatus } from '../lib/api'
+import { type AudioKeepDays, api, type SttLanguage, type SttStatus } from '../lib/api'
 import { formatBytes } from '../lib/format'
 import { errorMessage, useQuery } from '../lib/useQuery'
 import { Button, Card, ErrorText, Field, inputClass, Loading } from './ui'
@@ -99,6 +99,24 @@ export function SttPanel() {
           ))}
         </select>
       </Field>
+      <Field label={es.stt.keepAudio}>
+        <select
+          className={`${inputClass} w-auto`}
+          value={s.audio_keep_days}
+          onChange={(e) =>
+            void act(() =>
+              api.updateSttSettings({ audio_keep_days: Number(e.target.value) as AudioKeepDays }),
+            )
+          }
+        >
+          {([7, 30, 0] as AudioKeepDays[]).map((d) => (
+            <option key={d} value={d}>
+              {es.stt.keepDays[d]}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <p className="text-xs text-zinc-500">{es.stt.keepAudioHint}</p>
       <p className="text-xs text-zinc-500">{es.stt.privacy}</p>
       <ErrorText>{error}</ErrorText>
     </Card>

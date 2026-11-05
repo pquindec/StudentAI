@@ -11,12 +11,12 @@ import {
   StatusBadge,
 } from '../components/ui'
 import { es } from '../i18n/es'
-import { api, native } from '../lib/api'
+import { api, native, type Subject } from '../lib/api'
 import { formatDate, formatDuration } from '../lib/format'
 import { useNavigate } from '../lib/nav'
 import { importedSourceId, useRecording } from '../lib/recording'
 import { unitTree } from '../lib/subjects'
-import { useQuery } from '../lib/useQuery'
+import { type Query, useQuery } from '../lib/useQuery'
 
 const SUBJECT_KEY = 'recording.subject'
 
@@ -37,17 +37,20 @@ function rememberSubject(id: string) {
   }
 }
 
-function NewRecording() {
+function NewRecording({
+  subjects,
+  effectiveSubject,
+  onSubject,
+}: {
+  subjects: Query<Subject[]>
+  effectiveSubject: string
+  onSubject: (id: string) => void
+}) {
   const rec = useRecording()
-  const subjects = useQuery(() => api.listSubjects(false), [])
   const devices = useQuery(() => (native ? native.devices() : Promise.resolve([])), [])
-  const [subjectId, setSubjectId] = useState(lastSubject)
   const [unitIds, setUnitIds] = useState<string[]>([])
   const [title, setTitle] = useState(() => es.recording.defaultName(new Date()))
   const [deviceId, setDeviceId] = useState('')
-  // Siempre hay una asignatura elegida: la de la última grabación o, si no, la primera.
-  const known = subjects.data?.some((s) => s.id === subjectId)
-  const effectiveSubject = (known ? subjectId : subjects.data?.[0]?.id) ?? ''
   const detail = useQuery(
     () => (effectiveSubject ? api.getSubject(effectiveSubject) : Promise.resolve(null)),
     [effectiveSubject],
@@ -105,7 +108,7 @@ function NewRecording() {
             className={inputClass}
             value={effectiveSubject}
             onChange={(e) => {
-              setSubjectId(e.target.value)
+              onSubject(e.target.value)
               setUnitIds([])
             }}
           >
@@ -211,12 +214,15 @@ function LastResult() {
   )
 }
 
-function SavedRecordings() {
+function SavedRecordings({ subjectId, subjectName }: { subjectId: string; subjectName?: string }) {
   const navigate = useNavigate()
   const rec = useRecording()
   const list = useQuery(
-    () => api.listSources({ kind: 'recording', limit: 20 }),
-    [rec.lastResult?.recording_id],
+    () =>
+      subjectId
+        ? api.listSources({ kind: 'recording', subject_id: subjectId, limit: 50 })
+        : Promise.resolve(null),
+    [subjectId, rec.lastResult?.recording_id],
   )
   // Mientras se transcribe alguna, se refresca hasta que pase a «Listo» (o falle).
   const busy = list.data?.items.some((s) => s.status === 'pending' || s.status === 'processing')
@@ -228,7 +234,7 @@ function SavedRecordings() {
   }, [busy, reload])
   return (
     <Card>
-      <h2 className="mb-3 font-medium">{es.recording.list}</h2>
+      <h2 className="mb-3 font-medium">{es.recording.listOf(subjectName)}</h2>
       {list.data?.items.length === 0 && (
         <p className="text-sm text-zinc-500">{es.recording.empty}</p>
       )}
@@ -253,6 +259,15 @@ function SavedRecordings() {
 }
 
 export function Recordings() {
+  const rec = useRecording()
+  const subjects = useQuery(() => api.listSubjects(false), [])
+  const [subjectId, setSubjectId] = useState(lastSubject)
+  // Siempre hay una asignatura elegida: la de la última grabación o, si no, la primera.
+  // Mientras se graba, manda la asignatura de la grabación en curso.
+  const known = subjects.data?.some((s) => s.id === subjectId)
+  const chosen = (known ? subjectId : subjects.data?.[0]?.id) ?? ''
+  const shown = (rec.status.state !== 'idle' && rec.status.subject_id) || chosen
+  const name = subjects.data?.find((s) => s.id === shown)?.name
   return (
     <div className="mx-auto max-w-5xl px-10 py-10">
       <PageHeader title={es.recording.title} subtitle={es.recording.subtitle} />
@@ -260,8 +275,15 @@ export function Recordings() {
         <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
           <div className="space-y-6">
             <LastResult />
-            <NewRecording />
-            <SavedRecordings />
+            <NewRecording
+              subjects={subjects}
+              effectiveSubject={chosen}
+              onSubject={(id) => {
+                setSubjectId(id)
+                rememberSubject(id)
+              }}
+            />
+            {shown && <SavedRecordings subjectId={shown} subjectName={name} />}
           </div>
           <SttPanel />
         </div>

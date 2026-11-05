@@ -5,13 +5,14 @@ import {
   native,
   nativeError,
   type Source,
+  type SourceAudio,
   type SourceContent,
   type SttLanguage,
 } from '../lib/api'
-import { formatDuration } from '../lib/format'
+import { formatBytes, formatDay, formatDuration } from '../lib/format'
 import { useNavigate } from '../lib/nav'
 import { errorMessage, useQuery } from '../lib/useQuery'
-import { Button, Card, ErrorText, inputClass } from './ui'
+import { Button, Card, ConfirmButton, ErrorText, inputClass } from './ui'
 
 /** Reproductor del audio normalizado, retranscripción y exportación. */
 export function AudioPanel({
@@ -31,12 +32,18 @@ export function AudioPanel({
   const navigate = useNavigate()
   const info = useQuery(() => api.systemInfo(), [])
   const dataDir = info.data?.data_dir
+  // Se vuelve a consultar al cambiar el estado: tras transcribir se borra el original.
+  const audio = useQuery(
+    () => api.sourceAudio(source.id),
+    [source.id, source.status, source.processed_at],
+  )
+  const hasAudio = audio.data != null && audio.data.state !== 'deleted'
   const src = useQuery(
     () =>
-      native && dataDir
+      native && dataDir && hasAudio
         ? native.mediaUrl(`${dataDir}/sources/${source.id}/normalized.wav`)
         : Promise.resolve(null),
-    [dataDir, source.id],
+    [dataDir, source.id, hasAudio],
   )
   const [language, setLanguage] = useState<SttLanguage>('auto')
   const [error, setError] = useState<string | null>(null)
@@ -82,8 +89,21 @@ export function AudioPanel({
             if (startAt != null) e.currentTarget.currentTime = startAt / 1000
           }}
         />
+      ) : audio.data?.state === 'deleted' ? (
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{es.transcript.audioDeleted}</p>
       ) : (
-        <p className="text-xs text-zinc-500">{src.loading ? '' : es.transcript.noPlayer}</p>
+        <p className="text-xs text-zinc-500">
+          {src.loading || audio.loading ? '' : es.transcript.noPlayer}
+        </p>
+      )}
+      {hasAudio && audio.data && (
+        <AudioRetention
+          audio={audio.data}
+          onDelete={async () => {
+            await api.deleteSourceAudio(source.id)
+            audio.reload()
+          }}
+        />
       )}
       {state && es.transcript.status[state] && (
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -99,7 +119,7 @@ export function AudioPanel({
           )}
         </p>
       )}
-      {!busy && state !== 'needs_model' && (
+      {!busy && state !== 'needs_model' && hasAudio && (
         <div className="flex flex-wrap items-center gap-2">
           <select
             aria-label={es.transcript.language}
@@ -134,6 +154,31 @@ export function AudioPanel({
       )}
       <ErrorText>{error}</ErrorText>
     </Card>
+  )
+}
+
+function AudioRetention({
+  audio,
+  onDelete,
+}: {
+  audio: SourceAudio
+  onDelete: () => Promise<void>
+}) {
+  if (!audio.expires_at && !audio.deletable) return null
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+      {audio.expires_at && (
+        <span className="flex-1">{es.transcript.audioUntil(formatDay(audio.expires_at))}</span>
+      )}
+      {audio.deletable && (
+        <ConfirmButton
+          label={es.transcript.deleteAudio(formatBytes(audio.bytes))}
+          title={es.transcript.deleteAudioTitle}
+          body={es.transcript.deleteAudioBody}
+          onConfirm={onDelete}
+        />
+      )}
+    </div>
   )
 }
 

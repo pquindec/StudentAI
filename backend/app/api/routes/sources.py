@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Query, Request, Response
@@ -10,9 +11,9 @@ from app.core.errors import AppError, bad_request, conflict
 from app.db.connection import tx
 from app.jobs import queue
 from app.pipelines.extract.document import segment
+from app.services import audio_files, transcription
 from app.services import sources as svc
 from app.services import subjects as subj
-from app.services import transcription
 from app.services.subjects import remove_source_dir
 from app.stt.transcript import to_srt, to_txt
 
@@ -265,7 +266,9 @@ def update_content(source_id: str, body: ContentIn, db: Db, user: UserId) -> Sou
 
 
 @router.post("/sources/{source_id}/retry", response_model=SourceOut)
-def retry(source_id: str, request: Request, db: Db, user: UserId) -> SourceOut:
+def retry(
+    source_id: str, request: Request, db: Db, user: UserId, settings: AppSettings
+) -> SourceOut:
     src = svc.get_source(db, user, source_id)
     if src["status"] not in ("failed", "cancelled"):
         raise bad_request(
@@ -273,13 +276,24 @@ def retry(source_id: str, request: Request, db: Db, user: UserId) -> SourceOut:
         )
     if src["stored_path"] is None:
         raise bad_request("not_retryable", "Esta fuente no tiene archivo que procesar")
+    # Audio ya transcrito antes: el original se borró y se reintenta desde la copia ligera.
+    audio_state = (
+        audio_files.state(settings.data_dir, src)[0]
+        if src["kind"] in audio_files.AUDIO_KINDS
+        else "full"
+    )
+    if audio_state == "deleted":
+        raise _audio_deleted()
     with tx(db):
         db.execute(
             "UPDATE sources SET status = 'pending', error_code = NULL, error_message = NULL"
             " WHERE id = ?",
             (source_id,),
         )
-        enqueue_processing(db, src["kind"], source_id)
+        if audio_state == "light":
+            transcription.enqueue(db, source_id)
+        else:
+            enqueue_processing(db, src["kind"], source_id)
     request.app.state.scheduler.wake()
     return to_out(db, svc.get_source(db, user, source_id))
 
@@ -303,7 +317,9 @@ def transcribe_source(
         raise bad_request("not_audio", "Solo se pueden transcribir audios y grabaciones")
     if src["status"] in ("pending", "processing"):
         raise conflict("busy", "Este audio se está procesando todavía")
-    if not (settings.data_dir / "sources" / source_id / "normalized.wav").exists():
+    if not audio_files.light_path(settings.data_dir, source_id).exists():
+        if audio_files.state(settings.data_dir, src)[0] == "deleted":
+            raise _audio_deleted()
         raise bad_request("not_prepared", "Reintenta el procesamiento del audio primero")
     if not transcription.ready(db, settings.data_dir):
         raise bad_request("needs_model", "Descarga el modelo de transcripción para continuar")
@@ -316,6 +332,53 @@ def transcribe_source(
         transcription.enqueue(db, source_id, body.language)
     request.app.state.scheduler.wake()
     return to_out(db, svc.get_source(db, user, source_id))
+
+
+def _audio_deleted() -> AppError:
+    return bad_request(
+        "audio_deleted",
+        "El audio de esta clase se borró para liberar espacio. La transcripción se conserva.",
+    )
+
+
+class AudioOut(BaseModel):
+    state: Literal["full", "light", "deleted"]
+    bytes: int
+    expires_at: str | None  # cuándo se borrará solo (None: nunca o aún sin transcribir)
+    deletable: bool  # transcrita y sin trabajos en curso
+
+
+def _audio_out(db: Db, data_dir: Path, src: dict[str, Any]) -> AudioOut:
+    if src["kind"] not in audio_files.AUDIO_KINDS:
+        raise bad_request("not_audio", "Esta fuente no tiene audio")
+    st, size = audio_files.state(data_dir, src)
+    ok = st != "deleted" and audio_files.deletable(db, src)
+    return AudioOut(
+        state=st,
+        bytes=size,
+        expires_at=audio_files.expires_at(db, src) if st != "deleted" else None,
+        deletable=ok,
+    )
+
+
+@router.get("/sources/{source_id}/audio", response_model=AudioOut)
+def get_audio(source_id: str, db: Db, user: UserId, settings: AppSettings) -> AudioOut:
+    return _audio_out(db, settings.data_dir, svc.get_source(db, user, source_id))
+
+
+@router.delete("/sources/{source_id}/audio", response_model=AudioOut)
+def delete_audio(source_id: str, db: Db, user: UserId, settings: AppSettings) -> AudioOut:
+    """Borra el audio de una clase ya transcrita. La transcripción no se toca."""
+    src = svc.get_source(db, user, source_id)
+    if src["kind"] not in audio_files.AUDIO_KINDS:
+        raise bad_request("not_audio", "Esta fuente no tiene audio")
+    if not audio_files.deletable(db, src):
+        raise conflict(
+            "not_transcribed",
+            "Solo se puede borrar el audio de una clase ya transcrita y sin tareas en curso",
+        )
+    audio_files.delete_now(db, settings.data_dir, src)
+    return _audio_out(db, settings.data_dir, svc.get_source(db, user, source_id))
 
 
 class ExportOut(BaseModel):

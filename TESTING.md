@@ -44,6 +44,11 @@ scripts/check.sh backend    # solo una parte (preferible tras cambios acotados)
 - Con su clase real (82.464 caracteres, copia de la BD): resumen intermedio 12 frases + 12 ideas clave en 6 min 52 s, sin cortes. Antes de limitar las citas por punto, una de dos pasadas falló por respuesta cortada; «detallado» se cortaba (necesita ~4.100–5.100 tokens) → tope de 15 + 12 frases/ideas y hasta 5.600 tokens de salida con ventana de 12K en el paso final: 15 frases + 9 ideas clave, pico 7,7 GB.
 - Pendiente: comprobar la selección y el botón «Copiar» en la app (WKWebView).
 
+## Grabaciones por asignatura y retención del audio (2026-11-05)
+- Automáticas: pytest 135 (8 nuevas en `test_audio_retention.py`: original borrado al transcribir y copia ligera a los 7 días, ajuste 30/siempre, nunca se tocan audios sin transcribir, vacíos, fallidos o con trabajo en cola, endpoints GET/DELETE, retranscribir/reintentar sin audio → `audio_deleted`, reintento desde la copia ligera). vitest 29.
+- Simulación sobre una copia de su BD (sin borrar nada): 10 grabaciones transcritas; al arrancar se liberarían 1.183 MB (originales) y las copias ligeras caducarían entre el 10 y el 12 de noviembre.
+- Pendiente: probar en la app (el filtro de grabaciones y el borrado no se han verificado en la interfaz real).
+
 ## Pruebas de la Fase 6 (2026-11-04)
 - Automáticas: pytest 126 (13 nuevas en `test_exams.py`: cita literal, reglas de pregunta, duplicados y juez, reparto por fuentes y tipos, selección y barajado, configuración y corrección objetiva, respuesta del estudiante delimitada, examen completo con evidencia literal, fuentes insuficientes + aceptar menos, práctica sin revelar respuestas, tiempo agotado en el backend, corrección por IA, aislamiento y borrado), vitest 26 (6 nuevas de `lib/exams.ts`).
 - Aceptación con Ollama real (`bench/bench_exam.py`, BENCHMARKS §7): evidencia literal 100 %; revisión manual: corpus 0/20 y 1/20, clase real 7/20 → 4/20 tras endurecer reglas. Limitación aceptada por el usuario.

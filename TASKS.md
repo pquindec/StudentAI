@@ -17,6 +17,12 @@
 | 6 — Exámenes | ✅ Completada (2026-11-04) — evidencia literal 100 %; en transcripciones 20 % de preguntas dudosas (limitación aceptada, ver BENCHMARKS §7) |
 | 7–10 | ⏳ No iniciadas |
 
+### Ajustes tras la prueba del usuario (2026-11-05)
+- [x] Copiar texto en resúmenes, apuntes y asistente; resúmenes proporcionales al material (0.6.1)
+- [x] Grabaciones guardadas filtradas por la asignatura elegida (0.6.2)
+- [x] Retención del audio: el original se borra al transcribir; la copia ligera, a los 7/30 días o nunca; botón «Borrar audio ahora». La transcripción nunca se borra (0.6.2)
+- [ ] Comprobar en la app: copiar texto, filtro de grabaciones y borrado del audio (usuario)
+
 ### Tareas nuevas surgidas de la Fase 0.5
 - [x] (F1) Usar Ollama **oficial** en desarrollo (el de Homebrew no tiene salida estructurada); documentarlo en INSTALLATION.md
 - [x] (F1) Tabla `users` y `owner_id` en el esquema inicial (ADR-009); interfaz `ApiTransport` en el frontend

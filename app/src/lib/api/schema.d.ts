@@ -256,6 +256,27 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/sources/{source_id}/audio': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Audio */
+    get: operations['get_audio_api_v1_sources__source_id__audio_get']
+    put?: never
+    post?: never
+    /**
+     * Delete Audio
+     * @description Borra el audio de una clase ya transcrita. La transcripción no se toca.
+     */
+    delete: operations['delete_audio_api_v1_sources__source_id__audio_delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/sources/{source_id}/export': {
     parameters: {
       query?: never
@@ -867,6 +888,20 @@ export interface components {
       score: number | null
       /** Max Score */
       max_score: number | null
+    }
+    /** AudioOut */
+    AudioOut: {
+      /**
+       * State
+       * @enum {string}
+       */
+      state: 'full' | 'light' | 'deleted'
+      /** Bytes */
+      bytes: number
+      /** Expires At */
+      expires_at: string | null
+      /** Deletable */
+      deletable: boolean
     }
     /** ChatStatsOut */
     ChatStatsOut: {
@@ -1594,6 +1629,8 @@ export interface components {
       model?: string | null
       /** Language */
       language?: ('auto' | 'es' | 'en') | null
+      /** Audio Keep Days */
+      audio_keep_days?: (0 | 7 | 30) | null
     }
     /** SttStatusOut */
     SttStatusOut: {
@@ -1608,6 +1645,11 @@ export interface components {
        * @enum {string}
        */
       language: 'auto' | 'es' | 'en'
+      /**
+       * Audio Keep Days
+       * @enum {integer}
+       */
+      audio_keep_days: 0 | 7 | 30
       /** Models */
       models: components['schemas']['ModelOut'][]
     }
@@ -2584,6 +2626,68 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['SourceOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_audio_api_v1_sources__source_id__audio_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AudioOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_audio_api_v1_sources__source_id__audio_delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AudioOut']
         }
       }
       /** @description Validation Error */

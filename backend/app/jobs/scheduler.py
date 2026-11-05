@@ -6,6 +6,7 @@ Regla base (ARCHITECTURE §8): como mucho un trabajo pesado (stt/llm) a la vez; 
 import asyncio
 import contextlib
 import logging
+import time
 from pathlib import Path
 
 from app.core import children
@@ -15,9 +16,11 @@ from app.jobs import queue
 from app.jobs.handlers import HANDLERS, JobContext, JobFailed, set_source_status
 from app.pipelines.audio import Cancelled
 from app.rag import index as rag_index
-from app.services import transcription
+from app.services import audio_files, transcription
 
 log = logging.getLogger(__name__)
+
+SWEEP_EVERY_S = 3600  # retención del audio (services/audio_files)
 
 CONCURRENCY = {"io": 2, "media": 1, "stt": 1, "llm": 1, "embed": 1}
 HEAVY = {"stt", "llm"}
@@ -32,6 +35,7 @@ class Scheduler:
         self._wake = asyncio.Event()
         self._task: asyncio.Task[None] | None = None
         self._inflight: set[asyncio.Task[None]] = set()
+        self._next_sweep = 0.0
 
     def start(self) -> None:
         db = connect(self.db_path)
@@ -59,6 +63,11 @@ class Scheduler:
     def wake(self) -> None:
         self._wake.set()
 
+    def sweep_soon(self) -> None:
+        """Tras cambiar cuántos días se conserva el audio."""
+        self._next_sweep = 0.0
+        self.wake()
+
     def _free_classes(self) -> list[str]:
         heavy_busy = any(self.running[c] for c in HEAVY)
         return [
@@ -71,6 +80,9 @@ class Scheduler:
         db = connect(self.db_path)
         try:
             while True:
+                if time.monotonic() >= self._next_sweep:
+                    self._next_sweep = time.monotonic() + SWEEP_EVERY_S
+                    await asyncio.to_thread(self._sweep_audio)
                 job = queue.claim_next(db, self._free_classes())
                 if job is None:
                     self._wake.clear()
@@ -81,6 +93,17 @@ class Scheduler:
                 t = asyncio.create_task(self._run(job))
                 self._inflight.add(t)
                 t.add_done_callback(self._inflight.discard)
+        finally:
+            db.close()
+
+    def _sweep_audio(self) -> None:
+        db = connect(self.db_path)
+        try:
+            freed = audio_files.sweep(db, self.data_dir)
+            if freed:
+                log.info("Audio de clases transcritas borrado: %d MB liberados", freed >> 20)
+        except Exception:  # la limpieza nunca debe parar la cola
+            log.exception("Fallo al aplicar la retención del audio")
         finally:
             db.close()
 

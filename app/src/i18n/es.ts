@@ -242,8 +242,8 @@ export const es = {
     saved: 'Grabación guardada en la biblioteca.',
     open: 'Abrir',
     webOnly: 'La grabación solo está disponible en la app de escritorio.',
-    list: 'Grabaciones guardadas',
-    empty: 'Aún no hay grabaciones.',
+    listOf: (subject?: string) => (subject ? `Grabaciones de ${subject}` : 'Grabaciones guardadas'),
+    empty: 'Aún no hay grabaciones en esta asignatura.',
     needSubject: 'Primero crea una asignatura en «Mis asignaturas».',
     recoverTitle: 'Grabaciones interrumpidas',
     recoverBody:
@@ -267,6 +267,10 @@ export const es = {
     use: 'Usar este modelo',
     inUse: 'En uso',
     language: 'Idioma de las clases',
+    keepAudio: 'Conservar el audio tras transcribir',
+    keepAudioHint:
+      'Al terminar la transcripción se borra el archivo original (el más pesado) y se guarda una copia ligera para escuchar la clase. La transcripción nunca se borra.',
+    keepDays: { 7: '7 días', 30: '30 días', 0: 'Siempre' } as Record<number, string>,
     languages: { auto: 'Detectar automáticamente', es: 'Español', en: 'Inglés' },
     privacy:
       'La descarga se hace desde Hugging Face y se verifica (SHA-256). Ningún audio sale de este Mac.',
@@ -291,6 +295,13 @@ export const es = {
     editHint:
       'Mantén la marca [mm:ss] al principio de cada línea: así el texto sigue sincronizado con el audio.',
     seek: (t: string) => `Ir a ${t}`,
+    audioDeleted:
+      'El audio de esta clase se borró para liberar espacio. La transcripción, tus resúmenes y exámenes se conservan.',
+    audioUntil: (date: string) => `El audio se conserva hasta el ${date}; después se borra solo.`,
+    deleteAudio: (size: string) => `Borrar audio ahora (${size})`,
+    deleteAudioTitle: '¿Borrar el audio de esta clase?',
+    deleteAudioBody:
+      'Ya no podrás escucharla ni volver a transcribirla. La transcripción, los resúmenes, los exámenes y las citas se conservan.',
   },
   ai: {
     title: 'IA local (Ollama)',

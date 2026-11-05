@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Unit } from './api'
 import { isAnswering, scopeFor, splitRefs } from './chat'
 import { answerAsText, docAsText } from './clipboard'
-import { formatBytes, formatDuration } from './format'
+import { formatBytes, formatDay, formatDuration } from './format'
 import { unitTree } from './subjects'
 
 const u = (id: string, kind: Unit['kind'], parent: string | null, position = 0): Unit => ({
@@ -38,6 +38,10 @@ describe('formato', () => {
     expect(formatDuration(65_000)).toBe('1:05')
     expect(formatDuration(3_725_000)).toBe('1:02:05')
     expect(formatDuration(null)).toBe('—')
+  })
+  it('formatea el día en que caduca el audio', () => {
+    expect(formatDay('2026-11-12T12:00:00.000Z')).toBe('12 de noviembre')
+    expect(formatDay('no-es-fecha')).toBe('no-es-fecha')
   })
 })
 

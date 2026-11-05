@@ -20,6 +20,14 @@ export function formatDuration(ms: number | null | undefined): string {
   return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`
 }
 
+/** «12 de noviembre» */
+export function formatDay(iso: string): string {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleDateString('es', { day: 'numeric', month: 'long' })
+}
+
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return '—'
   const d = new Date(iso)

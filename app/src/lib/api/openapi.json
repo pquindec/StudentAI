@@ -1009,6 +1009,85 @@
         }
       }
     },
+    "/api/v1/sources/{source_id}/audio": {
+      "get": {
+        "tags": ["sources"],
+        "summary": "Get Audio",
+        "operationId": "get_audio_api_v1_sources__source_id__audio_get",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["sources"],
+        "summary": "Delete Audio",
+        "description": "Borra el audio de una clase ya transcrita. La transcripción no se toca.",
+        "operationId": "delete_audio_api_v1_sources__source_id__audio_delete",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/sources/{source_id}/export": {
       "get": {
         "tags": ["sources"],
@@ -2859,6 +2938,37 @@
         "type": "object",
         "required": ["id", "status", "started_at", "finished_at", "score", "max_score"],
         "title": "AttemptSummaryOut"
+      },
+      "AudioOut": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": ["full", "light", "deleted"],
+            "title": "State"
+          },
+          "bytes": {
+            "type": "integer",
+            "title": "Bytes"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "deletable": {
+            "type": "boolean",
+            "title": "Deletable"
+          }
+        },
+        "type": "object",
+        "required": ["state", "bytes", "expires_at", "deletable"],
+        "title": "AudioOut"
       },
       "ChatStatsOut": {
         "properties": {
@@ -4839,6 +4949,18 @@
               }
             ],
             "title": "Language"
+          },
+          "audio_keep_days": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "enum": [0, 7, 30]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Keep Days"
           }
         },
         "type": "object",
@@ -4863,6 +4985,11 @@
             "enum": ["auto", "es", "en"],
             "title": "Language"
           },
+          "audio_keep_days": {
+            "type": "integer",
+            "enum": [0, 7, 30],
+            "title": "Audio Keep Days"
+          },
           "models": {
             "items": {
               "$ref": "#/components/schemas/ModelOut"
@@ -4872,7 +4999,14 @@
           }
         },
         "type": "object",
-        "required": ["whisper_available", "ready", "model", "language", "models"],
+        "required": [
+          "whisper_available",
+          "ready",
+          "model",
+          "language",
+          "audio_keep_days",
+          "models"
+        ],
         "title": "SttStatusOut"
       },
       "SubjectDetailOut": {

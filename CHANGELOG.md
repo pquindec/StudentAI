@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.2] — 2026-11-05 · Grabaciones por asignatura y retención del audio
+### Cambiado
+- En **Grabaciones**, la lista muestra solo las grabaciones de la asignatura elegida (antes, las últimas 20 de todas). Mientras se graba, las de la asignatura de la grabación en curso.
+### Añadido
+- Retención del audio de clases ya transcritas, para liberar espacio (cada hora de clase ocupaba ~510 MB):
+  - al terminar bien la transcripción se borra el archivo original (~385 MB/h);
+  - la copia ligera (~125 MB/h), que sirve para escuchar la clase y volver a transcribir, se borra sola a los **7 días** (ajustable en Grabaciones › Transcripción: 7 días, 30 días o siempre);
+  - botón **«Borrar audio ahora»** en cada clase transcrita, con confirmación y el tamaño que libera.
+- La transcripción, los resúmenes, los exámenes y las citas **nunca se borran**. Sin audio, la clase muestra «El audio se borró para liberar espacio» y no ofrece retranscribir.
+- No se toca el audio de clases sin transcribir, con transcripción vacía o fallida, o con una tarea en curso. Sin migración ni dependencias nuevas.
+### Nota
+- Al abrir esta versión se borran los originales de las grabaciones ya transcritas.
+
 ## [0.6.1] — 2026-11-05 · Copiar texto y resúmenes más completos
 ### Corregido
 - No se podía seleccionar ni copiar texto en resúmenes, apuntes ni en el asistente (la app bloqueaba la selección en todas las páginas). Ahora el contenido se puede seleccionar y copiar con ⌘C; los botones y menús siguen sin seleccionarse.

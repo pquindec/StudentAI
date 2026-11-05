@@ -19,6 +19,7 @@ El modelo de datos completo y su justificación están en `ARCHITECTURE.md §5`.
 - Ciclos más largos en el árbol de unidades (A→B→A) y el orden curso → módulo → tema se validan en el servicio (`services/subjects.py::check_unit_parent`).
 - `source_links` exige exactamente uno de `unit_id`/`session_id`, y un trigger impide vincular a una unidad o sesión de otra asignatura.
 - Los archivos viven en `sources/<uuid>/original.<ext>` (solo lectura); `stored_path` es relativo a la carpeta de datos. Borrar una fuente o asignatura borra también su carpeta.
+- Audio ya transcrito (0.6.2, sin migración): el original y luego `normalized.wav` se borran según `settings['audio.keep_days']` (0/7/30); `stored_path` se conserva como referencia y `metadata_json.audio_cleaned_at` registra la limpieza. El estado real se calcula mirando el disco.
 - Las ediciones nunca sobrescriben: crean una versión nueva y se re-segmentan.
 - Solo se indexa la **versión actual** de cada fuente: guardar una versión encola `index_source`, que sustituye sus chunks (los triggers mantienen FTS5 al día y los vectores se borran en cascada).
 - `sqlite-vec` se carga solo en las conexiones que buscan (`vec_distance_cosine` sobre `chunk_vectors`); el esquema no depende de la extensión, así que borrar o migrar funciona sin ella.

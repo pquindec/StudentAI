@@ -10,13 +10,14 @@ from app.api.deps import AppSettings, Db
 from app.core.errors import bad_request, not_found
 from app.db.connection import tx
 from app.jobs import queue
+from app.services import audio_files, transcription
 from app.services import settings as prefs
-from app.services import transcription
 from app.stt import models
 
 router = APIRouter(prefix="/stt", tags=["stt"])
 
 Language = Literal["auto", "es", "en"]
+KeepDays = Literal[0, 7, 30]  # días que se conserva el audio tras transcribir; 0 = siempre
 
 
 class ModelOut(BaseModel):
@@ -35,12 +36,14 @@ class SttStatusOut(BaseModel):
     ready: bool
     model: str
     language: Language
+    audio_keep_days: KeepDays
     models: list[ModelOut]
 
 
 class SttSettingsIn(BaseModel):
     model: str | None = None
     language: Language | None = None
+    audio_keep_days: KeepDays | None = None
 
 
 def _download_job(db: Db, model_id: str) -> tuple[str, float] | None:
@@ -73,6 +76,7 @@ def _status(db: Db, settings: AppSettings) -> SttStatusOut:
         ready=transcription.ready(db, settings.data_dir),
         model=transcription.chosen_model(db),
         language=transcription.default_language(db),  # type: ignore[arg-type]
+        audio_keep_days=audio_files.keep_days(db),  # type: ignore[arg-type]
         models=out,
     )
 
@@ -83,7 +87,9 @@ def stt_status(db: Db, settings: AppSettings) -> SttStatusOut:
 
 
 @router.put("/settings", response_model=SttStatusOut)
-def update_settings(body: SttSettingsIn, db: Db, settings: AppSettings) -> SttStatusOut:
+def update_settings(
+    body: SttSettingsIn, request: Request, db: Db, settings: AppSettings
+) -> SttStatusOut:
     with tx(db):
         if body.model is not None:
             spec = models.CATALOG.get(body.model)
@@ -92,6 +98,10 @@ def update_settings(body: SttSettingsIn, db: Db, settings: AppSettings) -> SttSt
             prefs.put(db, "stt.model", body.model)
         if body.language is not None:
             prefs.put(db, "stt.language", body.language)
+        if body.audio_keep_days is not None:
+            prefs.put(db, audio_files.KEEP_DAYS_KEY, body.audio_keep_days)
+    if body.audio_keep_days is not None:
+        request.app.state.scheduler.sweep_soon()
     return _status(db, settings)
 
 

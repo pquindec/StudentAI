@@ -27,12 +27,12 @@ from app.rag import search as rag_search
 from app.rag.scope import Scope
 from app.resources import manager as res_manager
 from app.resources.manager import ResourceManager, profile
+from app.services import audio_files, transcription
 from app.services import chat as chat_svc
 from app.services import documents as docs_svc
 from app.services import exams as exams_svc
 from app.services import llm as llm_svc
 from app.services import sources as src_svc
-from app.services import transcription
 from app.stt import models
 from app.stt.transcript import Piece, build_text
 from app.stt.whisper_cpp import (
@@ -241,6 +241,8 @@ def transcribe(ctx: JobContext) -> None:
             (language if language != "auto" else None, total, ctx.source_id),
         )
     shutil.rmtree(parts, ignore_errors=True)
+    # Transcrita: el original pesado ya no hace falta (la copia ligera sigue unos días).
+    audio_files.apply(ctx.db, ctx.data_dir, ctx.source(), own_job=ctx.job["id"])
     _ = src
 
 

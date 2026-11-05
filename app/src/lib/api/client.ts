@@ -23,6 +23,8 @@ export type SttStatus = S['SttStatusOut']
 export type SttModel = S['ModelOut']
 export type SttLanguage = SttStatus['language']
 export type ExportFile = S['ExportOut']
+export type SourceAudio = S['AudioOut']
+export type AudioKeepDays = SttStatus['audio_keep_days']
 export type AiStatus = S['AiStatusOut']
 export type KeepAlive = AiStatus['keep_alive']
 export type GeneratedDoc = S['DocOut']
@@ -155,7 +157,11 @@ export class ApiClient {
   sttStatus(): Promise<SttStatus> {
     return this.call('GET', '/api/v1/stt')
   }
-  updateSttSettings(body: { model?: string; language?: SttLanguage }): Promise<SttStatus> {
+  updateSttSettings(body: {
+    model?: string
+    language?: SttLanguage
+    audio_keep_days?: AudioKeepDays
+  }): Promise<SttStatus> {
     return this.call('PUT', '/api/v1/stt/settings', body)
   }
   downloadModel(modelId: string): Promise<SttStatus> {
@@ -163,6 +169,12 @@ export class ApiClient {
   }
   transcribe(sourceId: string, language?: SttLanguage): Promise<Source> {
     return this.call('POST', `/api/v1/sources/${id(sourceId)}/transcribe`, { language })
+  }
+  sourceAudio(sourceId: string): Promise<SourceAudio> {
+    return this.call('GET', `/api/v1/sources/${id(sourceId)}/audio`)
+  }
+  deleteSourceAudio(sourceId: string): Promise<SourceAudio> {
+    return this.call('DELETE', `/api/v1/sources/${id(sourceId)}/audio`)
   }
   exportSource(sourceId: string, format: 'txt' | 'srt'): Promise<ExportFile> {
     return this.call('GET', `/api/v1/sources/${id(sourceId)}/export${query({ format })}`)

@@ -30,11 +30,13 @@ Formato único:
 | POST | `/api/v1/sources/text` | Texto pegado o nota propia (Markdown) |
 | GET/PATCH/DELETE | `/api/v1/sources/{id}` | Detalle / renombrar y vínculos / borrar (cancela trabajos y borra archivos) |
 | GET/PUT | `/api/v1/sources/{id}/content` | Texto y segmentos (`?version=`) / nueva versión con `base_version` (409 `version_conflict`, 400 `no_changes`) |
-| POST | `/api/v1/sources/{id}/retry` | Reprocesar una fuente fallida o cancelada |
+| POST | `/api/v1/sources/{id}/retry` | Reprocesar una fuente fallida o cancelada (audio sin original: retranscribe desde la copia ligera; sin audio: 400 `audio_deleted`) |
 | GET | `/api/v1/stt` | whisper.cpp disponible, modelos (instalado, descarga en curso), modelo e idioma elegidos |
-| PUT | `/api/v1/stt/settings` | `{model?, language?: auto\|es\|en}` |
+| PUT | `/api/v1/stt/settings` | `{model?, language?: auto\|es\|en, audio_keep_days?: 0\|7\|30}` (0 = conservar el audio siempre) |
 | POST | `/api/v1/stt/models/{id}/download` | Descarga explícita (202); también descarga el VAD si falta |
-| POST | `/api/v1/sources/{id}/transcribe` | `{language?}` — (re)transcribir un audio; la versión anterior se conserva |
+| POST | `/api/v1/sources/{id}/transcribe` | `{language?}` — (re)transcribir un audio; la versión anterior se conserva. 400 `audio_deleted` si el audio ya se borró |
+| GET | `/api/v1/sources/{id}/audio` | Audio en disco: `state` full (original + copia ligera) \| light (solo copia ligera) \| deleted, `bytes`, `expires_at` (cuándo se borra solo), `deletable` |
+| DELETE | `/api/v1/sources/{id}/audio` | Borra el audio de una clase ya transcrita (409 `not_transcribed` si no lo está o hay tareas en curso). La transcripción no se toca |
 | GET | `/api/v1/sources/{id}/export?format=txt\|srt` | `{filename, content}` (la UI lo guarda con el diálogo nativo) |
 | GET | `/api/v1/ai/status` | Ollama (en marcha, versión), modelo elegido y ligero, `keep_alive`, modelos instalados, cargados y memoria disponible |
 | PUT | `/api/v1/ai/settings` | `{model?, keep_alive?: 1m\|2m\|5m\|10m}` |

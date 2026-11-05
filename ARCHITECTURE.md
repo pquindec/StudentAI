@@ -138,6 +138,7 @@ Pediste que cuestionara el stack donde tuviera sentido. Mantengo todas las tecno
 **Ubicación de los datos:** `~/Library/Application Support/<bundle-id>/`
 - `app.db` (SQLite en modo WAL)
 - `sources/<uuid>/original.<ext>` (copia inmutable del original) y `normalized.wav`
+  - Retención del audio (`services/audio_files.py`, 0.6.2): al terminar bien una transcripción se borra el original del audio; `normalized.wav` (copia ligera para escuchar y retranscribir) se borra a los `audio.keep_days` días (7 por defecto; 30 o 0 = siempre) desde la última transcripción. La limpieza corre al arrancar y cada hora, y nunca toca audios sin transcribir, con transcripción vacía o con trabajos en curso. La transcripción y lo generado con ella no se borran nunca.
 - `recordings/<uuid>/` (segmentos y manifiesto)
 - `models/whisper/` (modelos ggml descargados bajo demanda)
 - `backups/`, `logs/` (logs sin contenido de las fuentes)
