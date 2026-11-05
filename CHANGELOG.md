@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.1] — 2026-11-05 · Copiar texto y resúmenes más completos
+### Corregido
+- No se podía seleccionar ni copiar texto en resúmenes, apuntes ni en el asistente (la app bloqueaba la selección en todas las páginas). Ahora el contenido se puede seleccionar y copiar con ⌘C; los botones y menús siguen sin seleccionarse.
+### Añadido
+- Botón **«Copiar»** en apuntes y resúmenes y en cada respuesta del asistente: copia el texto con las referencias [n] y la lista de fuentes citadas.
+### Cambiado
+- Los resúmenes crecen con el material: hasta ~3 páginas, como antes; hasta ~25.000 caracteres, ×1,5; en clases largas, ×2 (nivel intermedio: 12 frases + 12 ideas clave). Tope de 15 frases + 12 ideas; el paso final del resumen tiene hasta 5.600 tokens de salida (ventana de 12K) para que no se corte.
+- Cada frase del resumen explica la idea (porqué, relación o ejemplo), no solo la nombra.
+- Como máximo 3 citas por punto (antes llegaban a 8 y la respuesta final se cortaba por longitud).
+
 ## [0.6.0] — 2026-11-04 · Fase 6: exámenes
 ### Añadido
 - Página **Exámenes**: crea un examen por asignatura eligiendo número de preguntas (1–50), tipos (opción múltiple, verdadero/falso, respuesta corta), dificultad, opciones por pregunta (3–5), temas o fuentes, modo (práctica o con tiempo) y penalización por fallo.

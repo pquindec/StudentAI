@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CitationPanel, Refs } from '../components/Citations'
+import { CopyButton } from '../components/CopyButton'
 import {
   Button,
   Card,
@@ -11,6 +12,7 @@ import {
 } from '../components/ui'
 import { es } from '../i18n/es'
 import { api, type ChatMessage, type ChatScope, type ChatThreadDetail } from '../lib/api'
+import { answerAsText } from '../lib/clipboard'
 import { isAnswering, scopeFor, splitRefs } from '../lib/chat'
 import { errorMessage, useQuery } from '../lib/useQuery'
 
@@ -121,10 +123,13 @@ function Answer({
       </p>
       {m.status === 'cancelled' && <p className="text-xs text-zinc-500">{es.chat.cancelled}</p>}
       {m.status === 'done' && (
-        <p className="text-xs text-zinc-500">
-          {m.model ? es.chat.model(m.model) : ''}
-          {m.stats.invented_cites > 0 ? ` · ${es.chat.discarded(m.stats.invented_cites)}` : ''}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="flex-1 text-xs text-zinc-500">
+            {m.model ? es.chat.model(m.model) : ''}
+            {m.stats.invented_cites > 0 ? ` · ${es.chat.discarded(m.stats.invented_cites)}` : ''}
+          </p>
+          <CopyButton className="text-xs" text={() => answerAsText(m)} />
+        </div>
       )}
     </div>
   )

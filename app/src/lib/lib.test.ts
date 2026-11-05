@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Unit } from './api'
 import { isAnswering, scopeFor, splitRefs } from './chat'
+import { answerAsText, docAsText } from './clipboard'
 import { formatBytes, formatDuration } from './format'
 import { unitTree } from './subjects'
 
@@ -63,5 +64,42 @@ describe('asistente', () => {
     expect(scopeFor('s1', ['a']).source_ids).toEqual(['a'])
     expect(isAnswering({ status: 'streaming' })).toBe(true)
     expect(isAnswering({ status: 'not_found' })).toBe(false)
+  })
+})
+
+describe('copiar texto', () => {
+  it('convierte un resumen en texto con referencias y fuentes', () => {
+    const t = docAsText({
+      title: 'Resumen',
+      sections: [
+        {
+          title: 'Texto',
+          prose: true,
+          points: [
+            { text: 'Uno.', refs: [1] },
+            { text: 'Dos.', refs: [] },
+          ],
+        },
+        { title: 'Ideas clave', prose: false, points: [{ text: 'A: b', refs: [2, 1] }] },
+      ],
+      citations: [
+        { ref: 2, source_title: 'Clase 2' },
+        { ref: 1, source_title: 'Clase 1' },
+      ],
+    } as never)
+    expect(t).toBe(
+      'Resumen\n\nTexto\nUno. [1] Dos.\n\nIdeas clave\n- A: b [2][1]\n\n[1] Clase 1\n[2] Clase 2',
+    )
+  })
+
+  it('convierte una respuesta del asistente', () => {
+    const t = answerAsText({
+      content: 'VUCA es volátil ⟦1⟧⟦2⟧.',
+      citations: [
+        { ref: 1, source_title: 'Clase' },
+        { ref: 2, source_title: 'Clase' },
+      ],
+    } as never)
+    expect(t).toBe('VUCA es volátil [1][2].\n\n[1][2] Clase')
   })
 })

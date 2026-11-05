@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { CitationPanel, Refs } from '../components/Citations'
 import { DocStatusBadge } from '../components/Documents'
+import { CopyButton } from '../components/CopyButton'
 import { Button, Card, ConfirmButton, ErrorText, Loading, PageHeader } from '../components/ui'
 import { es } from '../i18n/es'
+import { docAsText } from '../lib/clipboard'
 import { api } from '../lib/api'
 import { formatDate } from '../lib/format'
 import { isBusy } from '../lib/documents'
@@ -59,14 +61,17 @@ export function DocumentView({ id }: { id: string }) {
         title={d.title}
         subtitle={`${es.docs.kind[d.kind]} · ${es.docs.details[d.detail]} · ${formatDate(d.created_at)}`}
         actions={
-          <ConfirmButton
-            label={es.common.delete}
-            title={d.title}
-            onConfirm={async () => {
-              await api.deleteDocument(d.id)
-              navigate({ name: section })
-            }}
-          />
+          <div className="flex gap-2">
+            {d.status === 'ready' && <CopyButton text={() => docAsText(d)} />}
+            <ConfirmButton
+              label={es.common.delete}
+              title={d.title}
+              onConfirm={async () => {
+                await api.deleteDocument(d.id)
+                navigate({ name: section })
+              }}
+            />
+          </div>
         }
       />
       <ErrorText>{error}</ErrorText>

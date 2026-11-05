@@ -52,6 +52,8 @@ export const es = {
     unexpected: 'Ha ocurrido un error inesperado. Inténtalo de nuevo.',
     confirmDelete: 'Esta acción no se puede deshacer.',
     optional: '(opcional)',
+    copy: 'Copiar',
+    copied: 'Copiado',
   },
   subjects: {
     title: 'Mis asignaturas',

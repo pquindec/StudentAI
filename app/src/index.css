@@ -23,10 +23,15 @@ body {
   cursor: default;
 }
 
-/* El texto de contenido sí se puede seleccionar y copiar. */
-.selectable {
+/* El texto de contenido sí se puede seleccionar y copiar (las páginas enteras, menos los controles). */
+.selectable,
+main {
   -webkit-user-select: text;
   user-select: text;
+}
+main :is(button, nav, label, [role='button'], [role='radio']) {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 :focus-visible {

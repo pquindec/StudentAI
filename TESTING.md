@@ -38,6 +38,12 @@ scripts/check.sh backend    # solo una parte (preferible tras cambios acotados)
 - Problema reportado por el usuario: el resumen de su clase (82.000 caracteres, 9 partes) se quedó en 0 % durante la primera parte y lo canceló; además los resúmenes tenían el formato de los apuntes.
 - Prueba con su clase real (copia de la BD hecha con `sqlite3 .backup`; copiar solo `app.db` pierde lo que está en el WAL): resumen intermedio en 4 min 29 s, progreso continuo con estimación de tiempo, 6 frases + 5 ideas clave, 0 citas inventadas de 277 propuestas, pico 8,4 GB. Segunda pasada: el modelo repitió las 10 frases del resumen como ideas clave → límite y deduplicación en código; tercera pasada (4 min 44 s): 6 frases + 6 conceptos «Término: definición» distintos, 0 citas inventadas de 334.
 
+## Ajustes tras la prueba del usuario (2026-11-05)
+- Reportado: resúmenes demasiado cortos y no se puede copiar texto (resumen, asistente).
+- Automáticas: pytest 127 (tamaño del resumen según el material), vitest 28 (texto copiado de un resumen y de una respuesta).
+- Con su clase real (82.464 caracteres, copia de la BD): resumen intermedio 12 frases + 12 ideas clave en 6 min 52 s, sin cortes. Antes de limitar las citas por punto, una de dos pasadas falló por respuesta cortada; «detallado» se cortaba (necesita ~4.100–5.100 tokens) → tope de 15 + 12 frases/ideas y hasta 5.600 tokens de salida con ventana de 12K en el paso final: 15 frases + 9 ideas clave, pico 7,7 GB.
+- Pendiente: comprobar la selección y el botón «Copiar» en la app (WKWebView).
+
 ## Pruebas de la Fase 6 (2026-11-04)
 - Automáticas: pytest 126 (13 nuevas en `test_exams.py`: cita literal, reglas de pregunta, duplicados y juez, reparto por fuentes y tipos, selección y barajado, configuración y corrección objetiva, respuesta del estudiante delimitada, examen completo con evidencia literal, fuentes insuficientes + aceptar menos, práctica sin revelar respuestas, tiempo agotado en el backend, corrección por IA, aislamiento y borrado), vitest 26 (6 nuevas de `lib/exams.ts`).
 - Aceptación con Ollama real (`bench/bench_exam.py`, BENCHMARKS §7): evidencia literal 100 %; revisión manual: corpus 0/20 y 1/20, clase real 7/20 → 4/20 tras endurecer reglas. Limitación aceptada por el usuario.

@@ -615,3 +615,12 @@ def test_transcription_goes_first_while_a_summary_is_generating(
         )["maps"]
     )
     assert len(fake.requests) == n_blocks + 1  # ninguna parte se repitió
+
+
+def test_summary_grows_with_material() -> None:
+    assert prompts.summary_size("medium", 3_000)[:2] == (6, 6)
+    assert prompts.summary_size("medium", 10_000)[:2] == (9, 9)
+    assert prompts.summary_size("medium", 82_000)[:2] == (12, 12)
+    assert prompts.summary_size("detailed", 82_000)[:2] == (15, 12)
+    system = prompts.system_prompt("summary", "medium", False, chars=82_000)
+    assert "Como máximo 12 frases" in system

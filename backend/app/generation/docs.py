@@ -228,7 +228,11 @@ class Job:
         summary = self.kind == "summary"
         shape = ("summary" if final else "points") if summary else "sections"
         if summary:
-            tokens = SUMMARY_TOKENS[self.detail] if final else SUMMARY_MAP_TOKENS
+            # Más frases en material largo → más espacio de salida (con tope por memoria).
+            # Material largo → más frases → más espacio de salida, con margen para las citas.
+            # Medido con una clase de 82.000 caracteres: el detallado ocupa ~5.100 tokens.
+            scaled = round(SUMMARY_TOKENS[self.detail] * prompts.size_factor(self.chars) * 1.25)
+            tokens = min(scaled, 5600) if final else SUMMARY_MAP_TOKENS
         else:
             tokens = MAX_TOKENS[self.detail]
         return ChatRequest(
@@ -236,8 +240,14 @@ class Job:
             messages=[Message("system", system), Message("user", user)],
             schema=prompts.schema(contradictions, shape),
             max_tokens=tokens,
+            # La entrada del paso final ronda 3.500 tokens: con salidas largas no cabe en 8K.
+            num_ctx=12_288 if tokens > 3600 else 8192,
             keep_alive=self.keep_alive,
         )
+
+    @property
+    def chars(self) -> int:
+        return sum(len(f.text) for s in self.sources for f in s.fragments)
 
     def _progress(self, start: float, span: float, label: str, limit: int) -> Callable[[int], None]:
         """Avance continuo mientras el modelo escribe (no solo al terminar cada parte)."""
@@ -275,7 +285,7 @@ class Job:
             began = time.monotonic()
             allowed = {f.id for s in block for f in s.fragments}
             system = prompts.system_prompt(
-                self.kind, self.detail, contra and single, partial=not single
+                self.kind, self.detail, contra and single, partial=not single, chars=self.chars
             )
             user = prompts.map_user(_render(block), i + 1, len(parts))
             req = self._req(system, user, contra and single, final=single)
@@ -295,7 +305,7 @@ class Job:
         if not single and self.should_yield():
             raise Yielded
         result = drafts[0] if single else self._reduce(drafts, contra)
-        return finish_summary(result, self.detail) if self.kind == "summary" else result
+        return finish_summary(result, self.detail, self.chars) if self.kind == "summary" else result
 
     def _reduce(self, drafts: list[Draft], contra: bool) -> Draft:
         """Une los resultados parciales; si no caben juntos, por grupos (jerárquico)."""
@@ -322,7 +332,11 @@ class Job:
                 allowed = set().union(*(_draft_cites(d) for d in g))
                 summary = self.kind == "summary"
                 system = prompts.system_prompt(
-                    self.kind, self.detail, contra and last, partial=summary and not last
+                    self.kind,
+                    self.detail,
+                    contra and last,
+                    partial=summary and not last,
+                    chars=self.chars,
                 )
                 user = prompts.reduce_user(_partials(g), summary=summary and last)
                 req = self._req(system, user, contra and last, final=last or not summary)
@@ -346,10 +360,10 @@ def _similar(a: str, b: str) -> bool:
     return bool(wa and wb) and len(wa & wb) / min(len(wa), len(wb)) >= 0.7
 
 
-def finish_summary(draft: Draft, detail: str) -> Draft:
+def finish_summary(draft: Draft, detail: str, chars: int = 0) -> Draft:
     """Garantiza en código lo que el modelo no siempre respeta: la longitud del resumen y que
     las ideas clave no repitan sus frases."""
-    sentences, keys, _ = prompts.SUMMARY_SIZE[detail]
+    sentences, keys, _ = prompts.summary_size(detail, chars)
     text = next((s for s in draft.sections if s.get("prose")), None)
     key = next((s for s in draft.sections if s["title"] == "Ideas clave"), None)
     sections = []
