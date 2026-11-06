@@ -304,6 +304,13 @@ palabra coincide y ningún vector está a distancia ≤ 0,55, no se llama al mod
 Los fragmentos son los segmentos de esos chunks con ids `A12`; se envían las 3 últimas preguntas
 y respuestas (sin fragmentos). Una respuesta sin ninguna cita válida, o `NO_ENCONTRADO`, se
 guarda como «no encontrado». Sin reranker: el Recall@5 ya es 1,0 (BENCHMARKS §6). Ajustes de la 0.5.1: búsqueda adicional en mayúsculas de las palabras cortas que no existen tal cual (siglas mal transcritas), chunk siguiente al más relevante y un reintento si la respuesta no trae ninguna cita.
+Peticiones de crear (0.7.2, `rag/answer.py::is_creative`, por patrones: verbo de crear + objeto
+—«hazme una pregunta», «dame un ejemplo»—, «opción múltiple», «ejercicio», o «otra» tras una
+respuesta de crear): con fragmentos relevantes, prompt `CREATE_SYSTEM` (conceptos de los
+fragmentos y citados; la situación o las opciones incorrectas pueden ser nuevas) → `kind=created`.
+Si no hay fragmentos relevantes, el modelo responde `NO_ENCONTRADO` o no cita nada, se crea sin
+fragmentos con `GENERAL_SYSTEM` → `kind=general`, sin citas y marcado en la UI como «sin respaldo
+en tus fuentes». El tipo se guarda en `chat_messages.stats_json` (sin migración).
 
 ### 6.6 Generación de exámenes (funcionalidad crítica)
 ```

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.2] — 2026-11-06 · El asistente también crea ejemplos y preguntas
+### Añadido
+- El asistente entiende peticiones de **crear**: «dame un ejemplo de…», «hazme una pregunta de opción múltiple con 4 respuestas», «plantéame un ejercicio / caso práctico», «preguntas de verdadero o falso», y «otra» justo después.
+  - Si el tema está en tus fuentes, crea a partir de ellas y cita de dónde sale cada concepto. La respuesta lleva la etiqueta «Creado por la IA a partir de tus fuentes».
+  - Si el tema no está en tus fuentes, crea con el conocimiento general del modelo (local) y lo marca en ámbar: «Sin respaldo en tus fuentes… Puede contener errores; compruébalo».
+  - Las preguntas de opción múltiple traen cuatro opciones (A–D), una correcta y la explicación.
+- Las preguntas normales («¿qué es…?») no cambian: solo responden con tus fuentes y, si no está, «no encontrado».
+- Sin migración ni dependencias nuevas; nada sale del equipo.
+
 ## [0.7.1] — 2026-11-06 · Corrección al crear mazos y exámenes
 ### Corregido
 - «Alguna fuente elegida no es de esta asignatura» al crear un mazo: la ventana conservaba las fuentes marcadas en otra asignatura (ocultas). Ahora la ventana empieza de cero cada vez que se abre y solo envía fuentes y temas de la asignatura actual. El mismo fallo existía en «Nuevo examen» y queda corregido igual.

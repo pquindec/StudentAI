@@ -109,8 +109,21 @@ function Answer({
   if (m.status === 'queued' || (m.status === 'streaming' && !m.content)) {
     return <p className="animate-pulse text-zinc-500">{m.progress_message ?? es.chat.thinking}</p>
   }
+  const kind = m.status === 'done' ? m.stats.kind : 'answer'
+  const label = kind === 'created' ? es.chat.created : kind === 'general' ? es.chat.general : null
   return (
     <div className="space-y-2">
+      {label && (
+        <p
+          className={`rounded-md px-2 py-1 text-xs font-medium ${
+            kind === 'general'
+              ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+              : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'
+          }`}
+        >
+          {label}
+        </p>
+      )}
       <p className="leading-relaxed whitespace-pre-wrap">
         {splitRefs(m.content).map((p, i) =>
           'text' in p ? (
@@ -128,7 +141,10 @@ function Answer({
             {m.model ? es.chat.model(m.model) : ''}
             {m.stats.invented_cites > 0 ? ` · ${es.chat.discarded(m.stats.invented_cites)}` : ''}
           </p>
-          <CopyButton className="text-xs" text={() => answerAsText(m)} />
+          <CopyButton
+            className="text-xs"
+            text={() => (label ? `${label}\n\n` : '') + answerAsText(m)}
+          />
         </div>
       )}
     </div>

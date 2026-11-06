@@ -44,6 +44,11 @@ scripts/check.sh backend    # solo una parte (preferible tras cambios acotados)
 - Con su clase real (82.464 caracteres, copia de la BD): resumen intermedio 12 frases + 12 ideas clave en 6 min 52 s, sin cortes. Antes de limitar las citas por punto, una de dos pasadas falló por respuesta cortada; «detallado» se cortaba (necesita ~4.100–5.100 tokens) → tope de 15 + 12 frases/ideas y hasta 5.600 tokens de salida con ventana de 12K en el paso final: 15 frases + 9 ideas clave, pico 7,7 GB.
 - Pendiente: comprobar la selección y el botón «Copiar» en la app (WKWebView).
 
+## El asistente crea ejemplos y preguntas (2026-11-06, 0.7.2)
+- Automáticas: pytest 148 (4 nuevas en `test_chat.py`: detección de peticiones de crear y de «otra»; crear desde las fuentes con citas; crear con conocimiento general cuando no está en las fuentes —sin fragmentos en el prompt, sin citas— y directamente si no hay nada relevante; las preguntas normales siguen dando «no encontrado» sin llamar al modelo), vitest 32, comprobaciones de frontend correctas.
+- Con Ollama real (`qwen3.5:9b`, texto de ejemplo, no material del usuario): pregunta de opción múltiple sobre VUCA con 4 opciones, respuesta correcta y 2 citas válidas (9 s); ejemplo de volatilidad con citas (8 s); pregunta de fotosíntesis con conocimiento general, correcta, sin citas (11 s). En el modo general usó LaTeX (`$CO_2$`): se añadió la regla «sin LaTeX».
+- Pendiente: probarlo en la app (usuario).
+
 ## Pruebas de la Fase 7 (2026-11-06)
 - Automáticas: pytest 144 (9 nuevas en `test_flashcards.py`), vitest 32 (3 nuevas en `flashcards.test.ts`).
   - FSRS: pasos de aprendizaje, intervalos crecientes, fallo → reaprendizaje; la fecha del botón es la que se aplica.

@@ -375,7 +375,7 @@ export const es = {
   chat: {
     title: 'Asistente',
     subtitle:
-      'Pregunta sobre tus fuentes. Solo responde con lo que hay en ellas y cita cada frase.',
+      'Pregunta sobre tus fuentes: responde solo con lo que hay en ellas y cita cada frase. También puede crear ejemplos, ejercicios o preguntas de opción múltiple.',
     newThread: 'Nueva conversación',
     threads: 'Conversaciones',
     noThreads: 'Aún no hay conversaciones.',
@@ -405,6 +405,9 @@ export const es = {
       n === 1 ? '1 cita no existía y se descartó.' : `${n} citas no existían y se descartaron.`,
     deleteThread: 'Borrar conversación',
     model: (m: string) => `Respondido con ${m}`,
+    created: 'Creado por la IA a partir de tus fuentes',
+    general:
+      'Sin respaldo en tus fuentes: creado con conocimiento general del modelo. Puede contener errores; compruébalo.',
   },
   exams: {
     title: 'Exámenes',

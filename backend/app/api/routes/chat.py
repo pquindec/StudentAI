@@ -48,6 +48,9 @@ class MessageIn(BaseModel):
 
 
 class ChatStatsOut(BaseModel):
+    # answer: responde con las fuentes · created: creado a partir de las fuentes ·
+    # general: creado con conocimiento general del modelo (sin respaldo en las fuentes)
+    kind: Literal["answer", "created", "general"] = "answer"
     search_mode: str | None = None
     search_ms: int | None = None
     proposed_cites: int = 0

@@ -1104,6 +1104,12 @@ export interface components {
     }
     /** ChatStatsOut */
     ChatStatsOut: {
+      /**
+       * Kind
+       * @default answer
+       * @enum {string}
+       */
+      kind: 'answer' | 'created' | 'general'
       /** Search Mode */
       search_mode?: string | null
       /** Search Ms */

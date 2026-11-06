@@ -366,3 +366,76 @@ def test_next_chunk_is_added_and_uncited_answer_is_retried(
 def test_missing_terms_are_flagged() -> None:
     assert answer.missing_terms("¿Qué es vuca?", "biuca es un entorno") == ["vuca"]
     assert answer.missing_terms("¿Qué es el entorno?", "un ENTORNO volátil") == []
+
+
+# ------------------------------------------------------------------ crear (ejemplos, preguntas)
+
+
+def test_creative_requests_are_detected() -> None:
+    yes = [
+        "Hazme una pregunta de opción múltiple sobre la mitocondria",
+        "dame un ejemplo de entorno VUCA",
+        "Créame 3 preguntas con 4 respuestas",
+        "Un ejercicio sobre la célula",
+        "preguntas de verdadero o falso",
+        "plantéame un caso práctico",
+    ]
+    no = [
+        "¿Qué es la mitocondria?",
+        "¿Qué ejemplos dio el profesor?",
+        "Tengo una duda sobre la célula",
+        "otra",  # sin respuesta de crear antes, no es un seguimiento
+    ]
+    assert all(answer.is_creative(q) for q in yes), [q for q in yes if not answer.is_creative(q)]
+    assert not any(answer.is_creative(q) for q in no), [q for q in no if answer.is_creative(q)]
+    assert answer.is_creative("otra", after_creative=True)
+    assert answer.is_creative("Dame otra más difícil", after_creative=True)
+    assert not answer.is_creative("¿Qué es la mitocondria?", after_creative=True)
+
+
+def test_create_from_sources_cites_the_material(
+    client: TestClient, auth: H, fake: FakeChat, lib: dict[str, str]
+) -> None:
+    fake.reply = lambda ids: (
+        f"¿Qué orgánulo produce la energía de la célula? [{ids[0]}]\nA) Mitocondria\nB) Núcleo\n"
+        "C) Ribosoma\nD) Vacuola\nRespuesta correcta: A"
+    )
+    tid = _thread(client, auth, subject_id=lib["bio"])
+    m = _ask(client, auth, tid, "Hazme una pregunta de opción múltiple sobre la mitocondria")
+    assert m["status"] == "done" and m["stats"]["kind"] == "created"
+    assert m["citations"] and "Respuesta correcta: A" in m["content"]
+    msgs = fake.requests[-1].messages
+    assert "CREES" in msgs[0].content and "Petición del estudiante" in msgs[-1].content
+    assert "La mitocondria produce" in msgs[-1].content  # los fragmentos llegaron al modelo
+
+
+def test_create_with_general_knowledge_when_not_in_sources(
+    client: TestClient, auth: H, fake: FakeChat, lib: dict[str, str]
+) -> None:
+    replies = iter(["NO_ENCONTRADO", "Ejemplo: una empresa de fotosíntesis [A1]."])
+    fake.reply = lambda ids: next(replies)
+    tid = _thread(client, auth, subject_id=lib["bio"])
+    m = _ask(client, auth, tid, "Dame un ejemplo de la célula aplicado a una empresa")
+    assert m["status"] == "done" and m["stats"]["kind"] == "general"
+    assert m["citations"] == [] and "[" not in m["content"] and "⟦" not in m["content"]
+    general = fake.requests[-1].messages
+    assert "conocimiento general" in general[0].content
+    assert "<fuente" not in general[-1].content  # sin fragmentos del material
+
+    # Tema ajeno a la asignatura: no se busca contexto, se crea directamente y se marca.
+    fake.requests.clear()
+    fake.reply = lambda ids: "1. ¿Quién pintó la Gioconda?\nA) Da Vinci"
+    m = _ask(client, auth, tid, "Créame una pregunta sobre pintura renacentista")
+    assert m["stats"]["kind"] == "general" and len(fake.requests) == 1
+    # «otra» tras una respuesta de crear sigue siendo crear (no «no encontrado»).
+    m = _ask(client, auth, tid, "otra")
+    assert m["status"] == "done" and m["stats"]["kind"] == "general"
+    assert len(fake.requests[-1].messages) > 2  # con el historial de la conversación
+
+
+def test_questions_still_answer_only_from_sources(
+    client: TestClient, auth: H, fake: FakeChat, lib: dict[str, str]
+) -> None:
+    tid = _thread(client, auth, subject_id=lib["bio"])
+    m = _ask(client, auth, tid, "¿Quién pintó la Gioconda?")
+    assert m["status"] == "not_found" and fake.requests == []

@@ -48,7 +48,7 @@ Formato único:
 | GET/POST | `/api/v1/chat/threads` | Conversaciones del asistente (más recientes primero) / crear `{scope?, title?}` → 201. `scope = {subject_id?, unit_ids[], source_ids[], exclude_source_ids[]}`; sin `subject_id` = toda la biblioteca. Los ids deben ser del usuario y de la asignatura (400 `invalid_scope`) |
 | GET/PATCH/DELETE | `/api/v1/chat/threads/{id}` | Detalle con mensajes y citas / cambiar título o ámbito / borrar (cancela la respuesta en curso) |
 | POST | `/api/v1/chat/threads/{id}/messages` | `{text}` → 202 con el mensaje de respuesta (`queued`); 409 `answer_in_progress` si aún responde |
-| GET | `/api/v1/chat/messages/{id}` | Estado (`queued`, `streaming` con texto parcial, `done`, `not_found`, `failed`, `cancelled`), contenido con referencias `⟦n⟧`, citas y métricas. La UI lo consulta cada 400 ms mientras responde |
+| GET | `/api/v1/chat/messages/{id}` | Estado (`queued`, `streaming` con texto parcial, `done`, `not_found`, `failed`, `cancelled`), contenido con referencias `⟦n⟧`, citas y métricas; `stats.kind`: `answer` (respuesta con las fuentes), `created` (creado a partir de las fuentes, con citas) o `general` (creado con conocimiento general, sin citas: la UI lo marca «sin respaldo»). La UI lo consulta cada 400 ms mientras responde |
 | POST | `/api/v1/chat/messages/{id}/cancel` | Detiene la respuesta |
 | GET | `/api/v1/rag/status` | Modelo de embeddings y si está disponible, búsqueda por vectores, fuentes indexadas y pendientes |
 | GET | `/api/v1/sources/{id}/index` | Estado del índice de una fuente (`none`, `queued`, `indexing`, `ready`, `failed`, chunks, con vector) |

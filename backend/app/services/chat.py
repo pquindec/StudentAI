@@ -172,6 +172,20 @@ def history(db: sqlite3.Connection, thread_id: str, before: str) -> list[tuple[s
     return pairs
 
 
+def last_kind(db: sqlite3.Connection, thread_id: str, before: str) -> str | None:
+    """Tipo de la última respuesta completada antes de `before`: answer, created o general."""
+    row = db.execute(
+        "SELECT stats_json FROM chat_messages WHERE thread_id = ? AND role = 'assistant'"
+        " AND status = 'done' AND rowid < (SELECT rowid FROM chat_messages WHERE id = ?)"
+        " ORDER BY rowid DESC LIMIT 1",
+        (thread_id, before),
+    ).fetchone()
+    if row is None:
+        return None
+    kind = json.loads(row[0] or "{}").get("kind", "answer")
+    return str(kind)
+
+
 def save_answer(
     db: sqlite3.Connection,
     message_id: str,

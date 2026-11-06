@@ -422,21 +422,25 @@ def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any
     info = prov.info()
     if not info.running:
         raise JobFailed("llm_unavailable", "Ollama no está en marcha. Abre la app de Ollama.")
+    question = row["question"]
+    history = chat_svc.history(ctx.db, row["thread_id"], mid)
+    previous = chat_svc.last_kind(ctx.db, row["thread_id"], mid)
+    creative = rag_answer.is_creative(question, previous in ("created", "general"))
+    stats["kind"] = "created" if creative else "answer"
     ctx.report(0.1, "Buscando en tus fuentes")
     scope = Scope.model_validate(json.loads(row["scope_json"] or "{}"))
     embedder = prov if rag_index.embeddings_available(prov) is None else None
     t0 = time.monotonic()
-    found = rag_search.search(ctx.db, row["owner_id"], scope, row["question"], embedder)
+    found = rag_search.search(ctx.db, row["owner_id"], scope, question, embedder)
     stats.update(
         search_ms=int((time.monotonic() - t0) * 1000),
         search_mode=found.mode,
         chunks=[h.chunk_id for h in found.hits],
         notes=found.notes,
     )
-    if not found.relevant:
+    if not found.relevant and not creative:
         chat_svc.save_answer(ctx.db, mid, "not_found", "", [], None, stats)
         return
-    context = rag_answer.build_context(ctx.db, found.hits)
     rm = ResourceManager(prov)
     choice = rm.acquire(
         llm_svc.chosen_model(ctx.db),
@@ -445,15 +449,7 @@ def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any
         report=lambda m: ctx.report(0.2, m),
         cancelled=ctx.cancelled,
     )
-    ctx.report(0.3, "Redactando la respuesta")
-    history = chat_svc.history(ctx.db, row["thread_id"], mid)
-    req = ChatRequest(
-        model=choice.model,
-        messages=rag_answer.build_messages(row["question"], history, context.block),
-        max_tokens=1200,
-        temperature=0.1,
-        keep_alive=llm_svc.keep_alive(ctx.db),
-    )
+    keep = llm_svc.keep_alive(ctx.db)
     last_t, last_text = [0.0], [""]
 
     def on_text(raw: str) -> None:
@@ -478,26 +474,60 @@ def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any
         )
         return out
 
-    res = call(req, "chat:answer")
-    final = rag_answer.finalize(res.text, context.segment_of)
-    retried = False
-    if not final.found and rag_answer.needs_citations(res.text):
-        # Escribió una respuesta pero sin ninguna cita válida: se le pide una vez que cite.
-        retried = True
-        again = dataclasses.replace(req, messages=req.messages + rag_answer.cite_retry(res.text))
-        res = call(again, "chat:answer_retry")
+    def save(res: ChatResult, content: str, cites: list[tuple[int, int]], **extra: Any) -> None:
+        stats.update(
+            input_tokens=res.input_tokens,
+            output_tokens=res.output_tokens,
+            duration_ms=res.duration_ms,
+            fallback=choice.fallback,
+            **extra,
+        )
+        status = "done" if content else "not_found"
+        chat_svc.save_answer(ctx.db, mid, status, content, cites, choice.model, stats)
+
+    if found.relevant:
+        context = rag_answer.build_context(ctx.db, found.hits)
+        step = "Creando a partir de tus fuentes" if creative else "Redactando la respuesta"
+        ctx.report(0.3, step)
+        req = ChatRequest(
+            model=choice.model,
+            messages=rag_answer.build_messages(question, history, context.block, creative),
+            max_tokens=1200,
+            temperature=0.3 if creative else 0.1,
+            keep_alive=keep,
+        )
+        res = call(req, "chat:create" if creative else "chat:answer")
         final = rag_answer.finalize(res.text, context.segment_of)
-    stats.update(
-        proposed_cites=final.proposed,
-        invented_cites=final.invented,
-        input_tokens=res.input_tokens,
-        output_tokens=res.output_tokens,
-        duration_ms=res.duration_ms,
-        fallback=choice.fallback,
-        retried=retried,
+        retried = False
+        if not creative and not final.found and rag_answer.needs_citations(res.text):
+            # Escribió una respuesta pero sin ninguna cita válida: se le pide una vez que cite.
+            retried = True
+            again = dataclasses.replace(
+                req, messages=req.messages + rag_answer.cite_retry(res.text)
+            )
+            res = call(again, "chat:answer_retry")
+            final = rag_answer.finalize(res.text, context.segment_of)
+        cites = {"proposed_cites": final.proposed, "invented_cites": final.invented}
+        if final.found or not creative:
+            save(res, final.content, final.citations, retried=retried, **cites)
+            return
+        uncited = rag_answer.live_text(res.text)
+        if uncited:  # creó algo pero sin citar de dónde sale: se muestra como «sin respaldo»
+            stats["kind"] = "general"
+            save(res, uncited, [], **cites)
+            return
+    # El tema no está en las fuentes: se crea con conocimiento general y se marca así.
+    stats["kind"] = "general"
+    ctx.report(0.3, "No está en tus fuentes: creando con conocimiento general")
+    req = ChatRequest(
+        model=choice.model,
+        messages=rag_answer.general_messages(question, history),
+        max_tokens=1200,
+        temperature=0.4,
+        keep_alive=keep,
     )
-    status = "done" if final.found else "not_found"
-    chat_svc.save_answer(ctx.db, mid, status, final.content, final.citations, choice.model, stats)
+    res = call(req, "chat:create_general")
+    save(res, rag_answer.live_text(res.text), [])
 
 
 def generate_exam(ctx: JobContext) -> None:

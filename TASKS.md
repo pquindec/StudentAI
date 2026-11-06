@@ -22,7 +22,8 @@
 - [x] Copiar texto en resúmenes, apuntes y asistente; resúmenes proporcionales al material (0.6.1)
 - [x] Grabaciones guardadas filtradas por la asignatura elegida (0.6.2)
 - [x] Retención del audio: el original se borra al transcribir; la copia ligera, a los 7/30 días o nunca; botón «Borrar audio ahora». La transcripción nunca se borra (0.6.2)
-- [ ] Comprobar en la app: copiar texto, filtro de grabaciones y borrado del audio (usuario)
+- [x] Asistente: crea ejemplos, ejercicios y preguntas de opción múltiple a partir de las fuentes (con citas); si el tema no está en ellas, con conocimiento general y marcado «sin respaldo» (0.7.2)
+- [ ] Comprobar en la app: copiar texto, filtro de grabaciones, borrado del audio y peticiones de crear en el asistente (usuario)
 
 ### Tareas nuevas surgidas de la Fase 0.5
 - [x] (F1) Usar Ollama **oficial** en desarrollo (el de Homebrew no tiene salida estructurada); documentarlo en INSTALLATION.md
