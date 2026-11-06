@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Ejecuta todas las comprobaciones (lint, tipos, pruebas) de backend, frontend y Rust.
-# Uso: scripts/check.sh [backend|frontend|rust]   (sin argumento: todo)
+# Uso: scripts/check.sh [backend|frontend|rust|e2e]   (sin argumento: todo)
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export PATH="/opt/homebrew/opt/rustup/bin:$PATH"
@@ -30,5 +30,10 @@ if [[ $what == all || $what == rust ]]; then
   cargo fmt --check
   cargo clippy --all-targets --quiet -- -D warnings
   cargo test --quiet
+fi
+if [[ $what == all || $what == e2e ]]; then
+  echo "── e2e (WebKit; requiere: cd app && npx playwright install webkit)"
+  cd "$ROOT/app"
+  npm run --silent e2e
 fi
 echo "✔ Todo correcto"

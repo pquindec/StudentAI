@@ -63,7 +63,12 @@ export class HttpTransport implements ApiTransport {
   private readonly baseUrl: string
   private readonly fetchFn: typeof fetch
 
-  constructor(baseUrl: string, fetchFn: typeof fetch = fetch) {
+  // `fetch` se llama siempre sobre `globalThis`: guardado y llamado como método del transporte
+  // lanza «Illegal invocation» en los navegadores (detectado en las pruebas E2E de la Fase 9).
+  constructor(
+    baseUrl: string,
+    fetchFn: typeof fetch = (input, init) => globalThis.fetch(input, init),
+  ) {
     this.baseUrl = baseUrl
     this.fetchFn = fetchFn
   }

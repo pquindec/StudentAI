@@ -15,7 +15,7 @@ Formato único:
 ```json
 { "error": { "code": "unauthorized", "message": "No autorizado" } }
 ```
-`message` está en español y puede mostrarse al usuario. Nunca se devuelven trazas. Si el fallo ocurre en Rust (backend caído, ruta no permitida), la UI recibe `ApiError` con `code = "transport_error"`.
+`message` está en español y puede mostrarse al usuario. Nunca se devuelven trazas. Errores generales: `invalid_body` (400, JSON ilegible), `invalid_data` (422), `not_found` (404), `method_not_allowed` (405), `too_large` (413, cuerpo > 16 MB) y `length_required` (411, cuerpo sin `Content-Length`). Si el fallo ocurre en Rust (backend caído, ruta no permitida), la UI recibe `ApiError` con `code = "transport_error"`.
 
 ## Endpoints (v1)
 | Método | Ruta | Descripción |

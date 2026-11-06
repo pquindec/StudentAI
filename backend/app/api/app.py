@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routes import (
     ai,
@@ -23,7 +24,8 @@ from app.api.routes import (
 )
 from app.core.config import APP_VERSION, Settings
 from app.core.errors import AppError, from_integrity_error
-from app.core.security import TokenAuthMiddleware
+from app.core.limits import MAX_REQUEST_BYTES
+from app.core.security import BodyLimitMiddleware, TokenAuthMiddleware
 from app.jobs.scheduler import Scheduler
 
 log = logging.getLogger(__name__)
@@ -75,6 +77,23 @@ def create_app(settings: Settings, run_jobs: bool = True) -> FastAPI:
         err = from_integrity_error(exc)
         return JSONResponse(status_code=err.status, content=err.body())
 
+    # Errores del propio framework (JSON ilegible, ruta o método inexistente): mismo formato
+    # y en español, sin el texto interno en inglés (Fase 9).
+    framework_errors = {
+        400: ("invalid_body", "La petición no es un JSON válido"),
+        404: ("not_found", "No encontrado"),
+        405: ("method_not_allowed", "Método no permitido"),
+    }
+
+    @app.exception_handler(StarletteHTTPException)
+    async def http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
+        code, message = framework_errors.get(exc.status_code, ("http_error", "Petición no válida"))
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": {"code": code, "message": message}},
+            headers=getattr(exc, "headers", None),
+        )
+
     @app.exception_handler(RequestValidationError)
     async def invalid(_: Request, exc: RequestValidationError) -> JSONResponse:
         fields = [".".join(str(p) for p in e.get("loc", [])[1:]) for e in exc.errors()]
@@ -98,5 +117,6 @@ def create_app(settings: Settings, run_jobs: bool = True) -> FastAPI:
             content={"error": {"code": "internal_error", "message": "Error interno"}},
         )
 
-    app.add_middleware(TokenAuthMiddleware, token=settings.token)
+    app.add_middleware(BodyLimitMiddleware, max_bytes=MAX_REQUEST_BYTES)
+    app.add_middleware(TokenAuthMiddleware, token=settings.token)  # el último añadido va primero
     return app

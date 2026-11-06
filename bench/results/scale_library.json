@@ -1,0 +1,55 @@
+{
+  "documents": 500,
+  "import_requests_s": 2.8,
+  "kinds": {
+    "paste": 350,
+    "pdf": 100,
+    "docx": 50
+  },
+  "pasted_chars": 6546226,
+  "processing_and_index_s": 525.0,
+  "sources": 500,
+  "failed": 0,
+  "rag": {
+    "embed_model": "qwen3-embedding:0.6b",
+    "embed_ready": true,
+    "embed_problem": null,
+    "vector_search": true,
+    "sources": 500,
+    "indexed": 500,
+    "pending": 0
+  },
+  "list_page_50": {
+    "p50_ms": 2.7,
+    "p95_ms": 5.3
+  },
+  "list_last_page": {
+    "p50_ms": 2.2,
+    "p95_ms": 2.4
+  },
+  "filter_text": {
+    "p50_ms": 1.5,
+    "p95_ms": 1.8
+  },
+  "filter_subject_kind": {
+    "p50_ms": 2.0,
+    "p95_ms": 2.1
+  },
+  "subjects": {
+    "p50_ms": 1.1,
+    "p95_ms": 1.2
+  },
+  "assistant_search_all": {
+    "p50_ms": 41.8,
+    "p95_ms": 47.3
+  },
+  "assistant_search_subject": {
+    "p50_ms": 34.9,
+    "p95_ms": 36.6
+  },
+  "chunks": 6773,
+  "db_mb": 64.7,
+  "data_dir_mb": 616.7,
+  "backend_peak_rss_mb": 189,
+  "children_peak_rss_mb": 101
+}

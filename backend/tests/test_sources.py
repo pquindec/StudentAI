@@ -117,6 +117,11 @@ def test_docx_structure(
             "patrón;familia\nSingleton;Creacional\n".encode(),
             "| Singleton | Creacional |",
         ),
+        (  # saltos de línea de Mac antiguo (\r) y un salto dentro de una celda entre comillas
+            "mac.csv",
+            'patrón;familia\rSingleton;"Crea\rcional"\rAdapter;Estructural\r'.encode(),
+            "| Adapter | Estructural |",
+        ),
     ],
 )
 def test_text_formats(
@@ -351,3 +356,56 @@ def test_internal_requires_core_header(
         json={"path": str(p), "subject_id": subject["id"]},
     )
     assert r.status_code == 403
+
+
+# ------------------------------------------------------------------ XML hostil en DOCX (Fase 9)
+def _docx_with_xml(tmp_path: Path, name: str, xml: str) -> Path:
+    import zipfile
+
+    src = make_docx(tmp_path / "base.docx")
+    out = tmp_path / name
+    with zipfile.ZipFile(src) as zin, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zout:
+        for item in zin.infolist():
+            data = zin.read(item.filename)
+            if item.filename == "word/document.xml":
+                data = xml.encode()
+            zout.writestr(item, data)
+    return out
+
+
+_W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
+
+
+@pytest.mark.parametrize(
+    ("name", "xml"),
+    [
+        (  # XXE: intenta leer un archivo del Mac
+            "xxe.docx",
+            '<?xml version="1.0"?><!DOCTYPE d [<!ENTITY x SYSTEM "file:///etc/passwd">]>'
+            f"<w:document {_W}><w:body><w:p><w:r><w:t>A &x; B</w:t></w:r></w:p></w:body>"
+            "</w:document>",
+        ),
+        (  # «billion laughs»: expansión exponencial de entidades
+            "risas.docx",
+            '<?xml version="1.0"?><!DOCTYPE d [<!ENTITY a "jajajajaja">'
+            + "".join(
+                f'<!ENTITY {c} "{("&" + p + ";") * 10}">'
+                for p, c in zip("abcdefgh", "bcdefghi", strict=True)
+            )
+            + f"]><w:document {_W}><w:body><w:p><w:r><w:t>&i;</w:t></w:r></w:p></w:body>"
+            "</w:document>",
+        ),
+    ],
+)
+def test_hostile_xml_in_docx_is_never_expanded(
+    client: TestClient, auth: H, subject: dict[str, Any], tmp_path: Path, name: str, xml: str
+) -> None:
+    r = import_file(client, auth, subject["id"], _docx_with_xml(tmp_path, name, xml))
+    assert r.status_code == 201, r.text
+    s = wait_done(client, auth, r.json()["id"])
+    if s["status"] == "ready":
+        text = client.get(f"/api/v1/sources/{s['id']}/content", headers=auth).json()["text"]
+        assert "root:" not in text and "nobody" not in text  # /etc/passwd no se leyó
+        assert len(text) < 10_000  # las entidades no se expandieron
+    else:
+        assert s["status"] == "failed" and s["error_message"], s

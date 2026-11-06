@@ -1,0 +1,57 @@
+{
+  "seed": 9,
+  "per_format": 300,
+  "cases": 2100,
+  "duration_s": 25.3,
+  "outcomes": {
+    "txt": {
+      "rechazado:content_mismatch": 71,
+      "ok": 178,
+      "fallo:binary": 49,
+      "rechazado:empty_file": 2
+    },
+    "md": {
+      "rechazado:content_mismatch": 68,
+      "ok": 191,
+      "fallo:binary": 39,
+      "rechazado:empty_file": 2
+    },
+    "csv": {
+      "ok": 198,
+      "rechazado:content_mismatch": 54,
+      "fallo:binary": 48
+    },
+    "rtf": {
+      "rechazado:content_mismatch": 75,
+      "ok": 225
+    },
+    "pdf": {
+      "rechazado:content_mismatch": 13,
+      "fallo:corrupt": 163,
+      "fallo:no_text": 19,
+      "fallo:crashed": 52,
+      "ok": 53
+    },
+    "docx": {
+      "fallo:corrupt": 216,
+      "ok": 82,
+      "rechazado:content_mismatch": 1,
+      "fallo:crashed": 1
+    },
+    "wav": {
+      "ok": 300
+    }
+  },
+  "slowest_s": {
+    "txt": 0.06,
+    "md": 0.14,
+    "csv": 0.12,
+    "rtf": 0.07,
+    "pdf": 0.25,
+    "docx": 0.1,
+    "wav": 0.05
+  },
+  "child_peak_rss_mb": 55,
+  "unexpected": [],
+  "kept_failures_in": null
+}

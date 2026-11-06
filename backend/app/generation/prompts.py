@@ -2,6 +2,7 @@
 no confiables (THREAT_MODEL T03): nunca son instrucciones para el modelo."""
 
 import re
+import unicodedata
 from typing import Any
 
 DETAIL = {
@@ -73,13 +74,53 @@ respaldan.
 4. Redacta en español aunque la fuente esté en otro idioma.
 5. Responde solo con JSON que cumpla el esquema."""
 
-_TAG = re.compile(r"<\s*/?\s*fuente", re.IGNORECASE)
-_FAKE_ID = re.compile(r"\[([A-Z]{1,2}\d+)\]")
+# Variantes que el modelo leería igual: anchos completos, corchetes de otros alfabetos y
+# caracteres invisibles intercalados (Fase 9). Solo se toca lo que imita un delimitador.
+_OPENERS = "<" + "".join(
+    map(chr, (0xFF1C, 0xFE64, 0x3008, 0x2039, 0x300A))
+)  # < de ancho completo, angulares
+_BRACKETS = "[" + "".join(map(chr, (0xFF3B, 0x3010, 0x3014, 0x301A)))  # corchetes de apertura
+_CLOSERS = "]" + "".join(map(chr, (0xFF3D, 0x3011, 0x3015, 0x301B)))  # y sus cierres
+_INVISIBLE = re.compile(
+    r"[\s\u00ad\u034f\u061c\u180e\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]"
+)
+_CANDIDATE = re.compile(f"[{re.escape(_OPENERS + _BRACKETS)}]")
+_ID = re.compile(rf"([A-Z]{{1,2}}\d+)[{re.escape(_CLOSERS)}]")
+
+
+def _canon(s: str) -> str:
+    return _INVISIBLE.sub("", unicodedata.normalize("NFKC", s))
+
+
+def neutralize_tag(text: str, tag: str) -> str:
+    """Cambia «<» por «(» si lo que sigue, normalizado, abre o cierra la etiqueta `tag`."""
+    return _neutralize(text, tag)
 
 
 def neutralize(text: str) -> str:
-    """Evita que el contenido cierre el delimitador o imite identificadores de fragmento."""
-    return _FAKE_ID.sub(r"(\1)", _TAG.sub("(fuente", text))
+    """Evita que el contenido cierre el delimitador <fuente> o imite identificadores de
+    fragmento como [A12] (también con caracteres de ancho completo o invisibles)."""
+    return _neutralize(text, "fuente")
+
+
+def _neutralize(text: str, tag: str) -> str:
+    out = list(text)
+    for m in _CANDIDATE.finditer(text):
+        i, ch = m.start(), m.group()
+        after = _canon(text[i + 1 : i + 41])
+        if ch in _OPENERS and after.lstrip("/").lower().startswith(tag):
+            out[i] = "("
+        elif ch in _BRACKETS:
+            idm = _ID.match(after)
+            if idm:
+                out[i] = "("
+                # el cierre correspondiente: el primer corchete de cierre tras el id
+                j = next(
+                    (k for k in range(i + 1, min(len(text), i + 41)) if text[k] in _CLOSERS), None
+                )
+                if j is not None:
+                    out[j] = ")"
+    return "".join(out)
 
 
 def _attr(value: str) -> str:

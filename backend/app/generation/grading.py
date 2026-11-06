@@ -2,11 +2,12 @@
 cortas, con el modelo local según la rúbrica y la evidencia («corregida por IA»)."""
 
 import json
-import re
 from typing import Any
 
-from app.generation.prompts import neutralize
+from app.generation.prompts import neutralize, neutralize_tag
 from app.llm.base import Message
+
+_STUDENT = "respuesta_estudiante"
 
 GRADE_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -29,18 +30,22 @@ está vacía o no responde a la pregunta.
 4. feedback: una o dos frases en español, dirigidas al estudiante, sobre qué falta o qué está \
 bien. Responde solo con JSON."""
 
-_TAG = re.compile(r"<\s*/?\s*respuesta_estudiante", re.IGNORECASE)
+
+def _data(text: str) -> str:
+    """Texto de la pregunta, la rúbrica o la evidencia (sale del material importado): no puede
+    imitar ni el delimitador de las fuentes ni el de la respuesta del estudiante."""
+    return neutralize_tag(neutralize(text), _STUDENT)
 
 
 def grade_messages(q: dict[str, Any], evidence: list[str], answer: str) -> list[Message]:
-    rubric = "\n".join(f"- {neutralize(r)}" for r in json.loads(q["rubric_json"] or "[]"))
-    quotes = "\n".join(f"- «{neutralize(e)}»" for e in evidence)
-    student = _TAG.sub("(respuesta_estudiante", answer)[:2000]
+    rubric = "\n".join(f"- {_data(r)}" for r in json.loads(q["rubric_json"] or "[]"))
+    quotes = "\n".join(f"- «{_data(e)}»" for e in evidence)
+    student = neutralize_tag(answer, _STUDENT)[:2000]
     user = (
-        f"Pregunta: {neutralize(q['stem'])}\n"
-        f"Respuesta modelo: {neutralize(str(json.loads(q['answer_json'])))}\n"
+        f"Pregunta: {_data(q['stem'])}\n"
+        f"Respuesta modelo: {_data(str(json.loads(q['answer_json'])))}\n"
         f"Rúbrica:\n{rubric}\nEvidencia de las fuentes:\n{quotes}\n\n"
-        f"<respuesta_estudiante>\n{student}\n</respuesta_estudiante>\n\nDevuelve el JSON."
+        f"<{_STUDENT}>\n{student}\n</{_STUDENT}>\n\nDevuelve el JSON."
     )
     return [Message("system", GRADE_RULES), Message("user", user)]
 

@@ -15,7 +15,8 @@ scripts/check.sh backend    # solo una parte (preferible tras cambios acotados)
 | Unitarias Rust | cargo test | validación de rutas y métodos del proxy (incl. bloqueo de `/internal`), permisos de rutas de un solo uso |
 | Unitarias frontend | vitest | transportes Tauri/HTTP, errores, codificación de queries e IDs, importador, árbol de unidades, formatos |
 | Estático | ruff, mypy `--strict`, clippy `-D warnings`, oxlint, tsc, prettier | todo el código |
-| E2E | (Fase 9) WebDriver de Tauri o Playwright | — |
+| E2E | Playwright + WebKit (`app/e2e/`, `scripts/check.sh e2e`) | la UI real en Vite contra el backend real por su Unix socket, con modelos simulados: asignatura y texto, resumen con citas, asistente, mazo y repaso, examen, consentimiento de Claude |
+| Seguridad | pytest (`test_dast.py`, `test_injection.py`), `bench/fuzz_files.py`, `bench/bench_injection.py` | ver `QA_REPORT.md` |
 | IA | `bench/` + conjuntos de referencia | ver `BENCHMARKS.md` |
 
 ## Pruebas manuales de la Fase 1 (2026-11-03)

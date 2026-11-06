@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { es } from '../i18n/es'
 import type { SourceStatus } from '../lib/api'
 import { errorMessage } from '../lib/useQuery'
@@ -92,6 +92,9 @@ export function Modal({
   wide?: boolean
 }) {
   const ref = useRef<HTMLDialogElement>(null)
+  // Id único: con dos ventanas abiertas (p. ej. «Generar» y el consentimiento encima) cada una
+  // debe anunciar su propio título.
+  const titleId = useId()
   useEffect(() => {
     const d = ref.current
     if (!d) return
@@ -102,12 +105,12 @@ export function Modal({
     <dialog
       ref={ref}
       onClose={onClose}
-      aria-labelledby="modal-title"
+      aria-labelledby={titleId}
       className={`m-auto w-full ${wide ? 'max-w-2xl' : 'max-w-md'} rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 shadow-xl backdrop:bg-black/40 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100`}
     >
       {open && (
         <div className="p-5">
-          <h2 id="modal-title" className="mb-4 text-base font-semibold">
+          <h2 id={titleId} className="mb-4 text-base font-semibold">
             {title}
           </h2>
           {children}

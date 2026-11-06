@@ -16,8 +16,9 @@
 | 5 — RAG y asistente | ✅ Aprobada por el usuario (2026-11-04) |
 | 6 — Exámenes | ✅ Completada (2026-11-04) — evidencia literal 100 %; en transcripciones 20 % de preguntas dudosas (limitación aceptada, ver BENCHMARKS §7) |
 | 7 — Flashcards y seguimiento | ✅ Aprobada por el usuario (2026-11-06) — en transcripciones 30 % de tarjetas dudosas: limitación aceptada, a mejorar en la Fase 8 con Claude (ver BENCHMARKS §8) |
-| 8 — Cloud y optimización | 🟡 Implementada (2026-11-06), pendiente de tu prueba y aprobación |
-| 9–10 | ⏳ No iniciadas |
+| 8 — Cloud y optimización | ✅ Aprobada por el usuario (2026-11-06) |
+| 9 — QA y seguridad | 🔄 En curso (aprobada para empezar el 2026-11-06) |
+| 10 | ⏳ No iniciada |
 
 ### Ajustes tras la prueba del usuario (2026-11-05)
 - [x] Copiar texto en resúmenes, apuntes y asistente; resúmenes proporcionales al material (0.6.1)
@@ -133,11 +134,12 @@
 - **Criterio de aceptación:** cambiar una tarea entre local y cloud no modifica la lógica de negocio; sin consentimiento no sale ningún byte (verificado con un proxy de red en las pruebas); sin conexión, todo lo local sigue funcionando.
 
 ## Fase 9 — QA y seguridad
-- [ ] Pruebas unitarias, de integración y E2E (Playwright sobre la UI de Tauri o WebDriver)
-- [ ] SAST (Semgrep, Bandit), SCA (pip-audit, npm audit, cargo audit, Trivy), Gitleaks
-- [ ] DAST de la API local (ZAP o pruebas propias sobre el socket)
-- [ ] Fuzzing de archivos malformados; batería de prompt injection; revisión de capabilities de Tauri
-- [ ] Pruebas de rendimiento y estabilidad (audio de 3 h, biblioteca de 500 documentos)
+- [x] Pruebas unitarias, de integración y E2E (Playwright + WebKit, 7 flujos contra el backend real)
+- [x] SAST (Semgrep, Bandit), SCA (pip-audit, npm audit, cargo audit, Trivy), Gitleaks
+- [x] DAST de la API local (pruebas propias: token, aislamiento ruta a ruta, entradas hostiles, tamaño)
+- [x] Fuzzing de archivos malformados; batería de prompt injection; revisión de capabilities de Tauri
+- [x] Pruebas de rendimiento y estabilidad (audio de 3 h en 11,6 min; 500 documentos sin fallos)
+- [x] Informe `QA_REPORT.md`: 0 críticos/altos; 3 medios y 6 bajos/informativos corregidos
 - **Criterio de aceptación:** informe con hallazgos, evidencias, severidad y estado; 0 críticos/altos abiertos.
 
 ## Fase 10 — Empaquetado

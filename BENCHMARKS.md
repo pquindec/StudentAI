@@ -144,6 +144,12 @@ Script: `bench/bench_exam.py [--real <app.db> --out <ruta>]` (corpus en `bench/r
 - Pico de memoria 8,5 GB (generación y revisor con el mismo modelo).
 - Todas las tarjetas se pueden editar, suspender o borrar, y muestran su cita.
 
+## 9. Fase 9: escala y estabilidad (pipeline real, 2026-11-06)
+Detalle en `QA_REPORT.md` §8; datos en `bench/results/scale_*.json`.
+- **500 documentos** (350 textos, 100 PDF, 50 Word): 0 fallos; extraer e indexar 6.773 fragmentos en 525 s; listado y filtros de la biblioteca ≤ 5,3 ms (p95); búsqueda del asistente 42 ms (p50) en toda la biblioteca; BD de 64,7 MB; backend ≤ 189 MB.
+- **Audio de 3 h** (185,6 min): transcrito e indexado en 696,6 s (≈ 16× tiempo real); último segmento en el minuto 185,5; subprocesos ≤ 966 MB; nunca menos de 7,8 GB libres.
+- **Prompt injection con el modelo real** (`bench_injection.py`): 0 órdenes obedecidas; la respuesta tramposa en la corrección obtuvo 0 puntos.
+
 ## 5. Resumen de decisiones
 
 | Componente | Por defecto | Alternativa | Descartado |

@@ -1,0 +1,21 @@
+{
+  "hours": 3,
+  "file_mb": 340,
+  "total_s": 696.6,
+  "status": "ready",
+  "content_ms": 16,
+  "content_mb": 0.74,
+  "segments": 1977,
+  "chars": 231594,
+  "last_timestamp_min": 185.5,
+  "max_gap_s": 13.0,
+  "index": {
+    "status": "ready",
+    "chunks": 201,
+    "embedded": 201,
+    "error": null
+  },
+  "min_available_mb_during": 7854,
+  "children_peak_rss_mb": 966,
+  "backend_peak_rss_mb": 117
+}

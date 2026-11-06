@@ -23,16 +23,39 @@ class TokenAuthMiddleware:
             return
         provided = dict(scope["headers"]).get(b"authorization", b"")
         if not hmac.compare_digest(provided, self.expected):
-            body = json.dumps(
-                {"error": {"code": "unauthorized", "message": "No autorizado"}}
-            ).encode()
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": 401,
-                    "headers": [(b"content-type", b"application/json")],
-                }
-            )
-            await send({"type": "http.response.body", "body": body})
+            await _error(send, 401, "unauthorized", "No autorizado")
             return
         await self.app(scope, receive, send)
+
+
+class BodyLimitMiddleware:
+    """Rechaza cuerpos demasiado grandes antes de leerlos (Fase 9). El proxy de Rust siempre
+    envía `Content-Length`; un cuerpo sin longitud declarada (chunked) no es legítimo."""
+
+    def __init__(self, app: ASGIApp, max_bytes: int) -> None:
+        self.app = app
+        self.max_bytes = max_bytes
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http":
+            headers = dict(scope["headers"])
+            length = headers.get(b"content-length")
+            if length is None and b"transfer-encoding" in headers:
+                await _error(send, 411, "length_required", "Falta la longitud de la petición")
+                return
+            if length is not None and (not length.isdigit() or int(length) > self.max_bytes):
+                await _error(send, 413, "too_large", "La petición es demasiado grande")
+                return
+        await self.app(scope, receive, send)
+
+
+async def _error(send: Send, status: int, code: str, message: str) -> None:
+    body = json.dumps({"error": {"code": code, "message": message}}).encode()
+    await send(
+        {
+            "type": "http.response.start",
+            "status": status,
+            "headers": [(b"content-type", b"application/json")],
+        }
+    )
+    await send({"type": "http.response.body", "body": body})

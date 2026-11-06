@@ -113,11 +113,16 @@ def extract_csv(path: Path) -> Extraction:
         dialect = csv.excel
     rows: list[list[str]] = []
     truncated = False
-    for i, row in enumerate(csv.reader(io.StringIO(text), dialect)):
-        if i >= limits.CSV_MAX_ROWS:
-            truncated = True
-            break
-        rows.append(row)
+    # newline="": el lector de csv reconoce \r, \n y \r\n (CSV de Mac antiguos, saltos dentro
+    # de celdas entre comillas). Celdas enormes o comillas imposibles → error controlado.
+    try:
+        for i, row in enumerate(csv.reader(io.StringIO(text, newline=""), dialect)):
+            if i >= limits.CSV_MAX_ROWS:
+                truncated = True
+                break
+            rows.append(row)
+    except csv.Error as exc:
+        raise ExtractionError("corrupt", "El CSV está dañado o tiene un formato no válido") from exc
     if not rows:
         raise ExtractionError("empty", "El CSV está vacío")
     header, body = rows[0], rows[1:]

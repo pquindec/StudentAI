@@ -33,6 +33,22 @@ describe('HttpTransport', () => {
     )
     expect(res).toEqual({ status: 201, body: { ok: true } })
   })
+
+  it('llama a fetch sobre globalThis, como exigen los navegadores', async () => {
+    const real = globalThis.fetch
+    globalThis.fetch = function (this: unknown) {
+      if (this !== undefined && this !== globalThis) throw new TypeError('Illegal invocation')
+      return Promise.resolve(new Response('null', { status: 200 }))
+    } as typeof fetch
+    try {
+      await expect(new HttpTransport('').request('GET', '/api/v1/health')).resolves.toEqual({
+        status: 200,
+        body: null,
+      })
+    } finally {
+      globalThis.fetch = real
+    }
+  })
 })
 
 describe('ApiClient', () => {

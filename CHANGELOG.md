@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.9.0] — 2026-11-06 · Fase 9: QA y seguridad
+### Seguridad (corregido)
+- **Trabajos en proceso aislados por usuario:** los trabajos sin fuente asociada (apuntes, mazos, exámenes, correcciones, respuestas del asistente) se veían y podían cancelarse desde cualquier usuario. Ahora cada trabajo pertenece al dueño de lo que procesa.
+- **Prompt injection con trucos Unicode:** un documento podía imitar los delimitadores de las fuentes o los ids de fragmento con caracteres invisibles, de ancho completo o corchetes CJK (`＜/ｆｕｅｎｔｅ＞`, `【A1】`…). Ahora se normalizan antes de compararlos. El texto normal (`array[i] < 5`) no cambia.
+- **Corrección por IA:** el enunciado, la rúbrica y la evidencia de las fuentes tampoco pueden fingir una respuesta del estudiante.
+- **Límite de tamaño en el backend:** peticiones de más de 16 MB → 413; sin longitud declarada → 411 (el proxy de la app ya limitaba a 1 MB).
+### Corregido
+- CSV con saltos de línea de Mac antiguo (`\r`) o con celdas enormes: se leen o fallan con «El CSV está dañado», no con un error genérico.
+- Errores de la API por JSON ilegible, ruta o método inexistente: ahora en español y con el formato de siempre.
+- El transporte HTTP (modo web futuro) fallaba en cualquier navegador («Illegal invocation»).
+- Dos ventanas abiertas a la vez compartían el mismo título accesible.
+- El panel «En proceso» muestra nombres en español para todos los trabajos.
+### Añadido (pruebas)
+- **E2E** con Playwright sobre WebKit (el motor del WebView de macOS): 7 flujos contra el backend real. `scripts/check.sh e2e`. Requiere una vez `cd app && npx playwright install webkit`.
+- **DAST propio** de la API (79 operaciones): token obligatorio, aislamiento entre propietarios ruta a ruta, más de 2.000 entradas hostiles sin ningún 5xx.
+- Batería de **prompt injection** (unitaria y con el modelo real), **fuzzing** de archivos malformados (2.100 casos) y pruebas de **escala** (biblioteca de 500 documentos, audio de 3 h).
+- Informe completo: `QA_REPORT.md`.
+### Dependencias
+- Solo de desarrollo: `@playwright/test` 1.64.1 (Apache-2.0). Herramientas de análisis fuera del proyecto (Homebrew/uvx): gitleaks, trivy, cargo-audit, bandit, semgrep, pip-audit.
+
 ## [0.8.0] — 2026-11-06 · Fase 8: Claude en la nube, solo con tu permiso
 ### Añadido
 - **Configuración › Claude** (antes «Próximamente»): activar Claude (desactivado por defecto), vía, modelo (Sonnet 5.5 por defecto), tareas permitidas, límites mensuales, consentimientos de la sesión y registro de envíos.

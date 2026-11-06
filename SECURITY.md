@@ -47,9 +47,18 @@ Amenazas y riesgos: `THREAT_MODEL.md`. Este archivo lista **solo lo que está im
 | Límite mensual por vía comprobado antes de cada llamada; registro de envíos sin contenido | `services/cloud.py::Gate` | `test_monthly_limit_blocks_and_continues_locally` |
 | Clave API solo en el Keychain; la API devuelve solo los 4 últimos caracteres | `core/secrets.py`, `routes/cloud.py` | `test_api_key_lives_in_keychain_not_in_db` |
 | Plan de Claude: solo se ejecuta el binario oficial, sin herramientas, MCP ni ajustes, sin variables `ANTHROPIC_*`; nunca se leen sus credenciales; el prompt no puede ser un comando «/» | `llm/claude_code.py` | `test_plan_via_runs_claude_code_without_tools_or_credentials`, `test_prompt_never_starts_with_a_slash_command` |
+| Límite del cuerpo de las peticiones también en el backend (además del proxy): 413 por encima de 16 MB, 411 sin `Content-Length` | `core/security.py::BodyLimitMiddleware` | `test_request_size_is_limited` |
+| Cada trabajo de la cola pertenece al dueño de lo que procesa (fuente, apunte, mazo, examen, intento, mensaje); otro usuario no lo ve ni lo cancela | `routes/jobs.py` | `test_another_owner_cannot_reach_or_change_anything` |
+| Neutralización de delimitadores resistente a Unicode: se normaliza (NFKC, sin caracteres invisibles) lo que sigue a cada `<` o `[` (y sus variantes de ancho completo o CJK) antes de compararlo | `generation/prompts.py::neutralize` | `tests/test_injection.py` |
+| Corrección por IA: enunciado, rúbrica y evidencia tampoco pueden cerrar ni abrir `<respuesta_estudiante>` | `generation/grading.py` | `test_grading_prompt` |
+| XML hostil en DOCX (XXE, entidades en expansión) nunca se resuelve | `extractors.py` (python-docx/lxml sin red ni entidades) | `test_hostile_xml_in_docx_is_never_expanded` |
+| DAST propio: las 79 operaciones exigen token; con otro propietario, ninguna ruta lee ni modifica nada (hash de la BD idéntico); más de 2.000 entradas hostiles sin ningún 5xx ni traza | `tests/test_dast.py` | 4 pruebas |
+| E2E en WebKit (el motor del WebView de macOS) con el backend real: flujos principales y consentimiento de Claude | `app/e2e/` | 7 pruebas Playwright |
+
+Informe completo de la Fase 9 (SAST, SCA, DAST, fuzzing, prompt injection, rendimiento): `QA_REPORT.md`.
 
 ## Pendiente (fases siguientes)
-SAST/SCA/DAST, fuzzing y batería de prompt injection (Fase 9).
+Firma y notarización del `.app` (Fase 10).
 
 ## Reportar un problema
 Proyecto personal: abre una nota en `TASKS.md` con la etiqueta `[SEGURIDAD]`.

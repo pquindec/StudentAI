@@ -14,6 +14,9 @@ MAX_BYTES = {
 MAX_PDF_PAGES = 2000
 MAX_AUDIO_MS = 6 * 3600 * 1000  # 6 horas
 MAX_PASTED_CHARS = 2_000_000
+# Cuerpo de una petición a la API (JSON). El mayor legítimo es un texto pegado: ≤ 2M
+# caracteres ≈ 8 MB en UTF-8. Los archivos no pasan por aquí (se importan por ruta).
+MAX_REQUEST_BYTES = 16 * MB
 
 # DOCX (zip): defensa ante "zip bombs".
 DOCX_MAX_ENTRIES = 10_000
