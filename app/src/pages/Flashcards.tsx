@@ -110,7 +110,12 @@ function NewDeckDialog({
       const deck = await api.createDeck(subjectId, {
         title: title.trim() || null,
         count,
-        scope: { source_ids: sourceIds, unit_ids: unitIds, exclude_source_ids: [] },
+        // Solo lo que se ve marcado en esta asignatura.
+        scope: {
+          source_ids: sourceIds.filter((id) => usable.some((s) => s.id === id)),
+          unit_ids: unitIds.filter((id) => units.some((u) => u.unit.id === id)),
+          exclude_source_ids: [],
+        },
       })
       onClose()
       navigate({ name: 'deck', id: deck.id })
@@ -305,8 +310,9 @@ export function Flashcards() {
           </>
         )}
       </Card>
-      {subjectId && (
-        <NewDeckDialog open={open} subjectId={subjectId} onClose={() => setOpen(false)} />
+      {/* Se monta al abrir (y por asignatura): no arrastra lo marcado en otra asignatura. */}
+      {subjectId && open && (
+        <NewDeckDialog key={subjectId} open subjectId={subjectId} onClose={() => setOpen(false)} />
       )}
     </div>
   )

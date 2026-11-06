@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.1] — 2026-11-06 · Corrección al crear mazos y exámenes
+### Corregido
+- «Alguna fuente elegida no es de esta asignatura» al crear un mazo: la ventana conservaba las fuentes marcadas en otra asignatura (ocultas). Ahora la ventana empieza de cero cada vez que se abre y solo envía fuentes y temas de la asignatura actual. El mismo fallo existía en «Nuevo examen» y queda corregido igual.
+
 ## [0.7.0] — 2026-11-06 · Fase 7: flashcards y estadísticas
 ### Añadido
 - **Flashcards**: mazos creados con la IA local desde tus fuentes (por asignatura, temas o fuentes). Cada tarjeta guarda la frase literal que la respalda (comprobada); un revisor descarta las no respaldadas, poco claras o poco útiles. Si no hay material para todas, el mazo indica cuántas se pudieron crear.

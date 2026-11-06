@@ -119,7 +119,12 @@ function NewExamDialog({
           time_limit_min: mode === 'timed' ? minutes : null,
           penalty: Number(penalty),
         },
-        scope: { source_ids: sourceIds, unit_ids: unitIds, exclude_source_ids: [] },
+        // Solo lo que se ve marcado en esta asignatura.
+        scope: {
+          source_ids: sourceIds.filter((id) => usable.some((s) => s.id === id)),
+          unit_ids: unitIds.filter((id) => units.some((u) => u.unit.id === id)),
+          exclude_source_ids: [],
+        },
       })
       onClose()
       navigate({ name: 'exam', id: exam.id })
@@ -375,8 +380,9 @@ export function Exams() {
           </>
         )}
       </Card>
-      {subjectId && (
-        <NewExamDialog open={open} subjectId={subjectId} onClose={() => setOpen(false)} />
+      {/* Se monta al abrir (y por asignatura): no arrastra lo marcado en otra asignatura. */}
+      {subjectId && open && (
+        <NewExamDialog key={subjectId} open subjectId={subjectId} onClose={() => setOpen(false)} />
       )}
     </div>
   )
