@@ -1,7 +1,8 @@
 """Interfaz común de los modelos de lenguaje (ADR-005).
 
-La lógica de negocio solo conoce `LLMProvider`; Ollama es la implementación local. Un futuro
-proveedor en la nube deberá pasar por el consentimiento explícito (ARCHITECTURE §10).
+La lógica de negocio solo conoce `LLMProvider`. Implementaciones: Ollama (local), la API de Claude
+con clave (`claude_api`) y Claude Code con el plan del usuario (`claude_code`). Los proveedores de
+la nube solo se crean desde `services/engine.py`, tras validar el consentimiento (ARCHITECTURE §10).
 """
 
 from collections.abc import Callable
@@ -45,6 +46,8 @@ class ChatResult:
     input_tokens: int | None
     output_tokens: int | None
     duration_ms: int
+    cost_usd: float | None = None  # solo en la nube (con el plan: coste equivalente)
+    model: str | None = None  # modelo que respondió de verdad (la nube puede usar uno de respaldo)
 
 
 @dataclass

@@ -2993,6 +2993,311 @@
           }
         }
       }
+    },
+    "/api/v1/cloud/status": {
+      "get": {
+        "tags": ["cloud"],
+        "summary": "Cloud Status",
+        "operationId": "cloud_status_api_v1_cloud_status_get",
+        "parameters": [
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Refresh"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cloud/settings": {
+      "put": {
+        "tags": ["cloud"],
+        "summary": "Update Settings",
+        "operationId": "update_settings_api_v1_cloud_settings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloudSettingsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cloud/api-key": {
+      "put": {
+        "tags": ["cloud"],
+        "summary": "Set Api Key",
+        "operationId": "set_api_key_api_v1_cloud_api_key_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiKeyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["cloud"],
+        "summary": "Delete Api Key",
+        "operationId": "delete_api_key_api_v1_cloud_api_key_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudStatusOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cloud/preview": {
+      "post": {
+        "tags": ["cloud"],
+        "summary": "Preview",
+        "operationId": "preview_api_v1_cloud_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cloud/consents": {
+      "post": {
+        "tags": ["cloud"],
+        "summary": "Give Consent",
+        "description": "Registra el consentimiento para lo que se ha mostrado en la vista previa.",
+        "operationId": "give_consent_api_v1_cloud_consents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["cloud"],
+        "summary": "Revoke Session Consents",
+        "operationId": "revoke_session_consents_api_v1_cloud_consents_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/v1/cloud/consents/{consent_id}": {
+      "delete": {
+        "tags": ["cloud"],
+        "summary": "Revoke Consent",
+        "operationId": "revoke_consent_api_v1_cloud_consents__consent_id__delete",
+        "parameters": [
+          {
+            "name": "consent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Consent Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cloud/requests": {
+      "get": {
+        "tags": ["cloud"],
+        "summary": "List Requests",
+        "operationId": "list_requests_api_v1_cloud_requests_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CloudRequestOut"
+                  },
+                  "title": "Response List Requests Api V1 Cloud Requests Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3250,6 +3555,20 @@
         "type": "object",
         "required": ["question_id", "flagged", "checked"],
         "title": "AnswerStateOut"
+      },
+      "ApiKeyIn": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 20,
+            "pattern": "^sk-ant-\\S+$",
+            "title": "Key"
+          }
+        },
+        "type": "object",
+        "required": ["key"],
+        "title": "ApiKeyIn"
       },
       "AttemptOut": {
         "properties": {
@@ -3771,6 +4090,387 @@
         ],
         "title": "CitationOut"
       },
+      "CloudModelOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "input_usd": {
+            "type": "number",
+            "title": "Input Usd"
+          },
+          "output_usd": {
+            "type": "number",
+            "title": "Output Usd"
+          }
+        },
+        "type": "object",
+        "required": ["id", "label", "input_usd", "output_usd"],
+        "title": "CloudModelOut"
+      },
+      "CloudRequestOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "task": {
+            "type": "string",
+            "title": "Task"
+          },
+          "via": {
+            "type": "string",
+            "enum": ["api", "plan"],
+            "title": "Via"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ok", "failed", "blocked"],
+            "title": "Status"
+          },
+          "chars_sent": {
+            "type": "integer",
+            "title": "Chars Sent"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Tokens"
+          },
+          "output_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Tokens"
+          },
+          "cost_usd": {
+            "type": "number",
+            "title": "Cost Usd"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "task",
+          "via",
+          "model",
+          "status",
+          "chars_sent",
+          "input_tokens",
+          "output_tokens",
+          "cost_usd",
+          "error",
+          "created_at"
+        ],
+        "title": "CloudRequestOut"
+      },
+      "CloudSettingsIn": {
+        "properties": {
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "via": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["auto", "api", "plan"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Via"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "tasks": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "boolean"
+                },
+                "propertyNames": {
+                  "enum": ["chat", "docs", "generate", "review"]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tasks"
+          },
+          "limit_api": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Api"
+          },
+          "limit_plan": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Plan"
+          }
+        },
+        "type": "object",
+        "title": "CloudSettingsIn"
+      },
+      "CloudStatusOut": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "via_pref": {
+            "type": "string",
+            "enum": ["auto", "api", "plan"],
+            "title": "Via Pref"
+          },
+          "via": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["api", "plan"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Via"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/CloudModelOut"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "tasks": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "propertyNames": {
+              "enum": ["chat", "docs", "generate", "review"]
+            },
+            "type": "object",
+            "title": "Tasks"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/PlanOut"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/ViaAmountsOut"
+          },
+          "spent": {
+            "$ref": "#/components/schemas/ViaAmountsOut"
+          },
+          "session_consents": {
+            "items": {
+              "$ref": "#/components/schemas/SessionConsentOut"
+            },
+            "type": "array",
+            "title": "Session Consents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "via_pref",
+          "via",
+          "model",
+          "models",
+          "tasks",
+          "api_key",
+          "plan",
+          "limits",
+          "spent",
+          "session_consents"
+        ],
+        "title": "CloudStatusOut"
+      },
+      "ConsentIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["chat", "docs", "deck", "exam"],
+            "title": "Kind"
+          },
+          "subject_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject Id"
+          },
+          "source_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Source Ids",
+            "default": []
+          },
+          "scope": {
+            "$ref": "#/components/schemas/ExamScopeIn",
+            "default": {
+              "unit_ids": [],
+              "source_ids": [],
+              "exclude_source_ids": []
+            }
+          },
+          "count": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "default": 20
+          },
+          "thread_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["once", "session"],
+            "title": "Mode",
+            "default": "once"
+          }
+        },
+        "type": "object",
+        "required": ["kind"],
+        "title": "ConsentIn"
+      },
+      "ConsentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["once", "session"],
+            "title": "Mode"
+          }
+        },
+        "type": "object",
+        "required": ["id", "mode"],
+        "title": "ConsentOut"
+      },
       "ContentIn": {
         "properties": {
           "text": {
@@ -4001,6 +4701,18 @@
               "source_ids": [],
               "exclude_source_ids": []
             }
+          },
+          "consent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent Id"
           }
         },
         "type": "object",
@@ -4301,6 +5013,18 @@
               }
             ],
             "title": "Title"
+          },
+          "consent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent Id"
           }
         },
         "type": "object",
@@ -4582,6 +5306,18 @@
               "source_ids": [],
               "exclude_source_ids": []
             }
+          },
+          "consent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent Id"
           }
         },
         "type": "object",
@@ -5000,6 +5736,18 @@
             "maxLength": 4000,
             "minLength": 1,
             "title": "Text"
+          },
+          "consent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent Id"
           }
         },
         "type": "object",
@@ -5157,6 +5905,32 @@
         ],
         "title": "ModelOut"
       },
+      "PlanOut": {
+        "properties": {
+          "installed": {
+            "type": "boolean",
+            "title": "Installed"
+          },
+          "logged_in": {
+            "type": "boolean",
+            "title": "Logged In"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
+          }
+        },
+        "type": "object",
+        "required": ["installed", "logged_in", "plan"],
+        "title": "PlanOut"
+      },
       "PointOut": {
         "properties": {
           "text": {
@@ -5174,6 +5948,219 @@
         "type": "object",
         "required": ["text", "refs"],
         "title": "PointOut"
+      },
+      "PreviewIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["chat", "docs", "deck", "exam"],
+            "title": "Kind"
+          },
+          "subject_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject Id"
+          },
+          "source_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Source Ids",
+            "default": []
+          },
+          "scope": {
+            "$ref": "#/components/schemas/ExamScopeIn",
+            "default": {
+              "unit_ids": [],
+              "source_ids": [],
+              "exclude_source_ids": []
+            }
+          },
+          "count": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "default": 20
+          },
+          "thread_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": ["kind"],
+        "title": "PreviewIn"
+      },
+      "PreviewOut": {
+        "properties": {
+          "cloud": {
+            "type": "boolean",
+            "title": "Cloud"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["disabled", "task_local", "no_via", "limit"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "tasks": {
+            "items": {
+              "type": "string",
+              "enum": ["chat", "docs", "generate", "review"]
+            },
+            "type": "array",
+            "title": "Tasks"
+          },
+          "via": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["api", "plan"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Via"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/PreviewSourceOut"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "fragments": {
+            "type": "integer",
+            "title": "Fragments"
+          },
+          "chars": {
+            "type": "integer",
+            "title": "Chars"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          },
+          "sends": {
+            "type": "boolean",
+            "title": "Sends"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "est_cost_usd": {
+            "type": "number",
+            "title": "Est Cost Usd"
+          },
+          "spent_usd": {
+            "type": "number",
+            "title": "Spent Usd"
+          },
+          "limit_usd": {
+            "type": "number",
+            "title": "Limit Usd"
+          },
+          "session_consent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Consent Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cloud",
+          "reason",
+          "tasks",
+          "via",
+          "model",
+          "sources",
+          "fragments",
+          "chars",
+          "text",
+          "truncated",
+          "sends",
+          "notes",
+          "est_cost_usd",
+          "spent_usd",
+          "limit_usd",
+          "session_consent_id"
+        ],
+        "title": "PreviewOut"
+      },
+      "PreviewSourceOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": ["id", "title", "kind"],
+        "title": "PreviewSourceOut"
       },
       "QuestionOut": {
         "properties": {
@@ -5468,6 +6455,43 @@
           "char_end"
         ],
         "title": "SegmentOut"
+      },
+      "SessionConsentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["chat", "docs", "deck", "exam"],
+            "title": "Kind"
+          },
+          "tasks": {
+            "items": {
+              "type": "string",
+              "enum": ["chat", "docs", "generate", "review"]
+            },
+            "type": "array",
+            "title": "Tasks"
+          },
+          "via": {
+            "type": "string",
+            "enum": ["api", "plan"],
+            "title": "Via"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "kind", "tasks", "via", "model", "created_at"],
+        "title": "SessionConsentOut"
       },
       "SessionIn": {
         "properties": {
@@ -6969,6 +7993,21 @@
         "type": "object",
         "required": ["version", "origin", "char_count", "created_at"],
         "title": "VersionInfo"
+      },
+      "ViaAmountsOut": {
+        "properties": {
+          "api": {
+            "type": "number",
+            "title": "Api"
+          },
+          "plan": {
+            "type": "number",
+            "title": "Plan"
+          }
+        },
+        "type": "object",
+        "required": ["api", "plan"],
+        "title": "ViaAmountsOut"
       },
       "WeakTopicOut": {
         "properties": {

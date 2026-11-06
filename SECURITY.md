@@ -42,9 +42,14 @@ Amenazas y riesgos: `THREAT_MODEL.md`. Este archivo lista **solo lo que está im
 | Corrección por IA: la respuesta del estudiante va delimitada como datos (etiqueta neutralizada), salida con esquema (0 / 0,5 / 1) y marcada «Corregida por IA» | `generation/grading.py` | `test_student_answer_cannot_escape_delimiter`, `test_short_answers_are_graded_by_ai` |
 | Consulta FTS construida solo con palabras entre comillas (sin operadores del usuario) | `rag/search.py::fts_query` | `test_fts_query_is_safe` |
 | Vínculos solo dentro de la misma asignatura (servicio + trigger) | `services/sources.py`, `0002` | `test_links_must_be_same_subject` |
+| Claude desactivado por defecto; ningún byte sale sin un consentimiento válido para esa tarea, vía y modelo | `services/cloud.py::authorize`, `services/engine.py` | `test_disabled_by_default_and_nothing_leaves_without_consent` |
+| Consentimiento «una vez» ligado a un trabajo y a las fuentes/fragmentos mostrados; «sesión» ligado al arranque del backend; revocable | `services/cloud.py`, `services/cloud_preview.py` | `test_consent_only_covers_the_previewed_sources`, `test_session_consent_lasts_until_restart_and_can_be_revoked`, `test_chat_sends_exactly_the_previewed_fragments` |
+| Límite mensual por vía comprobado antes de cada llamada; registro de envíos sin contenido | `services/cloud.py::Gate` | `test_monthly_limit_blocks_and_continues_locally` |
+| Clave API solo en el Keychain; la API devuelve solo los 4 últimos caracteres | `core/secrets.py`, `routes/cloud.py` | `test_api_key_lives_in_keychain_not_in_db` |
+| Plan de Claude: solo se ejecuta el binario oficial, sin herramientas, MCP ni ajustes, sin variables `ANTHROPIC_*`; nunca se leen sus credenciales; el prompt no puede ser un comando «/» | `llm/claude_code.py` | `test_plan_via_runs_claude_code_without_tools_or_credentials`, `test_prompt_never_starts_with_a_slash_command` |
 
 ## Pendiente (fases siguientes)
-Defensa ante prompt injection en exámenes (Fase 6), consentimiento cloud y Keychain (Fase 8), SAST/SCA/DAST (Fase 9).
+SAST/SCA/DAST, fuzzing y batería de prompt injection (Fase 9).
 
 ## Reportar un problema
 Proyecto personal: abre una nota en `TASKS.md` con la etiqueta `[SEGURIDAD]`.

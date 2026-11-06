@@ -1,3 +1,4 @@
+import { useCloudConsent } from '../components/CloudConsent'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CitationPanel, Refs } from '../components/Citations'
 import { CopyButton } from '../components/CopyButton'
@@ -233,6 +234,8 @@ export function Assistant() {
     }
   }
 
+  const askCloud = useCloudConsent()
+
   const send = async () => {
     const q = text.trim()
     if (!q || sending || pending) return
@@ -240,7 +243,12 @@ export function Assistant() {
     setError(null)
     try {
       const id = thread?.id ?? (await api.createThread(draftScope)).id
-      await api.ask(id, q)
+      const consent = await askCloud({ kind: 'chat', thread_id: id, text: q })
+      if (consent === false) {
+        if (id !== threadId) open(id)
+        return
+      }
+      await api.ask(id, q, consent)
       setText('')
       const t = await api.getThread(id)
       setThread(t)

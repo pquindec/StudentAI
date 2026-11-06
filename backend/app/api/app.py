@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from app.api.routes import (
     ai,
     chat,
+    cloud,
     exams,
     flashcards,
     internal,
@@ -60,6 +61,7 @@ def create_app(settings: Settings, run_jobs: bool = True) -> FastAPI:
         exams,
         flashcards,
         stats,
+        cloud,
         internal,
     ):
         app.include_router(module.router, prefix=API_PREFIX)

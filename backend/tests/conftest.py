@@ -37,9 +37,39 @@ class NoLLM:
         raise LLMError("llm_unavailable", "Ollama no está en marcha")
 
 
+class MemoryKeyring:
+    """Llavero en memoria: las pruebas nunca tocan el Keychain del usuario."""
+
+    def __init__(self) -> None:
+        self.items: dict[tuple[str, str], str] = {}
+
+    def get_password(self, service: str, user: str) -> str | None:
+        return self.items.get((service, user))
+
+    def set_password(self, service: str, user: str, password: str) -> None:
+        self.items[(service, user)] = password
+
+    def delete_password(self, service: str, user: str) -> None:
+        self.items.pop((service, user), None)
+
+
 @pytest.fixture(autouse=True)
 def no_real_llm(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(llm, "provider", lambda: NoLLM())
+
+
+@pytest.fixture(autouse=True)
+def no_real_cloud(monkeypatch: pytest.MonkeyPatch) -> MemoryKeyring:
+    """Sin Keychain real ni el `claude` instalado en el Mac (Fase 8)."""
+    from app.core import secrets as app_secrets
+    from app.llm import claude_code
+    from app.services import cloud
+
+    ring = MemoryKeyring()
+    monkeypatch.setattr(app_secrets, "_backend", ring)
+    monkeypatch.setattr(claude_code, "find_binary", lambda: None)
+    cloud._plan_cache.update(at=0.0, value=None)
+    return ring
 
 
 @pytest.fixture

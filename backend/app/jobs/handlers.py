@@ -26,8 +26,8 @@ from app.rag import index as rag_index
 from app.rag import search as rag_search
 from app.rag.scope import Scope
 from app.resources import manager as res_manager
-from app.resources.manager import ResourceManager, profile
-from app.services import audio_files, transcription
+from app.resources.manager import ResourceManager
+from app.services import audio_files, engine, transcription
 from app.services import chat as chat_svc
 from app.services import documents as docs_svc
 from app.services import exams as exams_svc
@@ -305,48 +305,26 @@ def generate_doc(ctx: JobContext) -> None:
 
 
 def _generate(ctx: JobContext, doc: dict[str, Any]) -> None:
-    prov = llm_svc.provider()
-    info = prov.info()
-    if not info.running:
-        raise JobFailed("llm_unavailable", "Ollama no está en marcha. Abre la app de Ollama.")
-    rm = ResourceManager(prov)
-    choice = rm.acquire(
-        llm_svc.chosen_model(ctx.db),
-        llm_svc.light_model(ctx.db),
-        info.models,
-        report=lambda m: ctx.report(0, m),
-        cancelled=ctx.cancelled,
-    )
+    owner = ctx.db.execute(
+        "SELECT owner_id FROM subjects WHERE id = ?", (doc["subject_id"],)
+    ).fetchone()[0]
     material = docs_svc.load_material(ctx.db, doc["id"])
+    eng = engine.for_job(
+        ctx.db, ctx.job, owner, "docs", payload(ctx.job).get("consent_id"),
+        report=ctx.report, cancelled=ctx.cancelled,
+        source_ids={s["id"] for s in docs_svc.doc_sources(ctx.db, doc["id"])},
+    )  # fmt: skip
     segment_of = {f.id: f.segment_id for s in material for f in s.fragments}
-    budget = profile(choice.model).budget_mb
-    peak = {"mb": 0}
 
     def chat(
         req: ChatRequest, task: str, on_token: Callable[[int], None] | None = None
     ) -> ChatResult:
-        res = prov.chat(req, on_token=on_token, cancelled=ctx.cancelled)
-        loaded = rm.after_call(req.model)
-        if loaded:
-            peak["mb"] = max(peak["mb"], loaded)
-            if loaded > budget:
-                log.warning("%s ocupa %d MB (presupuesto %d MB)", req.model, loaded, budget)
-        docs_svc.record_run(
-            ctx.db,
-            ctx.job["id"],
-            req.model,
-            f"{doc['kind']}:{task}",
-            res.input_tokens,
-            res.output_tokens,
-            res.duration_ms,
-            loaded,
-        )
-        return res
+        return eng.chat(req, f"{doc['kind']}:{task}", on_token=on_token)
 
     job = GenJob(
         kind=doc["kind"],
         detail=doc["detail"],
-        model=choice.model,
+        model=eng.model,
         keep_alive=llm_svc.keep_alive(ctx.db),
         sources=material,
         chat=chat,
@@ -361,14 +339,8 @@ def _generate(ctx: JobContext, doc: dict[str, Any]) -> None:
         raise JobFailed(
             "empty_result", "El modelo no encontró contenido con respaldo en las fuentes"
         )
-    stats = {
-        **job.stats.__dict__,
-        "fallback": choice.fallback,
-        "available_mb": choice.available_mb,
-        "peak_loaded_mb": peak["mb"],
-        "budget_mb": budget,
-    }
-    docs_svc.save_result(ctx.db, doc["id"], content, cites, choice.model, stats)
+    stats = {**job.stats.__dict__, **eng.stats()}
+    docs_svc.save_result(ctx.db, doc["id"], content, cites, eng.model_label(), stats)
 
 
 def index_source(ctx: JobContext) -> None:
@@ -419,9 +391,10 @@ def chat_answer(ctx: JobContext) -> None:
 
 def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any]) -> None:
     prov = llm_svc.provider()
-    info = prov.info()
-    if not info.running:
-        raise JobFailed("llm_unavailable", "Ollama no está en marcha. Abre la app de Ollama.")
+    eng = engine.for_job(
+        ctx.db, ctx.job, row["owner_id"], "chat", payload(ctx.job).get("consent_id"),
+        report=ctx.report, cancelled=ctx.cancelled,
+    )  # fmt: skip
     question = row["question"]
     history = chat_svc.history(ctx.db, row["thread_id"], mid)
     previous = chat_svc.last_kind(ctx.db, row["thread_id"], mid)
@@ -429,9 +402,14 @@ def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any
     stats["kind"] = "created" if creative else "answer"
     ctx.report(0.1, "Buscando en tus fuentes")
     scope = Scope.model_validate(json.loads(row["scope_json"] or "{}"))
-    embedder = prov if rag_index.embeddings_available(prov) is None else None
     t0 = time.monotonic()
-    found = rag_search.search(ctx.db, row["owner_id"], scope, question, embedder)
+    approved = eng.consent.scope.get("chunk_ids") if eng.consent else None
+    if eng.consent and eng.consent.mode == "once" and approved is not None:
+        # Se envía exactamente lo que se mostró en la vista previa del consentimiento.
+        found = rag_search.from_chunks(ctx.db, [int(c) for c in approved])
+    else:
+        embedder = prov if rag_index.embeddings_available(prov) is None else None
+        found = rag_search.search(ctx.db, row["owner_id"], scope, question, embedder)
     stats.update(
         search_ms=int((time.monotonic() - t0) * 1000),
         search_mode=found.mode,
@@ -441,14 +419,6 @@ def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any
     if not found.relevant and not creative:
         chat_svc.save_answer(ctx.db, mid, "not_found", "", [], None, stats)
         return
-    rm = ResourceManager(prov)
-    choice = rm.acquire(
-        llm_svc.chosen_model(ctx.db),
-        llm_svc.light_model(ctx.db),
-        info.models,
-        report=lambda m: ctx.report(0.2, m),
-        cancelled=ctx.cancelled,
-    )
     keep = llm_svc.keep_alive(ctx.db)
     last_t, last_text = [0.0], [""]
 
@@ -460,37 +430,25 @@ def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any
             last_t[0], last_text[0] = now, shown
 
     def call(r: ChatRequest, task: str) -> ChatResult:
-        out = prov.chat(r, cancelled=ctx.cancelled, on_text=on_text)
-        loaded = rm.after_call(r.model)
-        docs_svc.record_run(
-            ctx.db,
-            ctx.job["id"],
-            r.model,
-            task,
-            out.input_tokens,
-            out.output_tokens,
-            out.duration_ms,
-            loaded,
-        )
-        return out
+        return eng.chat(r, task, on_text=on_text)
 
     def save(res: ChatResult, content: str, cites: list[tuple[int, int]], **extra: Any) -> None:
         stats.update(
             input_tokens=res.input_tokens,
             output_tokens=res.output_tokens,
             duration_ms=res.duration_ms,
-            fallback=choice.fallback,
+            **eng.stats(),
             **extra,
         )
         status = "done" if content else "not_found"
-        chat_svc.save_answer(ctx.db, mid, status, content, cites, choice.model, stats)
+        chat_svc.save_answer(ctx.db, mid, status, content, cites, eng.model_label(), stats)
 
     if found.relevant:
         context = rag_answer.build_context(ctx.db, found.hits)
         step = "Creando a partir de tus fuentes" if creative else "Redactando la respuesta"
         ctx.report(0.3, step)
         req = ChatRequest(
-            model=choice.model,
+            model=eng.model,
             messages=rag_answer.build_messages(question, history, context.block, creative),
             max_tokens=1200,
             temperature=0.3 if creative else 0.1,
@@ -520,7 +478,7 @@ def _answer(ctx: JobContext, row: dict[str, Any], mid: str, stats: dict[str, Any
     stats["kind"] = "general"
     ctx.report(0.3, "No está en tus fuentes: creando con conocimiento general")
     req = ChatRequest(
-        model=choice.model,
+        model=eng.model,
         messages=rag_answer.general_messages(question, history),
         max_tokens=1200,
         temperature=0.4,
@@ -543,32 +501,15 @@ def generate_exam(ctx: JobContext) -> None:
     exams_svc.set_status(ctx.db, exam_id, "running")
     try:
         prov = llm_svc.provider()
-        info = prov.info()
-        if not info.running:
-            raise JobFailed("llm_unavailable", "Ollama no está en marcha. Abre la app de Ollama.")
-        rm = ResourceManager(prov)
-        choice = rm.acquire(
-            llm_svc.chosen_model(ctx.db),
-            llm_svc.light_model(ctx.db),
-            info.models,
-            report=lambda m: ctx.report(0, m),
-            cancelled=ctx.cancelled,
-        )
+        scope = Scope.model_validate_json(exam["scope_json"])
+        eng = engine.for_job(
+            ctx.db, ctx.job, owner, "exam", payload(ctx.job).get("consent_id"),
+            report=ctx.report, cancelled=ctx.cancelled,
+            source_ids={g[0] for g in exams_svc.material(ctx.db, owner, scope)},
+        )  # fmt: skip
 
         def chat(req: ChatRequest, task: str) -> ChatResult:
-            res = prov.chat(req, cancelled=ctx.cancelled)
-            loaded = rm.after_call(req.model)
-            docs_svc.record_run(
-                ctx.db,
-                ctx.job["id"],
-                req.model,
-                task,
-                res.input_tokens,
-                res.output_tokens,
-                res.duration_ms,
-                loaded,
-            )
-            return res
+            return eng.chat(req, task)
 
         similarity = None
         if rag_index.embeddings_available(prov) is None:
@@ -581,7 +522,7 @@ def generate_exam(ctx: JobContext) -> None:
             ctx.db,
             exam,
             chat,
-            choice.model,
+            eng.model,
             llm_svc.keep_alive(ctx.db),
             owner,
             report=ctx.report,
@@ -590,6 +531,7 @@ def generate_exam(ctx: JobContext) -> None:
             should_yield=lambda: queue.higher_waiting(ctx.db, int(ctx.job["priority"])),
             similarity=similarity,
         )
+        _save_engine(ctx.db, "exams", exam_id, eng)
         log.info("Examen %s: %s", exam_id, {k: stats[k] for k in ("proposed", "valid")})
     except Yielded:
         exams_svc.set_status(ctx.db, exam_id, "queued")
@@ -621,26 +563,15 @@ def generate_deck(ctx: JobContext) -> None:
     cards_svc.set_status(ctx.db, deck_id, "running")
     try:
         prov = llm_svc.provider()
-        info = prov.info()
-        if not info.running:
-            raise JobFailed("llm_unavailable", "Ollama no está en marcha. Abre la app de Ollama.")
-        rm = ResourceManager(prov)
-        choice = rm.acquire(
-            llm_svc.chosen_model(ctx.db),
-            llm_svc.light_model(ctx.db),
-            info.models,
-            report=lambda m: ctx.report(0, m),
-            cancelled=ctx.cancelled,
-        )
+        scope = Scope.model_validate_json(deck["scope_json"])
+        eng = engine.for_job(
+            ctx.db, ctx.job, owner, "deck", payload(ctx.job).get("consent_id"),
+            report=ctx.report, cancelled=ctx.cancelled,
+            source_ids={g[0] for g in exams_svc.material(ctx.db, owner, scope)},
+        )  # fmt: skip
 
         def chat(req: ChatRequest, task: str) -> ChatResult:
-            res = prov.chat(req, cancelled=ctx.cancelled)
-            loaded = rm.after_call(req.model)
-            docs_svc.record_run(
-                ctx.db, ctx.job["id"], req.model, task, res.input_tokens, res.output_tokens,
-                res.duration_ms, loaded,
-            )  # fmt: skip
-            return res
+            return eng.chat(req, task)
 
         similarity = None
         if rag_index.embeddings_available(prov) is None:
@@ -653,7 +584,7 @@ def generate_deck(ctx: JobContext) -> None:
             ctx.db,
             deck,
             chat,
-            choice.model,
+            eng.model,
             llm_svc.keep_alive(ctx.db),
             owner,
             report=ctx.report,
@@ -662,6 +593,7 @@ def generate_deck(ctx: JobContext) -> None:
             should_yield=lambda: queue.higher_waiting(ctx.db, int(ctx.job["priority"])),
             similarity=similarity,
         )
+        _save_engine(ctx.db, "decks", deck_id, eng)
         log.info("Mazo %s: %s", deck_id, {k: stats[k] for k in ("proposed", "valid", "saved")})
     except Yielded:
         cards_svc.set_status(ctx.db, deck_id, "queued")
@@ -678,6 +610,15 @@ def generate_deck(ctx: JobContext) -> None:
     except Exception:
         cards_svc.set_status(ctx.db, deck_id, "failed", "internal_error", "Error inesperado")
         raise
+
+
+def _save_engine(db: sqlite3.Connection, table: str, row_id: str, eng: engine.Engine) -> None:
+    """Modelos usados y, si intervino Claude, su resumen (vía, tareas, coste) en el resultado."""
+    extra = {k: v for k, v in eng.stats().items() if k == "cloud"}
+    db.execute(
+        f"UPDATE {table} SET model = ?, stats_json = json_patch(stats_json, ?) WHERE id = ?",  # noqa: S608
+        (eng.model_label(), json.dumps(extra), row_id),
+    )
 
 
 def _cosine(a: list[float], b: list[float]) -> float:

@@ -1,4 +1,11 @@
 /** Todos los textos de la interfaz (ADR-010: solo español). */
+
+/** Importe en dólares: «0,0312 $» si es pequeño, «4,50 $» si no. */
+export function usd(n: number): string {
+  const digits = n > 0 && n < 0.1 ? 4 : 2
+  return `${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: digits })} $`
+}
+
 export const es = {
   appName: 'AI Study Assistant',
   nav: {
@@ -640,8 +647,81 @@ export const es = {
     streak: (n: number) => (n ? `Racha: ${n} ${n === 1 ? 'día' : 'días'}` : ''),
     goStats: 'Ver estadísticas',
   },
-  comingSoon: {
-    title: 'Próximamente',
-    body: (phase: number) => `Esta sección se construye en la fase ${phase} del proyecto.`,
+  cloud: {
+    title: 'Configuración',
+    subtitle: 'Claude en la nube: solo se usa con tu consentimiento y nunca envía audio.',
+    section: 'Claude (nube)',
+    enabled: 'Usar Claude cuando yo lo apruebe',
+    enabledHint:
+      'Antes de cada envío verás qué fuentes y qué texto exacto saldrán, el modelo y el coste estimado. Sin tu aprobación, todo se hace en local.',
+    via: 'Vía',
+    vias: {
+      auto: 'Automática (la clave si la hay; si no, tu plan)',
+      api: 'Clave de API',
+      plan: 'Mi plan de Claude (Claude Code)',
+    },
+    viaShort: { api: 'Con tu clave de API', plan: 'Con tu plan de Claude' },
+    viaNone: 'Ninguna vía disponible: guarda una clave o inicia sesión en Claude Code.',
+    apiKey: 'Clave de API',
+    apiKeySaved: (hint: string) => `Guardada en el llavero de macOS (${hint})`,
+    apiKeyNone: 'Sin clave. Créala en console.anthropic.com (se paga por uso).',
+    apiKeyPlaceholder: 'sk-ant-…',
+    apiKeySave: 'Guardar en el llavero',
+    apiKeyDelete: 'Borrar clave',
+    plan: 'Plan de Claude',
+    planOk: (plan: string | null) =>
+      `Claude Code instalado y con la sesión iniciada${plan ? ` (plan ${plan})` : ''}. Consume el cupo de tu plan.`,
+    planNoLogin:
+      'Claude Code está instalado pero sin sesión: ábrelo en la terminal con «claude» e inicia sesión.',
+    planMissing: 'Claude Code no está instalado.',
+    planCheck: 'Comprobar',
+    model: 'Modelo',
+    modelPrice: (label: string, i: number, o: number) =>
+      `${label} · ${usd(i)} / ${usd(o)} por millón de tokens`,
+    tasks: 'Tareas que pueden ir a Claude',
+    task: {
+      chat: 'Asistente (preguntas y crear ejemplos)',
+      docs: 'Apuntes y resúmenes',
+      generate: 'Generar tarjetas y exámenes',
+      review: 'Revisar tarjetas y preguntas',
+    },
+    limits: 'Límite de gasto mensual',
+    limitHint:
+      'Al alcanzarlo se bloquea esa vía hasta el mes siguiente y todo sigue en local. Con el plan es el coste equivalente, para no agotar tu cupo.',
+    spent: (spent: number, limit: number) => `Este mes: ${usd(spent)} de ${usd(limit)}`,
+    session: 'Aprobado para esta sesión',
+    sessionNone: 'Nada aprobado para toda la sesión.',
+    sessionRevoke: 'Revocar todo',
+    kind: { chat: 'Asistente', docs: 'Apuntes y resúmenes', deck: 'Tarjetas', exam: 'Exámenes' },
+    audit: 'Últimos envíos',
+    auditNone: 'Todavía no se ha enviado nada a Claude.',
+    auditCols: ['Fecha', 'Tarea', 'Vía', 'Modelo', 'Estado', 'Caracteres', 'Coste'],
+    status: { ok: 'Enviado', failed: 'Falló', blocked: 'Bloqueado (límite)' },
+    // Ventana de consentimiento
+    consentTitle: '¿Enviar a Claude?',
+    consentWhat: (kind: string, tasks: string) => `${kind}: ${tasks}`,
+    taskVerb: { chat: 'responder', docs: 'redactar', generate: 'generar', review: 'revisar' },
+    consentModel: (via: string, model: string) => `${via} · ${model}`,
+    consentSources: 'Fuentes',
+    consentAmount: (fragments: number, chars: number) =>
+      `${fragments} fragmentos · ${chars.toLocaleString('es-ES')} caracteres`,
+    consentCost: (est: number) => `Coste estimado: ${usd(est)}`,
+    consentPlanCost:
+      'Con tu plan no se paga aparte: es el coste equivalente que descuenta de tu cupo.',
+    consentMonth: (spent: number, limit: number) => `Este mes: ${usd(spent)} de ${usd(limit)}`,
+    consentText: 'Ver el texto exacto que se enviará',
+    consentTruncated: 'Se muestran los primeros 200.000 caracteres.',
+    consentInstructions:
+      'Además se envían las instrucciones de la app (sin datos tuyos). Nunca se envía audio.',
+    notes: {
+      review_only:
+        'Solo se enviarán las tarjetas o preguntas propuestas por el modelo local, con su cita (una parte de este texto).',
+      creative: 'Petición de crear: Claude creará a partir de estos fragmentos.',
+      general:
+        'El tema no está en tus fuentes: Claude creará con conocimiento general (solo se envía tu petición y la conversación).',
+    } as Record<string, string>,
+    consentSession: (kind: string) => `No volver a preguntar para «${kind}» hasta cerrar la app`,
+    consentSend: 'Enviar a Claude',
+    consentLocal: 'Hacerlo en local',
   },
 } as const

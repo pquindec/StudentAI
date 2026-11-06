@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.8.0] — 2026-11-06 · Fase 8: Claude en la nube, solo con tu permiso
+### Añadido
+- **Configuración › Claude** (antes «Próximamente»): activar Claude (desactivado por defecto), vía, modelo (Sonnet 5.5 por defecto), tareas permitidas, límites mensuales, consentimientos de la sesión y registro de envíos.
+- Dos vías:
+  - **Clave API** de Anthropic, guardada en el **llavero de macOS** (nunca en la base de datos). Se muestran solo sus 4 últimos caracteres.
+  - **Tu plan de Claude** (Pro/Max) mediante el programa oficial de Claude Code (`claude`), sin modificar. La app solo lo ejecuta; no lee ni guarda tus credenciales.
+  - «Automática» usa la clave si la hay; si no, el plan.
+- Tareas que pueden ir a Claude: asistente, apuntes y resúmenes, generar tarjetas y exámenes, y **revisar** tarjetas y preguntas (se puede activar solo la revisión).
+- **Ventana de consentimiento antes de cada envío**: qué tarea, vía y modelo, fuentes, fragmentos y caracteres, el texto exacto que saldría, coste estimado y gasto del mes. Botones: Cancelar, Hacerlo en local o Enviar a Claude. Opción «no volver a preguntar para esta tarea hasta cerrar la app».
+- **Límite mensual de 5 $ por vía** (ajustable). Con el plan se cuenta el coste equivalente que informa Claude Code. Al llegar al límite, todo sigue en local.
+- **Registro de envíos**: fecha, tarea, vía, modelo, estado, caracteres y coste. No guarda contenido.
+- Si Claude falla o no hay conexión, el trabajo continúa con el modelo local.
+- La corrección de respuestas cortas sigue siempre en local. Los audios nunca se envían.
+- Migración `0008_cloud.sql`. Dependencias nuevas: `anthropic` 2.6.0 (Apache-2.0) y `keyring` 25.7.0 (MIT), que traen `httpx2`/`httpcore2` (BSD), `truststore` y `jaraco.*` (MIT).
+### Cambiado
+- Resource Manager revisado con 104 llamadas reales del modelo local: el pico (8.460 MB) nunca superó el presupuesto, así que los valores se mantienen.
+### Limitaciones conocidas
+- Con salida estructurada (tarjetas, exámenes, apuntes), Claude Code no envía texto parcial: la barra de progreso avanza por lotes, no letra a letra.
+- Las peticiones de la API usan los respaldos del servidor ante un rechazo del modelo (`fallbacks: "default"`); el modelo que respondió de verdad queda en el registro.
+
 ## [0.7.2] — 2026-11-06 · El asistente también crea ejemplos y preguntas
 ### Añadido
 - El asistente entiende peticiones de **crear**: «dame un ejemplo de…», «hazme una pregunta de opción múltiple con 4 respuestas», «plantéame un ejercicio / caso práctico», «preguntas de verdadero o falso», y «otra» justo después.

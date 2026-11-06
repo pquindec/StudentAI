@@ -9,8 +9,8 @@ from app.core.errors import bad_request, conflict
 from app.db.connection import tx
 from app.jobs import queue
 from app.resources import manager
+from app.services import cloud, llm
 from app.services import documents as svc
-from app.services import llm
 from app.services import settings as prefs
 from app.services import subjects as subj
 
@@ -98,6 +98,7 @@ class DocIn(BaseModel):
     detail: Detail = "medium"
     source_ids: Annotated[list[str], Field(min_length=1, max_length=svc.MAX_SOURCES)]
     title: Title | None = None
+    consent_id: Annotated[str, StringConstraints(max_length=64)] | None = None  # Fase 8
 
 
 class DocSourceOut(BaseModel):
@@ -231,7 +232,14 @@ def create_document(subject_id: str, body: DocIn, db: Db, user: UserId) -> DocOu
         more = f" (+{len(body.source_ids) - 1})" if len(body.source_ids) > 1 else ""
         title = f"{base} · {first['title'] if first else 'material'}{more}"[:300]
     doc_id = svc.create(
-        db, subject_id, body.kind, body.detail, title, body.source_ids, llm.chosen_model(db)
+        db,
+        subject_id,
+        body.kind,
+        body.detail,
+        title,
+        body.source_ids,
+        llm.chosen_model(db),
+        body.consent_id,
     )
     return _out(db, _row(db, user, doc_id))
 
@@ -272,7 +280,12 @@ def retry_document(doc_id: str, db: Db, user: UserId) -> DocOut:
         raise conflict("not_retryable", "Solo se puede reintentar si falló o se canceló")
     with tx(db):
         job = queue.enqueue(
-            db, "generate_doc", "llm", None, {"doc_id": doc_id}, priority=queue.PRIORITY["batch"]
+            db,
+            "generate_doc",
+            "llm",
+            None,
+            {"doc_id": doc_id, "consent_id": cloud.session_consent(db, user, "docs")},
+            priority=queue.PRIORITY["batch"],
         )
         db.execute(
             "UPDATE generated_docs SET job_id = ?, status = 'queued', error_code = NULL,"

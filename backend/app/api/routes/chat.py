@@ -45,6 +45,7 @@ class ThreadOut(BaseModel):
 
 class MessageIn(BaseModel):
     text: Question
+    consent_id: Annotated[str, StringConstraints(max_length=64)] | None = None  # Fase 8
 
 
 class ChatStatsOut(BaseModel):
@@ -174,7 +175,7 @@ def delete_thread(thread_id: str, db: Db, user: UserId) -> Response:
 
 @router.post("/chat/threads/{thread_id}/messages", response_model=MessageOut, status_code=202)
 def ask(thread_id: str, body: MessageIn, db: Db, user: UserId) -> MessageOut:
-    mid = svc.post(db, user, thread_id, body.text)
+    mid = svc.post(db, user, thread_id, body.text, body.consent_id)
     return _messages(db, [svc.get_message(db, user, mid)])[0]
 
 

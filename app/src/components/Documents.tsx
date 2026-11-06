@@ -1,3 +1,4 @@
+import { useCloudConsent } from './CloudConsent'
 import { useState } from 'react'
 import { es } from '../i18n/es'
 import { api, type DocDetail, type DocKind, type GeneratedDoc } from '../lib/api'
@@ -55,15 +56,20 @@ export function GenerateDialog({
   const toggle = (id: string) =>
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
 
+  const askCloud = useCloudConsent()
+
   const submit = async () => {
     setBusy(true)
     setError(null)
     try {
+      const consent = await askCloud({ kind: 'docs', subject_id: subjectId, source_ids: picked })
+      if (consent === false) return
       const doc = await api.createDocument(subjectId, {
         kind,
         detail,
         source_ids: picked,
         title: title.trim() || null,
+        consent_id: consent,
       })
       onClose()
       navigate({ name: 'document', id: doc.id, kind })
@@ -155,13 +161,21 @@ export function GenerateDialog({
 export function QuickGenerate({ subjectId, sourceId }: { subjectId: string; sourceId: string }) {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
+  const askCloud = useCloudConsent()
   const go = async (kind: DocKind) => {
     setError(null)
     try {
+      const consent = await askCloud({
+        kind: 'docs',
+        subject_id: subjectId,
+        source_ids: [sourceId],
+      })
+      if (consent === false) return
       const doc = await api.createDocument(subjectId, {
         kind,
         detail: 'medium',
         source_ids: [sourceId],
+        consent_id: consent,
       })
       navigate({ name: 'document', id: doc.id, kind })
     } catch (e) {

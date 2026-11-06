@@ -41,6 +41,7 @@ def create(
     title: str,
     source_ids: list[str],
     model: str,
+    consent_id: str | None = None,
 ) -> str:
     """Crea el documento y encola su generación. Las fuentes deben ser de la asignatura y tener
     texto; se fija la versión actual de cada una (las citas apuntan a esa versión)."""
@@ -73,7 +74,12 @@ def create(
             [(doc_id, sid, vid, i) for i, (sid, vid) in enumerate(versions)],
         )
         job = queue.enqueue(
-            db, "generate_doc", "llm", None, {"doc_id": doc_id}, priority=queue.PRIORITY["batch"]
+            db,
+            "generate_doc",
+            "llm",
+            None,
+            {"doc_id": doc_id, "consent_id": consent_id},
+            priority=queue.PRIORITY["batch"],
         )
         db.execute("UPDATE generated_docs SET job_id = ? WHERE id = ?", (job, doc_id))
     return doc_id
@@ -188,9 +194,10 @@ def record_run(
     output_tokens: int | None,
     duration_ms: int,
     loaded_mb: int | None,
+    provider: str = "ollama",
 ) -> None:
     db.execute(
         "INSERT INTO model_runs(job_id, provider, model, task, input_tokens, output_tokens,"
-        " duration_ms, loaded_mb) VALUES (?, 'ollama', ?, ?, ?, ?, ?, ?)",
-        (job_id, model, task, input_tokens, output_tokens, duration_ms, loaded_mb),
+        " duration_ms, loaded_mb) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (job_id, provider, model, task, input_tokens, output_tokens, duration_ms, loaded_mb),
     )

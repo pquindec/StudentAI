@@ -1,3 +1,4 @@
+import { useCloudConsent } from '../components/CloudConsent'
 import { useEffect, useState } from 'react'
 import {
   Button,
@@ -103,19 +104,25 @@ function NewDeckDialog({
   const usable = sources.data?.items.filter((s) => s.version != null) ?? []
   const units = subject.data ? unitTree(subject.data.units) : []
 
+  const askCloud = useCloudConsent()
+
   const submit = async () => {
     setBusy(true)
     setError(null)
     try {
+      // Solo lo que se ve marcado en esta asignatura.
+      const scope = {
+        source_ids: sourceIds.filter((id) => usable.some((s) => s.id === id)),
+        unit_ids: unitIds.filter((id) => units.some((u) => u.unit.id === id)),
+        exclude_source_ids: [],
+      }
+      const consent = await askCloud({ kind: 'deck', subject_id: subjectId, scope, count })
+      if (consent === false) return
       const deck = await api.createDeck(subjectId, {
         title: title.trim() || null,
         count,
-        // Solo lo que se ve marcado en esta asignatura.
-        scope: {
-          source_ids: sourceIds.filter((id) => usable.some((s) => s.id === id)),
-          unit_ids: unitIds.filter((id) => units.some((u) => u.unit.id === id)),
-          exclude_source_ids: [],
-        },
+        scope,
+        consent_id: consent,
       })
       onClose()
       navigate({ name: 'deck', id: deck.id })

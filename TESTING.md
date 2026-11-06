@@ -44,6 +44,20 @@ scripts/check.sh backend    # solo una parte (preferible tras cambios acotados)
 - Con su clase real (82.464 caracteres, copia de la BD): resumen intermedio 12 frases + 12 ideas clave en 6 min 52 s, sin cortes. Antes de limitar las citas por punto, una de dos pasadas falló por respuesta cortada; «detallado» se cortaba (necesita ~4.100–5.100 tokens) → tope de 15 + 12 frases/ideas y hasta 5.600 tokens de salida con ventana de 12K en el paso final: 15 frases + 9 ideas clave, pico 7,7 GB.
 - Pendiente: comprobar la selección y el botón «Copiar» en la app (WKWebView).
 
+## Pruebas de la Fase 8 (2026-11-06)
+- Automáticas: pytest 160 (12 nuevas en `test_cloud.py`, con un servidor Anthropic falso y un `claude` falso que cuentan cada petición recibida), vitest 32, ruff, mypy, tsc y oxlint correctos.
+  - Desactivado por defecto y sin consentimiento: 0 peticiones a la nube.
+  - Mazo con consentimiento: mismas tarjetas que en local con el mismo modelo falso (la lógica no cambia), registro de envíos, el consentimiento «una vez» no se reutiliza.
+  - Solo revisión; ámbito limitado a las fuentes mostradas; en el asistente se envían exactamente los fragmentos de la vista previa.
+  - Consentimiento de sesión invalidado al cambiar el modelo, al reiniciar y al revocar; límite mensual que bloquea; sin conexión → local.
+  - Clave en el llavero y no en la BD; vía del plan con los flags y el entorno esperados; un prompt nunca empieza por «/».
+- Llamadas reales con tu plan (Claude Code 2.x, `claude-haiku-5-5`, texto sintético, ningún material tuyo):
+  - estado de la sesión: instalado, con sesión, plan `pro`;
+  - 2 tarjetas con salida estructurada válida: 1.297 tokens de entrada, 173 de salida, 0,00035 $ equivalentes, 2,6 s;
+  - respuesta en texto con streaming (14 trozos) y un prompt que empieza por «/help» tratado como texto: 0,00017 $.
+- No probado: llamadas reales con clave API (no hay clave), la interfaz en la app y un envío real desde la app.
+- Resource Manager con métricas reales de `model_runs` (copia de solo lectura de tu BD): 104 llamadas del 9B, tamaño cargado medio 7,6–8,0 GB según la tarea, pico 8.460 MB < presupuesto 8.500 MB.
+
 ## El asistente crea ejemplos y preguntas (2026-11-06, 0.7.2)
 - Automáticas: pytest 148 (4 nuevas en `test_chat.py`: detección de peticiones de crear y de «otra»; crear desde las fuentes con citas; crear con conocimiento general cuando no está en las fuentes —sin fragmentos en el prompt, sin citas— y directamente si no hay nada relevante; las preguntas normales siguen dando «no encontrado» sin llamar al modelo), vitest 32, comprobaciones de frontend correctas.
 - Con Ollama real (`qwen3.5:9b`, texto de ejemplo, no material del usuario): pregunta de opción múltiple sobre VUCA con 4 opciones, respuesta correcta y 2 citas válidas (9 s); ejemplo de volatilidad con citas (8 s); pregunta de fotosíntesis con conocimiento general, correcta, sin citas (11 s). En el modo general usó LaTeX (`$CO_2$`): se añadió la regla «sin LaTeX».

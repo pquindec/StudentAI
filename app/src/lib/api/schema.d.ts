@@ -892,6 +892,130 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/cloud/status': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Cloud Status */
+    get: operations['cloud_status_api_v1_cloud_status_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cloud/settings': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Update Settings */
+    put: operations['update_settings_api_v1_cloud_settings_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cloud/api-key': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Set Api Key */
+    put: operations['set_api_key_api_v1_cloud_api_key_put']
+    post?: never
+    /** Delete Api Key */
+    delete: operations['delete_api_key_api_v1_cloud_api_key_delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cloud/preview': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Preview */
+    post: operations['preview_api_v1_cloud_preview_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cloud/consents': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Give Consent
+     * @description Registra el consentimiento para lo que se ha mostrado en la vista previa.
+     */
+    post: operations['give_consent_api_v1_cloud_consents_post']
+    /** Revoke Session Consents */
+    delete: operations['revoke_session_consents_api_v1_cloud_consents_delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cloud/consents/{consent_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /** Revoke Consent */
+    delete: operations['revoke_consent_api_v1_cloud_consents__consent_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cloud/requests': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Requests */
+    get: operations['list_requests_api_v1_cloud_requests_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -971,6 +1095,11 @@ export interface components {
        * @default []
        */
       evidence: components['schemas']['CitationOut'][]
+    }
+    /** ApiKeyIn */
+    ApiKeyIn: {
+      /** Key */
+      key: string
     }
     /** AttemptOut */
     AttemptOut: {
@@ -1153,6 +1282,142 @@ export interface components {
       /** Version */
       version: number
     }
+    /** CloudModelOut */
+    CloudModelOut: {
+      /** Id */
+      id: string
+      /** Label */
+      label: string
+      /** Input Usd */
+      input_usd: number
+      /** Output Usd */
+      output_usd: number
+    }
+    /** CloudRequestOut */
+    CloudRequestOut: {
+      /** Id */
+      id: number
+      /** Kind */
+      kind: string
+      /** Task */
+      task: string
+      /**
+       * Via
+       * @enum {string}
+       */
+      via: 'api' | 'plan'
+      /** Model */
+      model: string
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'ok' | 'failed' | 'blocked'
+      /** Chars Sent */
+      chars_sent: number
+      /** Input Tokens */
+      input_tokens: number | null
+      /** Output Tokens */
+      output_tokens: number | null
+      /** Cost Usd */
+      cost_usd: number
+      /** Error */
+      error: string | null
+      /** Created At */
+      created_at: string
+    }
+    /** CloudSettingsIn */
+    CloudSettingsIn: {
+      /** Enabled */
+      enabled?: boolean | null
+      /** Via */
+      via?: ('auto' | 'api' | 'plan') | null
+      /** Model */
+      model?: ('claude-opus-5-5' | 'claude-sonnet-5-5' | 'claude-haiku-5-5') | null
+      /** Tasks */
+      tasks?: {
+        [key: string]: boolean
+      } | null
+      /** Limit Api */
+      limit_api?: number | null
+      /** Limit Plan */
+      limit_plan?: number | null
+    }
+    /** CloudStatusOut */
+    CloudStatusOut: {
+      /** Enabled */
+      enabled: boolean
+      /**
+       * Via Pref
+       * @enum {string}
+       */
+      via_pref: 'auto' | 'api' | 'plan'
+      /** Via */
+      via: ('api' | 'plan') | null
+      /** Model */
+      model: string
+      /** Models */
+      models: components['schemas']['CloudModelOut'][]
+      /** Tasks */
+      tasks: {
+        [key: string]: boolean
+      }
+      /** Api Key */
+      api_key: string | null
+      plan: components['schemas']['PlanOut']
+      limits: components['schemas']['ViaAmountsOut']
+      spent: components['schemas']['ViaAmountsOut']
+      /** Session Consents */
+      session_consents: components['schemas']['SessionConsentOut'][]
+    }
+    /** ConsentIn */
+    ConsentIn: {
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'chat' | 'docs' | 'deck' | 'exam'
+      /** Subject Id */
+      subject_id?: string | null
+      /**
+       * Source Ids
+       * @default []
+       */
+      source_ids: string[]
+      /**
+       * @default {
+       *       "unit_ids": [],
+       *       "source_ids": [],
+       *       "exclude_source_ids": []
+       *     }
+       */
+      scope: components['schemas']['ExamScopeIn']
+      /**
+       * Count
+       * @default 20
+       */
+      count: number
+      /** Thread Id */
+      thread_id?: string | null
+      /** Text */
+      text?: string | null
+      /**
+       * Mode
+       * @default once
+       * @enum {string}
+       */
+      mode: 'once' | 'session'
+    }
+    /** ConsentOut */
+    ConsentOut: {
+      /** Id */
+      id: string
+      /**
+       * Mode
+       * @enum {string}
+       */
+      mode: 'once' | 'session'
+    }
     /** ContentIn */
     ContentIn: {
       /** Text */
@@ -1243,6 +1508,8 @@ export interface components {
        *     }
        */
       scope: components['schemas']['ExamScopeIn']
+      /** Consent Id */
+      consent_id?: string | null
     }
     /** DeckOut */
     DeckOut: {
@@ -1362,6 +1629,8 @@ export interface components {
       source_ids: string[]
       /** Title */
       title?: string | null
+      /** Consent Id */
+      consent_id?: string | null
     }
     /** DocOut */
     DocOut: {
@@ -1517,6 +1786,8 @@ export interface components {
        *     }
        */
       scope: components['schemas']['ExamScopeIn']
+      /** Consent Id */
+      consent_id?: string | null
     }
     /** ExamOut */
     ExamOut: {
@@ -1683,6 +1954,8 @@ export interface components {
     MessageIn: {
       /** Text */
       text: string
+      /** Consent Id */
+      consent_id?: string | null
     }
     /** MessageOut */
     MessageOut: {
@@ -1736,12 +2009,97 @@ export interface components {
       /** Download Progress */
       download_progress: number | null
     }
+    /** PlanOut */
+    PlanOut: {
+      /** Installed */
+      installed: boolean
+      /** Logged In */
+      logged_in: boolean
+      /** Plan */
+      plan: string | null
+    }
     /** PointOut */
     PointOut: {
       /** Text */
       text: string
       /** Refs */
       refs: number[]
+    }
+    /** PreviewIn */
+    PreviewIn: {
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'chat' | 'docs' | 'deck' | 'exam'
+      /** Subject Id */
+      subject_id?: string | null
+      /**
+       * Source Ids
+       * @default []
+       */
+      source_ids: string[]
+      /**
+       * @default {
+       *       "unit_ids": [],
+       *       "source_ids": [],
+       *       "exclude_source_ids": []
+       *     }
+       */
+      scope: components['schemas']['ExamScopeIn']
+      /**
+       * Count
+       * @default 20
+       */
+      count: number
+      /** Thread Id */
+      thread_id?: string | null
+      /** Text */
+      text?: string | null
+    }
+    /** PreviewOut */
+    PreviewOut: {
+      /** Cloud */
+      cloud: boolean
+      /** Reason */
+      reason: ('disabled' | 'task_local' | 'no_via' | 'limit') | null
+      /** Tasks */
+      tasks: ('chat' | 'docs' | 'generate' | 'review')[]
+      /** Via */
+      via: ('api' | 'plan') | null
+      /** Model */
+      model: string
+      /** Sources */
+      sources: components['schemas']['PreviewSourceOut'][]
+      /** Fragments */
+      fragments: number
+      /** Chars */
+      chars: number
+      /** Text */
+      text: string
+      /** Truncated */
+      truncated: boolean
+      /** Sends */
+      sends: boolean
+      /** Notes */
+      notes: string[]
+      /** Est Cost Usd */
+      est_cost_usd: number
+      /** Spent Usd */
+      spent_usd: number
+      /** Limit Usd */
+      limit_usd: number
+      /** Session Consent Id */
+      session_consent_id: string | null
+    }
+    /** PreviewSourceOut */
+    PreviewSourceOut: {
+      /** Id */
+      id: string
+      /** Title */
+      title: string
+      /** Kind */
+      kind: string
     }
     /** QuestionOut */
     QuestionOut: {
@@ -1856,6 +2214,27 @@ export interface components {
       char_start: number
       /** Char End */
       char_end: number
+    }
+    /** SessionConsentOut */
+    SessionConsentOut: {
+      /** Id */
+      id: string
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'chat' | 'docs' | 'deck' | 'exam'
+      /** Tasks */
+      tasks: ('chat' | 'docs' | 'generate' | 'review')[]
+      /**
+       * Via
+       * @enum {string}
+       */
+      via: 'api' | 'plan'
+      /** Model */
+      model: string
+      /** Created At */
+      created_at: string
     }
     /** SessionIn */
     SessionIn: {
@@ -2331,6 +2710,13 @@ export interface components {
       char_count: number
       /** Created At */
       created_at: string
+    }
+    /** ViaAmountsOut */
+    ViaAmountsOut: {
+      /** Api */
+      api: number
+      /** Plan */
+      plan: number
     }
     /** WeakTopicOut */
     WeakTopicOut: {
@@ -4542,6 +4928,267 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['StatsOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  cloud_status_api_v1_cloud_status_get: {
+    parameters: {
+      query?: {
+        refresh?: boolean
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CloudStatusOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_settings_api_v1_cloud_settings_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CloudSettingsIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CloudStatusOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  set_api_key_api_v1_cloud_api_key_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ApiKeyIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CloudStatusOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_api_key_api_v1_cloud_api_key_delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CloudStatusOut']
+        }
+      }
+    }
+  }
+  preview_api_v1_cloud_preview_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PreviewIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PreviewOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  give_consent_api_v1_cloud_consents_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ConsentIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ConsentOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  revoke_session_consents_api_v1_cloud_consents_delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+    }
+  }
+  revoke_consent_api_v1_cloud_consents__consent_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        consent_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_requests_api_v1_cloud_requests_get: {
+    parameters: {
+      query?: {
+        limit?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CloudRequestOut'][]
         }
       }
       /** @description Validation Error */

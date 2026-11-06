@@ -11,6 +11,7 @@ from app.api.routes.ai import CitationOut
 from app.api.routes.exams import ExamScopeIn
 from app.jobs import queue
 from app.rag.scope import Scope
+from app.services import cloud
 from app.services import flashcards as svc
 from app.services import settings as prefs
 from app.services import subjects as subj
@@ -28,6 +29,7 @@ class DeckIn(BaseModel):
     title: Title | None = None
     count: int = Field(20, ge=5, le=100)
     scope: ExamScopeIn = ExamScopeIn()
+    consent_id: Annotated[str, StringConstraints(max_length=64)] | None = None  # Fase 8
 
 
 class DeckCountsOut(BaseModel):
@@ -194,7 +196,7 @@ def create_deck(subject_id: str, body: DeckIn, db: Db, user: UserId, now: Now) -
     sub = subj.get_subject(db, user, subject_id)
     title = body.title or f"Tarjetas · {sub['name']}"[:300]
     scope = Scope(subject_id=subject_id, **body.scope.model_dump())
-    did = svc.create_deck(db, user, subject_id, title, body.count, scope)
+    did = svc.create_deck(db, user, subject_id, title, body.count, scope, body.consent_id)
     return _deck_out(db, svc.get_deck(db, user, did), svc.deck_counts(db, [did], now)[did])
 
 
@@ -222,7 +224,7 @@ def get_deck(deck_id: str, db: Db, user: UserId, now: Now) -> DeckDetailOut:
 
 @router.post("/decks/{deck_id}/retry", response_model=DeckOut, status_code=202)
 def retry_deck(deck_id: str, db: Db, user: UserId, now: Now) -> DeckOut:
-    svc.retry(db, svc.get_deck(db, user, deck_id))
+    svc.retry(db, svc.get_deck(db, user, deck_id), cloud.session_consent(db, user, "deck"))
     return _deck_out(
         db, svc.get_deck(db, user, deck_id), svc.deck_counts(db, [deck_id], now)[deck_id]
     )

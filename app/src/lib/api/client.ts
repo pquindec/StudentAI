@@ -55,6 +55,16 @@ export type AttemptQuestion = S['QuestionOut']
 export type AnswerState = S['AnswerStateOut']
 export type AnswerIn = S['AnswerIn']
 export type WeakTopic = S['WeakTopicOut']
+export type CloudStatus = S['CloudStatusOut']
+export type CloudSettingsIn = S['CloudSettingsIn']
+export type CloudPreviewIn = S['PreviewIn']
+export type CloudPreview = S['PreviewOut']
+export type CloudConsent = S['ConsentOut']
+export type CloudRequest = S['CloudRequestOut']
+export type CloudKind = CloudPreviewIn['kind']
+export type CloudTask = 'chat' | 'docs' | 'generate' | 'review'
+/** Petición de vista previa: solo `kind` es obligatorio (el resto tiene valor por defecto). */
+export type CloudAsk = Pick<CloudPreviewIn, 'kind'> & Partial<CloudPreviewIn>
 export type SourceKind = Source['kind']
 export type SourceStatus = Source['status']
 
@@ -227,8 +237,11 @@ export class ApiClient {
   deleteThread(threadId: string): Promise<void> {
     return this.call('DELETE', `/api/v1/chat/threads/${id(threadId)}`)
   }
-  ask(threadId: string, text: string): Promise<ChatMessage> {
-    return this.call('POST', `/api/v1/chat/threads/${id(threadId)}/messages`, { text })
+  ask(threadId: string, text: string, consentId?: string | null): Promise<ChatMessage> {
+    return this.call('POST', `/api/v1/chat/threads/${id(threadId)}/messages`, {
+      text,
+      consent_id: consentId ?? null,
+    })
   }
   getMessage(messageId: string): Promise<ChatMessage> {
     return this.call('GET', `/api/v1/chat/messages/${id(messageId)}`)
@@ -279,6 +292,35 @@ export class ApiClient {
   }
   deleteAttempt(attemptId: string): Promise<void> {
     return this.call('DELETE', `/api/v1/attempts/${id(attemptId)}`)
+  }
+
+  // --- Claude en la nube (Fase 8)
+  cloudStatus(refresh = false): Promise<CloudStatus> {
+    return this.call(
+      'GET',
+      `/api/v1/cloud/status${query({ refresh: refresh ? 'true' : undefined })}`,
+    )
+  }
+  updateCloudSettings(body: CloudSettingsIn): Promise<CloudStatus> {
+    return this.call('PUT', '/api/v1/cloud/settings', body)
+  }
+  setCloudApiKey(key: string): Promise<CloudStatus> {
+    return this.call('PUT', '/api/v1/cloud/api-key', { key })
+  }
+  deleteCloudApiKey(): Promise<CloudStatus> {
+    return this.call('DELETE', '/api/v1/cloud/api-key')
+  }
+  cloudPreview(body: CloudAsk): Promise<CloudPreview> {
+    return this.call('POST', '/api/v1/cloud/preview', body)
+  }
+  giveCloudConsent(body: CloudAsk & { mode: 'once' | 'session' }): Promise<CloudConsent> {
+    return this.call('POST', '/api/v1/cloud/consents', body)
+  }
+  revokeSessionConsents(): Promise<void> {
+    return this.call('DELETE', '/api/v1/cloud/consents')
+  }
+  cloudRequests(limit = 50): Promise<CloudRequest[]> {
+    return this.call('GET', `/api/v1/cloud/requests${query({ limit })}`)
   }
 
   // --- Flashcards y repaso

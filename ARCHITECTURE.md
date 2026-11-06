@@ -416,12 +416,19 @@ Un trabajo de prioridad baja en curso **no se interrumpe** (es caro), pero cede 
 
 ## 10. Proveedor cloud (Claude API)
 
-- Desactivado por defecto. Se activa en Configuración con la clave API guardada en el **Keychain de macOS** (nunca en SQLite ni en archivos).
-- Se elige qué tareas pueden ir a la nube (p. ej. solo "validar preguntas" o solo "resumen de asignatura completa").
-- **Pantalla de consentimiento por envío** (o por sesión, si el usuario lo elige): muestra las fuentes, el número de fragmentos, una vista previa del texto exacto, el modelo y el coste estimado. El consentimiento se registra en `cloud_consents`.
-- **Los audios nunca se envían**: solo texto (fragmentos recuperados).
-- Límite de gasto mensual con bloqueo duro; el coste se registra en `model_runs`.
-- Sin conexión, todo funciona en local; las tareas configuradas para la nube pasan a local o esperan, según prefieras.
+Implementado en la Fase 8 (0.8.0).
+
+- **Desactivado por defecto.** Dos vías, ambas detrás de `LLMProvider`:
+  - `llm/claude_api.py`: SDK `anthropic` en streaming, salida estructurada estricta, `effort: medium`, respaldos del servidor ante rechazo. La clave vive en el **Keychain** (`core/secrets.py`, `keyring`), nunca en SQLite ni en archivos.
+  - `llm/claude_code.py`: el plan del usuario mediante el binario oficial `claude -p` sin modificar (permitido para uso personal; la app nunca lee sus tokens OAuth). Se ejecuta sin herramientas, sin MCP, sin ajustes ni sesiones guardadas, en una carpeta temporal, con `--max-budget-usd` y sin `ANTHROPIC_*` en el entorno. El prompt va por stdin y nunca empieza por «/».
+- **Tareas**: `chat`, `docs`, `generate`, `review` (mazos y exámenes = generar + revisar; las etiquetas `*:judge` son revisión). Se elige cuáles pueden ir a la nube. La corrección de respuestas cortas es siempre local.
+- **Motor por trabajo** (`services/engine.py`): los handlers llaman a `eng.chat(petición, etiqueta)`. Va a Claude solo si hay un consentimiento válido para esa tarea; cualquier error de Claude pasa el resto del trabajo a local. Ollama y el Resource Manager se reservan solo si hace falta. La lógica de negocio (validación, citas literales, juez) es la misma en los dos casos.
+- **Consentimiento** (`cloud_consents`): la UI pide `POST /cloud/preview` (texto exacto, fuentes, fragmentos, coste estimado) y, si el usuario acepta, `POST /cloud/consents`.
+  - «Una vez»: vale para un solo trabajo y solo para las fuentes y fragmentos mostrados. En el asistente se envían exactamente los fragmentos de la vista previa.
+  - «Sesión»: vale hasta que se reinicia el backend (`BOOT_ID`). Se invalida al cambiar vía o modelo o al revocarlo.
+- **Límite mensual por vía** (5 $ por defecto) comprobado antes de cada llamada; «una vez» además tiene un tope de max(2 × estimado, 0,05 $). Cada llamada queda en `cloud_requests` (ok/failed/blocked, tokens, coste, sin contenido) y en `model_runs` (`provider = claude_api|claude_plan`).
+- **Los audios nunca se envían**: solo texto (fragmentos o segmentos).
+- Sin conexión, todo funciona en local: el trabajo cae a Ollama.
 
 ---
 

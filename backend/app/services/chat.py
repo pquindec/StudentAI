@@ -113,7 +113,9 @@ def get_message(db: sqlite3.Connection, user: str, message_id: str) -> dict[str,
     return _msg(row)
 
 
-def post(db: sqlite3.Connection, user: str, thread_id: str, text: str) -> str:
+def post(
+    db: sqlite3.Connection, user: str, thread_id: str, text: str, consent_id: str | None = None
+) -> str:
     """Guarda la pregunta y encola la respuesta. Devuelve el id del mensaje de respuesta."""
     th = get_thread(db, user, thread_id)
     with tx(db, immediate=True):
@@ -138,7 +140,7 @@ def post(db: sqlite3.Connection, user: str, thread_id: str, text: str) -> str:
             "chat_answer",
             "llm",
             None,
-            {"message_id": aid, "question_id": qid},
+            {"message_id": aid, "question_id": qid, "consent_id": consent_id},
             priority=queue.PRIORITY["interactive"],
         )
         db.execute(
@@ -154,11 +156,12 @@ def post(db: sqlite3.Connection, user: str, thread_id: str, text: str) -> str:
     return aid
 
 
-def history(db: sqlite3.Connection, thread_id: str, before: str) -> list[tuple[str, str]]:
-    """Pares (pregunta, respuesta) completados anteriores al mensaje `before`."""
+def history(db: sqlite3.Connection, thread_id: str, before: str | None) -> list[tuple[str, str]]:
+    """Pares (pregunta, respuesta) completados anteriores al mensaje `before` (None: todos)."""
     rows = db.execute(
         "SELECT role, content, status FROM chat_messages WHERE thread_id = ?"
-        " AND rowid < (SELECT rowid FROM chat_messages WHERE id = ?) ORDER BY rowid",
+        " AND rowid < COALESCE((SELECT rowid FROM chat_messages WHERE id = ?), 1e18)"
+        " ORDER BY rowid",
         (thread_id, before),
     ).fetchall()
     pairs: list[tuple[str, str]] = []
@@ -172,11 +175,12 @@ def history(db: sqlite3.Connection, thread_id: str, before: str) -> list[tuple[s
     return pairs
 
 
-def last_kind(db: sqlite3.Connection, thread_id: str, before: str) -> str | None:
+def last_kind(db: sqlite3.Connection, thread_id: str, before: str | None) -> str | None:
     """Tipo de la última respuesta completada antes de `before`: answer, created o general."""
     row = db.execute(
         "SELECT stats_json FROM chat_messages WHERE thread_id = ? AND role = 'assistant'"
-        " AND status = 'done' AND rowid < (SELECT rowid FROM chat_messages WHERE id = ?)"
+        " AND status = 'done'"
+        " AND rowid < COALESCE((SELECT rowid FROM chat_messages WHERE id = ?), 1e18)"
         " ORDER BY rowid DESC LIMIT 1",
         (thread_id, before),
     ).fetchone()

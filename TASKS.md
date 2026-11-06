@@ -15,8 +15,9 @@
 | 4 — IA local: apuntes y resúmenes | ✅ Aprobada por el usuario (2026-11-04) |
 | 5 — RAG y asistente | ✅ Aprobada por el usuario (2026-11-04) |
 | 6 — Exámenes | ✅ Completada (2026-11-04) — evidencia literal 100 %; en transcripciones 20 % de preguntas dudosas (limitación aceptada, ver BENCHMARKS §7) |
-| 7 — Flashcards y seguimiento | 🔶 Implementada (2026-11-06), pendiente de aprobación — en transcripciones 30 % de tarjetas dudosas (ver BENCHMARKS §8) |
-| 8–10 | ⏳ No iniciadas |
+| 7 — Flashcards y seguimiento | ✅ Aprobada por el usuario (2026-11-06) — en transcripciones 30 % de tarjetas dudosas: limitación aceptada, a mejorar en la Fase 8 con Claude (ver BENCHMARKS §8) |
+| 8 — Cloud y optimización | 🟡 Implementada (2026-11-06), pendiente de tu prueba y aprobación |
+| 9–10 | ⏳ No iniciadas |
 
 ### Ajustes tras la prueba del usuario (2026-11-05)
 - [x] Copiar texto en resúmenes, apuntes y asistente; resúmenes proporcionales al material (0.6.1)
@@ -118,14 +119,17 @@
 - [x] Edición, suspensión y borrado de tarjetas
 - [x] Estadísticas (tiempo de estudio, repasos, retención, racha, exámenes, tarjetas, previsión) y «Para repasar hoy» en Inicio
 - [x] Aceptación con reloj simulado: 62 días (`test_simulated_days_dates_and_stats_evolve`)
-- [ ] Prueba en la app (usuario)
+- [x] Prueba en la app (usuario)
 - **Criterio de aceptación:** estudiar tarjetas durante varios días simulados y ver que las fechas y las estadísticas evolucionan correctamente (pruebas con reloj simulado).
 
 ## Fase 8 — Cloud y optimización
-- [ ] AnthropicProvider detrás de `LLMProvider`; clave en Keychain
-- [ ] Enrutado por tarea, consentimiento con vista previa, auditoría, coste estimado y límite de gasto
-- [ ] Modo offline verificado
-- [ ] Ajustes del Resource Manager según las métricas reales
+- [x] Dos vías detrás de `LLMProvider`: clave API (SDK `anthropic`, clave en el Keychain) y tu plan de Claude mediante el binario oficial de Claude Code (`claude -p`, sin leer sus credenciales). «Automática»: la clave si hay; si no, el plan
+- [x] Enrutado por tarea (asistente, apuntes/resúmenes, generar, revisar), consentimiento con vista previa del texto exacto (por envío o para la sesión), auditoría sin contenido, coste estimado y límite mensual (5 $ por vía; con el plan, coste equivalente)
+- [x] Modo offline verificado: si Claude falla o no hay conexión, el trabajo sigue en local (`test_offline_falls_back_to_local`)
+- [x] Resource Manager revisado con métricas reales (104 llamadas del 9B: pico 8.460 MB, presupuesto 8.500 MB nunca superado): no requiere cambios
+- [x] Revisor de tarjetas y preguntas con Claude (tarea «revisar»; se puede activar sola, sin enviar la generación)
+- [ ] Medir con material real cuánto baja el 30 % de tarjetas dudosas con el revisor de Claude (necesita tu consentimiento; usuario)
+- [ ] Probar en la app: Configuración › Claude, ventana de consentimiento y un envío real (usuario)
 - **Criterio de aceptación:** cambiar una tarea entre local y cloud no modifica la lógica de negocio; sin consentimiento no sale ningún byte (verificado con un proxy de red en las pruebas); sin conexión, todo lo local sigue funcionando.
 
 ## Fase 9 — QA y seguridad

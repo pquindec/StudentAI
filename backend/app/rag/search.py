@@ -192,3 +192,16 @@ def search(
     relevant = bool(fts_ids) or any(d <= VEC_GATE for _, d in vec_hits)
     mode = "hybrid" if vec_hits else ("fts" if fts_ids else "none")
     return SearchResult(top, mode, relevant and bool(top), notes)
+
+
+def from_chunks(db: sqlite3.Connection, chunk_ids: list[int]) -> SearchResult:
+    """Resultado fijado de antemano (los fragmentos aprobados en un consentimiento), en orden."""
+    marks = ",".join("?" * len(chunk_ids)) or "NULL"
+    src = dict(
+        db.execute(
+            f"SELECT id, source_id FROM chunks WHERE id IN ({marks})",  # noqa: S608
+            chunk_ids,
+        ).fetchall()
+    )
+    hits = [Hit(c, str(src[c]), 0.0) for c in chunk_ids if c in src]
+    return SearchResult(hits, "approved", bool(hits), [])

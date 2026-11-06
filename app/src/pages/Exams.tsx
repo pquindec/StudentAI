@@ -1,3 +1,4 @@
+import { useCloudConsent } from '../components/CloudConsent'
 import { useEffect, useState } from 'react'
 import {
   Button,
@@ -104,10 +105,19 @@ function NewExamDialog({
   const usable = sources.data?.items.filter((s) => s.version != null) ?? []
   const units = subject.data ? unitTree(subject.data.units) : []
 
+  const askCloud = useCloudConsent()
+
   const submit = async () => {
     setBusy(true)
     setError(null)
     try {
+      const scope = {
+        source_ids: sourceIds.filter((id) => usable.some((s) => s.id === id)),
+        unit_ids: unitIds.filter((id) => units.some((u) => u.unit.id === id)),
+        exclude_source_ids: [],
+      }
+      const consent = await askCloud({ kind: 'exam', subject_id: subjectId, scope, count })
+      if (consent === false) return
       const exam = await api.createExam(subjectId, {
         title: title.trim() || null,
         config: {
@@ -120,11 +130,8 @@ function NewExamDialog({
           penalty: Number(penalty),
         },
         // Solo lo que se ve marcado en esta asignatura.
-        scope: {
-          source_ids: sourceIds.filter((id) => usable.some((s) => s.id === id)),
-          unit_ids: unitIds.filter((id) => units.some((u) => u.unit.id === id)),
-          exclude_source_ids: [],
-        },
+        scope,
+        consent_id: consent,
       })
       onClose()
       navigate({ name: 'exam', id: exam.id })

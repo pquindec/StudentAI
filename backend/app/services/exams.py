@@ -73,6 +73,7 @@ def create_exam(
     title: str,
     cfg: gen.ExamConfig,
     scope: Scope,
+    consent_id: str | None = None,
 ) -> str:
     subj.get_subject(db, user, subject_id)
     scope = scope.model_copy(update={"subject_id": subject_id})
@@ -92,7 +93,12 @@ def create_exam(
     eid = str(uuid.uuid4())
     with tx(db):
         job = queue.enqueue(
-            db, "generate_exam", "llm", None, {"exam_id": eid}, priority=queue.PRIORITY["batch"]
+            db,
+            "generate_exam",
+            "llm",
+            None,
+            {"exam_id": eid, "consent_id": consent_id},
+            priority=queue.PRIORITY["batch"],
         )
         db.execute(
             "INSERT INTO exams(id, subject_id, title, config_json, scope_json, requested, job_id)"
@@ -124,7 +130,7 @@ def set_status(
     )
 
 
-def retry(db: sqlite3.Connection, exam: dict[str, Any]) -> None:
+def retry(db: sqlite3.Connection, exam: dict[str, Any], consent_id: str | None = None) -> None:
     if exam["status"] not in ("failed", "cancelled"):
         raise conflict("not_retryable", "Solo se puede reintentar si falló o se canceló")
     with tx(db):
@@ -133,7 +139,7 @@ def retry(db: sqlite3.Connection, exam: dict[str, Any]) -> None:
             "generate_exam",
             "llm",
             None,
-            {"exam_id": exam["id"]},
+            {"exam_id": exam["id"], "consent_id": consent_id},
             priority=queue.PRIORITY["batch"],
         )
         db.execute("DELETE FROM exam_questions WHERE exam_id = ?", (exam["id"],))

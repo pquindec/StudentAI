@@ -69,8 +69,17 @@ Formato único:
 | POST | `/api/v1/cards/{id}/review` | `{rating 1..4 (Otra vez, Difícil, Bien, Fácil), duration_ms}` → estado nuevo (FSRS). 409 `suspended` |
 | PUT | `/api/v1/study/settings` | `{new_per_day 0..200}` (20 por defecto) |
 | GET | `/api/v1/stats` | `?subject_id=&days=7\|30\|90` tiempo de estudio por día (tarjetas, máx. 2 min cada una, + intentos de examen), repasos, retención, racha, días activos, tarjetas (reparto y previsión de 7 días), exámenes (intentos corregidos, nota media, últimos 10). Días locales |
+| GET | `/api/v1/cloud/status` | Claude: activado, vía elegida y efectiva, modelo y modelos con precio, tareas, clave (solo `…últimos 4`), plan (instalado, con sesión, tipo), límites y gasto del mes por vía, consentimientos de sesión. `?refresh=true` vuelve a consultar Claude Code |
+| PUT | `/api/v1/cloud/settings` | `{enabled?, via?: auto\|api\|plan, model?, tasks?: {chat, docs, generate, review}, limit_api?, limit_plan? (0..1000 $)}` |
+| PUT/DELETE | `/api/v1/cloud/api-key` | `{key: "sk-ant-…"}` guarda la clave en el Keychain (409 `keychain_error`) / la borra. Nunca se devuelve |
+| POST | `/api/v1/cloud/preview` | `{kind: chat\|docs\|deck\|exam, subject_id?, source_ids?, scope?, count?, thread_id?, text?}` → `cloud` (False = irá en local, con `reason`: disabled, task_local, no_via, limit), tareas, vía, modelo, fuentes, fragmentos, caracteres, **texto exacto** (hasta 200.000 caracteres), notas, coste estimado, gasto y límite, `session_consent_id` si ya hay uno de sesión. No envía nada |
+| POST | `/api/v1/cloud/consents` | Mismo cuerpo + `mode: once\|session` → 201 `{id, mode}`. 409 `cloud_unavailable` o `nothing_to_send` |
+| DELETE | `/api/v1/cloud/consents` · `/api/v1/cloud/consents/{id}` | Revoca los consentimientos de sesión / uno concreto |
+| GET | `/api/v1/cloud/requests` | Registro de envíos (`?limit=1..500`): tarea, vía, modelo, estado ok/failed/blocked, caracteres, tokens, coste, error. Sin contenido |
 | GET | `/api/v1/jobs` | Trabajos (`?active=true`) con progreso |
 | POST | `/api/v1/jobs/{id}/cancel` | Cancelar (inmediato si está en cola; cooperativo si está en curso) |
+
+**Consentimiento (Fase 8):** crear apuntes/resúmenes, mazos y exámenes, y enviar un mensaje al asistente, aceptan `consent_id` opcional (de `POST /cloud/consents`). Sin él, todo va en local. Los reintentos usan el consentimiento de sesión activo, si lo hay.
 
 Errores de dominio frecuentes: `not_found`, `invalid_hierarchy`, `invalid_link`, `duplicate` (con `details.source_id`), `content_mismatch`, `unsupported_type`, `empty_file`, `too_large`, `version_conflict`. Los fallos de extracción quedan en la fuente (`error_code`: `encrypted`, `corrupt`, `no_text`, `zip_bomb`, `crashed`, `timeout`…) con `error_message` en español.
 

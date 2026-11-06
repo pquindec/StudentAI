@@ -62,7 +62,13 @@ def get_deck(db: sqlite3.Connection, user: str, deck_id: str) -> dict[str, Any]:
 
 
 def create_deck(
-    db: sqlite3.Connection, user: str, subject_id: str, title: str, count: int, scope: Scope
+    db: sqlite3.Connection,
+    user: str,
+    subject_id: str,
+    title: str,
+    count: int,
+    scope: Scope,
+    consent_id: str | None = None,
 ) -> str:
     subj.get_subject(db, user, subject_id)
     scope = scope.model_copy(update={"subject_id": subject_id})
@@ -79,8 +85,9 @@ def create_deck(
     did = str(uuid.uuid4())
     with tx(db):
         job = queue.enqueue(
-            db, "generate_deck", "llm", None, {"deck_id": did}, priority=queue.PRIORITY["batch"]
-        )
+            db, "generate_deck", "llm", None, {"deck_id": did, "consent_id": consent_id},
+            priority=queue.PRIORITY["batch"],
+        )  # fmt: skip
         db.execute(
             "INSERT INTO decks(id, subject_id, title, scope_json, requested, job_id)"
             " VALUES (?,?,?,?,?,?)",
@@ -103,12 +110,12 @@ def set_status(
     )
 
 
-def retry(db: sqlite3.Connection, deck: dict[str, Any]) -> None:
+def retry(db: sqlite3.Connection, deck: dict[str, Any], consent_id: str | None = None) -> None:
     if deck["status"] not in ("failed", "cancelled"):
         raise conflict("not_retryable", "Solo se puede reintentar si falló o se canceló")
     with tx(db):
         job = queue.enqueue(
-            db, "generate_deck", "llm", None, {"deck_id": deck["id"]},
+            db, "generate_deck", "llm", None, {"deck_id": deck["id"], "consent_id": consent_id},
             priority=queue.PRIORITY["batch"],
         )  # fmt: skip
         db.execute(

@@ -14,6 +14,7 @@ from app.api.routes.ai import CitationOut
 from app.generation.exam import ExamConfig
 from app.jobs import queue
 from app.rag.scope import Scope
+from app.services import cloud
 from app.services import exams as svc
 from app.services import subjects as subj
 
@@ -35,6 +36,7 @@ class ExamIn(BaseModel):
     title: Title | None = None
     config: ExamConfig
     scope: ExamScopeIn = ExamScopeIn()
+    consent_id: Annotated[str, StringConstraints(max_length=64)] | None = None  # Fase 8
 
 
 class ExamStatsOut(BaseModel):
@@ -188,7 +190,7 @@ def create_exam(subject_id: str, body: ExamIn, db: Db, user: UserId) -> ExamOut:
     sub = subj.get_subject(db, user, subject_id)
     title = body.title or f"Examen · {sub['name']}"[:300]
     scope = Scope(subject_id=subject_id, **body.scope.model_dump())
-    eid = svc.create_exam(db, user, subject_id, title, body.config, scope)
+    eid = svc.create_exam(db, user, subject_id, title, body.config, scope, body.consent_id)
     return _exam_out(db, svc.get_exam(db, user, eid))
 
 
@@ -214,7 +216,7 @@ def accept_fewer(exam_id: str, db: Db, user: UserId) -> ExamOut:
 
 @router.post("/exams/{exam_id}/retry", response_model=ExamOut, status_code=202)
 def retry_exam(exam_id: str, db: Db, user: UserId) -> ExamOut:
-    svc.retry(db, svc.get_exam(db, user, exam_id))
+    svc.retry(db, svc.get_exam(db, user, exam_id), cloud.session_consent(db, user, "exam"))
     return _exam_out(db, svc.get_exam(db, user, exam_id))
 
 
