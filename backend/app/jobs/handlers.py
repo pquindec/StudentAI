@@ -31,6 +31,7 @@ from app.services import audio_files, transcription
 from app.services import chat as chat_svc
 from app.services import documents as docs_svc
 from app.services import exams as exams_svc
+from app.services import flashcards as cards_svc
 from app.services import llm as llm_svc
 from app.services import sources as src_svc
 from app.stt import models
@@ -577,6 +578,78 @@ def generate_exam(ctx: JobContext) -> None:
         raise
 
 
+def generate_deck(ctx: JobContext) -> None:
+    """Mazo de tarjetas con evidencia literal y revisor (reanudable)."""
+    deck_id = str(payload(ctx.job).get("deck_id"))
+    row = ctx.db.execute("SELECT * FROM decks WHERE id = ?", (deck_id,)).fetchone()
+    if row is None:
+        raise audio.Cancelled
+    deck = dict(row)
+    owner = ctx.db.execute(
+        "SELECT owner_id FROM subjects WHERE id = ?", (deck["subject_id"],)
+    ).fetchone()[0]
+    cards_svc.set_status(ctx.db, deck_id, "running")
+    try:
+        prov = llm_svc.provider()
+        info = prov.info()
+        if not info.running:
+            raise JobFailed("llm_unavailable", "Ollama no está en marcha. Abre la app de Ollama.")
+        rm = ResourceManager(prov)
+        choice = rm.acquire(
+            llm_svc.chosen_model(ctx.db),
+            llm_svc.light_model(ctx.db),
+            info.models,
+            report=lambda m: ctx.report(0, m),
+            cancelled=ctx.cancelled,
+        )
+
+        def chat(req: ChatRequest, task: str) -> ChatResult:
+            res = prov.chat(req, cancelled=ctx.cancelled)
+            loaded = rm.after_call(req.model)
+            docs_svc.record_run(
+                ctx.db, ctx.job["id"], req.model, task, res.input_tokens, res.output_tokens,
+                res.duration_ms, loaded,
+            )  # fmt: skip
+            return res
+
+        similarity = None
+        if rag_index.embeddings_available(prov) is None:
+
+            def similarity(text: str, others: list[str]) -> list[float]:
+                vecs = prov.embed(rag_index.EMBED_MODEL, [text, *others])
+                return [_cosine(vecs[0], v) for v in vecs[1:]]
+
+        stats = cards_svc.run_generation(
+            ctx.db,
+            deck,
+            chat,
+            choice.model,
+            llm_svc.keep_alive(ctx.db),
+            owner,
+            report=ctx.report,
+            checkpoint=json.loads(ctx.job.get("checkpoint_json") or "{}"),
+            save_checkpoint=lambda data: queue.save_checkpoint(ctx.db, ctx.job["id"], data),
+            should_yield=lambda: queue.higher_waiting(ctx.db, int(ctx.job["priority"])),
+            similarity=similarity,
+        )
+        log.info("Mazo %s: %s", deck_id, {k: stats[k] for k in ("proposed", "valid", "saved")})
+    except Yielded:
+        cards_svc.set_status(ctx.db, deck_id, "queued")
+        raise
+    except (audio.Cancelled, LLMCancelled) as e:
+        cards_svc.set_status(ctx.db, deck_id, "cancelled")
+        raise audio.Cancelled from e
+    except LLMError as e:
+        cards_svc.set_status(ctx.db, deck_id, "failed", e.code, e.message)
+        raise JobFailed(e.code, e.message) from e
+    except JobFailed as e:
+        cards_svc.set_status(ctx.db, deck_id, "failed", e.code, e.message)
+        raise
+    except Exception:
+        cards_svc.set_status(ctx.db, deck_id, "failed", "internal_error", "Error inesperado")
+        raise
+
+
 def _cosine(a: list[float], b: list[float]) -> float:
     dot = sum(x * y for x, y in zip(a, b, strict=False))
     na = sum(x * x for x in a) ** 0.5
@@ -641,6 +714,7 @@ def grade_attempt(ctx: JobContext) -> None:
 
 HANDLERS: dict[str, Callable[[JobContext], None]] = {
     "generate_exam": generate_exam,
+    "generate_deck": generate_deck,
     "grade_attempt": grade_attempt,
     "chat_answer": chat_answer,
     "generate_doc": generate_doc,

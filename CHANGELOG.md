@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.0] — 2026-11-06 · Fase 7: flashcards y estadísticas
+### Añadido
+- **Flashcards**: mazos creados con la IA local desde tus fuentes (por asignatura, temas o fuentes). Cada tarjeta guarda la frase literal que la respalda (comprobada); un revisor descarta las no respaldadas, poco claras o poco útiles. Si no hay material para todas, el mazo indica cuántas se pudieron crear.
+- **Repaso espaciado con FSRS** (`fsrs` 6.3.2, MIT): Otra vez / Difícil / Bien / Fácil con el intervalo de cada botón, atajos (espacio y 1–4), evidencia al ver la respuesta, límite de tarjetas nuevas al día (20 por defecto, ajustable), repaso por asignatura, por mazo o de todo.
+- Editar, suspender y borrar tarjetas; reparto nuevas / aprendiendo / dominadas por mazo y próximas fechas.
+- **Estadísticas**: tiempo de estudio por día (tarjetas y exámenes), repasos, retención, racha, días activos, tarjetas y previsión de repasos de 7 días, exámenes corregidos con nota media y últimos intentos. Filtro por asignatura y periodo (7/30/90 días). Gráficos con tooltip y vista de tabla.
+- **Inicio**: «Para repasar hoy» con las tarjetas pendientes y la racha.
+- Migración `0007_flashcards.sql`. Dependencia nueva: `fsrs` (MIT, sin dependencias pesadas).
+### Limitaciones conocidas
+- En clases transcritas, ~3 de cada 10 tarjetas pueden ser dudosas (en material escrito, 0 de 20 en la prueba). Todas muestran su cita y se pueden editar o borrar.
+- Crear un mazo de 20 tarjetas tarda ~4 min con material escrito y ~10 min con una clase transcrita de una hora.
+- El tiempo de estudio no incluye leer apuntes o resúmenes.
+
 ## [0.6.2] — 2026-11-05 · Grabaciones por asignatura y retención del audio
 ### Cambiado
 - En **Grabaciones**, la lista muestra solo las grabaciones de la asignatura elegida (antes, las últimas 20 de todas). Mientras se graba, las de la asignatura de la grabación en curso.

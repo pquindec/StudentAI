@@ -9,21 +9,23 @@ import { Assistant } from './pages/Assistant'
 import { AttemptView } from './pages/AttemptView'
 import { ComingSoon } from './pages/ComingSoon'
 import { Dashboard } from './pages/Dashboard'
+import { DeckView } from './pages/DeckView'
 import { DocumentView } from './pages/DocumentView'
 import { Documents } from './pages/Documents'
 import { Exams } from './pages/Exams'
 import { ExamView } from './pages/ExamView'
+import { Flashcards } from './pages/Flashcards'
 import { Import } from './pages/Import'
 import { Library } from './pages/Library'
 import { Recordings } from './pages/Recordings'
+import { Review } from './pages/Review'
 import { SourceDetail } from './pages/SourceDetail'
+import { Stats } from './pages/Stats'
 import { SubjectDetail } from './pages/SubjectDetail'
 import { Subjects } from './pages/Subjects'
 
 /** Fase del plan (TASKS.md) en la que se construye cada sección pendiente. */
 const PHASE: Partial<Record<Section, number>> = {
-  flashcards: 7,
-  stats: 7,
   settings: 8,
 }
 
@@ -65,6 +67,21 @@ function Page({ route, status }: { route: Route; status: ReturnType<typeof useBa
       return <ExamView key={route.id} id={route.id} />
     case 'attempt':
       return <AttemptView key={route.id} id={route.id} />
+    case 'flashcards':
+      return <Flashcards />
+    case 'deck':
+      return <DeckView key={route.id} id={route.id} />
+    case 'review':
+      return (
+        <Review
+          key={`${route.subjectId ?? ''}-${route.deckId ?? ''}`}
+          subjectId={route.subjectId}
+          deckId={route.deckId}
+          back={route.back}
+        />
+      )
+    case 'stats':
+      return <Stats />
     case 'notes':
     case 'summaries':
       return <Documents key={route.name} kind={route.name === 'notes' ? 'notes' : 'summary'} />

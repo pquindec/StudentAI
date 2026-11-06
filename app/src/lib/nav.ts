@@ -9,6 +9,8 @@ export type Route =
   | { name: 'document'; id: string; kind: 'notes' | 'summary' }
   | { name: 'exam'; id: string }
   | { name: 'attempt'; id: string }
+  | { name: 'deck'; id: string }
+  | { name: 'review'; subjectId?: string; deckId?: string; back?: Route }
   | { name: 'import'; subjectId?: string; unitId?: string }
   | { name: 'library'; subjectId?: string; unitId?: string }
 
@@ -21,6 +23,7 @@ export function sectionOf(r: Route): Section {
   if (r.name === 'subject') return 'subjects'
   if (r.name === 'source') return 'library'
   if (r.name === 'exam' || r.name === 'attempt') return 'exams'
+  if (r.name === 'deck' || r.name === 'review') return 'flashcards'
   if (r.name === 'document') return r.kind === 'notes' ? 'notes' : 'summaries'
   return r.name
 }

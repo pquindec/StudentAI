@@ -750,6 +750,148 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/subjects/{subject_id}/decks': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Decks */
+    get: operations['list_decks_api_v1_subjects__subject_id__decks_get']
+    put?: never
+    /** Create Deck */
+    post: operations['create_deck_api_v1_subjects__subject_id__decks_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/decks/{deck_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Deck */
+    get: operations['get_deck_api_v1_decks__deck_id__get']
+    put?: never
+    post?: never
+    /** Delete Deck */
+    delete: operations['delete_deck_api_v1_decks__deck_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/decks/{deck_id}/retry': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Retry Deck */
+    post: operations['retry_deck_api_v1_decks__deck_id__retry_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cards/{card_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /** Delete Card */
+    delete: operations['delete_card_api_v1_cards__card_id__delete']
+    options?: never
+    head?: never
+    /** Update Card */
+    patch: operations['update_card_api_v1_cards__card_id__patch']
+    trace?: never
+  }
+  '/api/v1/study': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Study
+     * @description Siguiente tarjeta que toca (de una asignatura, de un mazo o de todo).
+     */
+    get: operations['study_api_v1_study_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cards/{card_id}/review': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Review Card */
+    post: operations['review_card_api_v1_cards__card_id__review_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/study/settings': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Study Settings */
+    put: operations['study_settings_api_v1_study_settings_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/stats': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Stats */
+    get: operations['stats_api_v1_stats_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -903,6 +1045,63 @@ export interface components {
       /** Deletable */
       deletable: boolean
     }
+    /** CardOut */
+    CardOut: {
+      /** Id */
+      id: string
+      /** Deck Id */
+      deck_id: string
+      /** Front */
+      front: string
+      /** Back */
+      back: string
+      /**
+       * State
+       * @enum {string}
+       */
+      state: 'new' | 'learning' | 'review' | 'relearning'
+      /** Due At */
+      due_at: string
+      /** Stability */
+      stability: number | null
+      /** Reps */
+      reps: number
+      /** Lapses */
+      lapses: number
+      /** Mastered */
+      mastered: boolean
+      /** Suspended */
+      suspended: boolean
+      /** Edited */
+      edited: boolean
+      evidence: components['schemas']['CitationOut'] | null
+    }
+    /** CardPatch */
+    CardPatch: {
+      /** Front */
+      front?: string | null
+      /** Back */
+      back?: string | null
+      /** Suspended */
+      suspended?: boolean | null
+    }
+    /** CardStatsOut */
+    CardStatsOut: {
+      /** Total */
+      total: number
+      /** New */
+      new: number
+      /** Learning */
+      learning: number
+      /** Mastered */
+      mastered: number
+      /** Suspended */
+      suspended: number
+      /** Due Today */
+      due_today: number
+      /** Forecast */
+      forecast: components['schemas']['ForecastOut'][]
+    }
     /** ChatStatsOut */
     ChatStatsOut: {
       /** Search Mode */
@@ -961,6 +1160,137 @@ export interface components {
       topic: string
       /** Claims */
       claims: components['schemas']['PointOut'][]
+    }
+    /** DayOut */
+    DayOut: {
+      /** Date */
+      date: string
+      /** Study Ms */
+      study_ms: number
+      /** Reviews */
+      reviews: number
+      /** Exams */
+      exams: number
+    }
+    /** DeckCountsOut */
+    DeckCountsOut: {
+      /** Total */
+      total: number
+      /** New */
+      new: number
+      /** Learning */
+      learning: number
+      /** Mastered */
+      mastered: number
+      /** Suspended */
+      suspended: number
+      /** Due */
+      due: number
+      /** Next Due At */
+      next_due_at: string | null
+    }
+    /** DeckDetailOut */
+    DeckDetailOut: {
+      /** Id */
+      id: string
+      /** Subject Id */
+      subject_id: string
+      /** Title */
+      title: string
+      scope: components['schemas']['Scope']
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'queued' | 'running' | 'ready' | 'failed' | 'cancelled'
+      /** Requested */
+      requested: number
+      /** Model */
+      model: string | null
+      /** Progress */
+      progress: number
+      /** Message */
+      message: string | null
+      /** Error Message */
+      error_message: string | null
+      stats: components['schemas']['DeckStatsOut']
+      counts: components['schemas']['DeckCountsOut']
+      /** Created At */
+      created_at: string
+      /** Cards */
+      cards: components['schemas']['CardOut'][]
+    }
+    /** DeckIn */
+    DeckIn: {
+      /** Title */
+      title?: string | null
+      /**
+       * Count
+       * @default 20
+       */
+      count: number
+      /**
+       * @default {
+       *       "unit_ids": [],
+       *       "source_ids": [],
+       *       "exclude_source_ids": []
+       *     }
+       */
+      scope: components['schemas']['ExamScopeIn']
+    }
+    /** DeckOut */
+    DeckOut: {
+      /** Id */
+      id: string
+      /** Subject Id */
+      subject_id: string
+      /** Title */
+      title: string
+      scope: components['schemas']['Scope']
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'queued' | 'running' | 'ready' | 'failed' | 'cancelled'
+      /** Requested */
+      requested: number
+      /** Model */
+      model: string | null
+      /** Progress */
+      progress: number
+      /** Message */
+      message: string | null
+      /** Error Message */
+      error_message: string | null
+      stats: components['schemas']['DeckStatsOut']
+      counts: components['schemas']['DeckCountsOut']
+      /** Created At */
+      created_at: string
+    }
+    /** DeckStatsOut */
+    DeckStatsOut: {
+      /**
+       * Proposed
+       * @default 0
+       */
+      proposed: number
+      /**
+       * Valid
+       * @default 0
+       */
+      valid: number
+      /**
+       * Saved
+       * @default 0
+       */
+      saved: number
+      /**
+       * Rejected
+       * @default {}
+       */
+      rejected: {
+        [key: string]: number
+      }
     }
     /** DocDetailOut */
     DocDetailOut: {
@@ -1262,6 +1592,13 @@ export interface components {
       /** Content */
       content: string
     }
+    /** ForecastOut */
+    ForecastOut: {
+      /** Date */
+      date: string
+      /** Due */
+      due: number
+    }
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -1275,6 +1612,18 @@ export interface components {
       version: string
       /** Schema Version */
       schema_version: number
+    }
+    /** IntervalOut */
+    IntervalOut: {
+      /**
+       * Rating
+       * @enum {integer}
+       */
+      rating: 1 | 2 | 3 | 4
+      /** Due At */
+      due_at: string
+      /** Seconds */
+      seconds: number
     }
     /** JobOut */
     JobOut: {
@@ -1423,6 +1772,32 @@ export interface components {
       indexed: number
       /** Pending */
       pending: number
+    }
+    /** RecentExamOut */
+    RecentExamOut: {
+      /** Attempt Id */
+      attempt_id: string
+      /** Exam Id */
+      exam_id: string
+      /** Title */
+      title: string
+      /** Date */
+      date: string
+      /** Grade */
+      grade: number | null
+    }
+    /** ReviewIn */
+    ReviewIn: {
+      /**
+       * Rating
+       * @enum {integer}
+       */
+      rating: 1 | 2 | 3 | 4
+      /**
+       * Duration Ms
+       * @default 0
+       */
+      duration_ms: number
     }
     /**
      * Scope
@@ -1623,6 +1998,30 @@ export interface components {
       /** Session Ids */
       session_ids?: string[] | null
     }
+    /** StatsOut */
+    StatsOut: {
+      /** Days */
+      days: components['schemas']['DayOut'][]
+      /** Study Ms */
+      study_ms: number
+      /** Reviews */
+      reviews: number
+      /** Retention */
+      retention: number | null
+      /** Streak */
+      streak: number
+      /** Active Days */
+      active_days: number
+      /** Exams Taken */
+      exams_taken: number
+      /** Exam Average */
+      exam_average: number | null
+      /** Recent Exams */
+      recent_exams: components['schemas']['RecentExamOut'][]
+      cards: components['schemas']['CardStatsOut']
+      /** Since */
+      since: string
+    }
     /** SttSettingsIn */
     SttSettingsIn: {
       /** Model */
@@ -1652,6 +2051,27 @@ export interface components {
       audio_keep_days: 0 | 7 | 30
       /** Models */
       models: components['schemas']['ModelOut'][]
+    }
+    /** StudyOut */
+    StudyOut: {
+      card: components['schemas']['CardOut'] | null
+      /** Intervals */
+      intervals: components['schemas']['IntervalOut'][]
+      /** Learning */
+      learning: number
+      /** Review */
+      review: number
+      /** New */
+      new: number
+      /** Next Due At */
+      next_due_at: string | null
+      /** New Per Day */
+      new_per_day: number
+    }
+    /** StudySettingsIn */
+    StudySettingsIn: {
+      /** New Per Day */
+      new_per_day: number
     }
     /** SubjectDetailOut */
     SubjectDetailOut: {
@@ -3763,6 +4183,359 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['AttemptOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_decks_api_v1_subjects__subject_id__decks_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DeckOut'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_deck_api_v1_subjects__subject_id__decks_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DeckIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DeckOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_deck_api_v1_decks__deck_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        deck_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DeckDetailOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_deck_api_v1_decks__deck_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        deck_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  retry_deck_api_v1_decks__deck_id__retry_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        deck_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DeckOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_card_api_v1_cards__card_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        card_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_card_api_v1_cards__card_id__patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        card_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CardPatch']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CardOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  study_api_v1_study_get: {
+    parameters: {
+      query?: {
+        subject_id?: string | null
+        deck_id?: string | null
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['StudyOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  review_card_api_v1_cards__card_id__review_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        card_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReviewIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CardOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  study_settings_api_v1_study_settings_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['StudySettingsIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['StudyOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  stats_api_v1_stats_get: {
+    parameters: {
+      query?: {
+        subject_id?: string | null
+        days?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['StatsOut']
         }
       }
       /** @description Validation Error */

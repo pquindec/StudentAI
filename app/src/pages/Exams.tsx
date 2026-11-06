@@ -37,7 +37,7 @@ export function ExamStatusBadge({ exam }: { exam: Pick<Exam, 'status'> }) {
   )
 }
 
-function Checklist({
+export function Checklist({
   items,
   picked,
   onChange,

@@ -397,6 +397,14 @@ Un trabajo de prioridad baja en curso **no se interrumpe** (es caro), pero cede 
 - Hay una implementación open source mantenida (`py-fsrs`, MIT). La interfaz de valoración es la misma (Otra vez / Difícil / Bien / Fácil).
 - Si prefieres SM-2 por motivos académicos (p. ej. para explicarlo en una memoria), el planificador queda detrás de una interfaz `Scheduler` y se pueden tener ambos.
 
+**Implementación (Fase 7):**
+- `srs/base.py` define `Scheduler` (`review`, `preview`) y `CardState`; `srs/fsrs_scheduler.py` lo implementa con `fsrs==6.3.2` (MIT, solo depende de `typing-extensions`), retención deseada 0,9, pasos de aprendizaje 1 y 10 min, reaprendizaje 10 min. Sin *fuzzing*: la fecha que muestra cada botón es la que se aplica y las pruebas son deterministas.
+- Cola de repaso: aprendizaje vencido → repasos vencidos → nuevas (límite diario, 20 por defecto, contado por día local). Si no queda nada, se adelantan pasos de aprendizaje de los próximos 20 min.
+- «Dominada» = en repaso con estabilidad ≥ 21 días.
+- Generación de tarjetas con el mismo esquema que los exámenes (§6.6): lotes repartidos por fuentes, cita literal verificada, duplicados fuera y revisor separado (`generation/cards.py`).
+- Estadísticas sin tabla `study_events`: se calculan de `card_reviews` (máx. 2 min por tarjeta) y de los intentos de examen (máx. su tiempo límite o 3 h). No mide el tiempo leyendo apuntes.
+- Reloj inyectable: las rutas reciben la hora como dependencia (`api/deps.py::current_time`), y las pruebas simulan 60 días.
+
 ---
 
 ## 10. Proveedor cloud (Claude API)

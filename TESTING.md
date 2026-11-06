@@ -44,6 +44,17 @@ scripts/check.sh backend    # solo una parte (preferible tras cambios acotados)
 - Con su clase real (82.464 caracteres, copia de la BD): resumen intermedio 12 frases + 12 ideas clave en 6 min 52 s, sin cortes. Antes de limitar las citas por punto, una de dos pasadas falló por respuesta cortada; «detallado» se cortaba (necesita ~4.100–5.100 tokens) → tope de 15 + 12 frases/ideas y hasta 5.600 tokens de salida con ventana de 12K en el paso final: 15 frases + 9 ideas clave, pico 7,7 GB.
 - Pendiente: comprobar la selección y el botón «Copiar» en la app (WKWebView).
 
+## Pruebas de la Fase 7 (2026-11-06)
+- Automáticas: pytest 144 (9 nuevas en `test_flashcards.py`), vitest 32 (3 nuevas en `flashcards.test.ts`).
+  - FSRS: pasos de aprendizaje, intervalos crecientes, fallo → reaprendizaje; la fecha del botón es la que se aplica.
+  - Generación con modelo falso: cita literal obligatoria, duplicadas y poco claras descartadas, lotes repartidos, fuentes como datos.
+  - Edición, suspensión, borrado y aislamiento (404).
+  - **Aceptación (reloj simulado):** 8 tarjetas, 4 nuevas al día, 62 días de estudio con un día sin estudiar y un fallo. Se comprueba que el límite diario se renueva, que las fechas aplicadas coinciden con las mostradas, que los intervalos crecen hasta ≥ 21 días, que el fallo suma un *lapse* y que las estadísticas evolucionan (repasos, tiempo = repasos × 8 s, racha, días activos, previsión, retención entre 0,9 y 1, dominadas > 0).
+  - Estadísticas con examen: 2 min máximo por tarjeta + duración del intento; nota media.
+- Modelo real: ver BENCHMARKS §8 (evidencia literal 100 % en todas las pasadas).
+- Paleta de los gráficos validada con `validate_palette.js` (claro y oscuro: pasa; el verde en claro tiene contraste 2,7:1, por eso cada segmento lleva etiqueta y número visibles). Gráficos con tooltip y vista de tabla.
+- Pendiente: prueba en la app (no se ha visto la interfaz en WKWebView).
+
 ## Grabaciones por asignatura y retención del audio (2026-11-05)
 - Automáticas: pytest 135 (8 nuevas en `test_audio_retention.py`: original borrado al transcribir y copia ligera a los 7 días, ajuste 30/siempre, nunca se tocan audios sin transcribir, vacíos, fallidos o con trabajo en cola, endpoints GET/DELETE, retranscribir/reintentar sin audio → `audio_deleted`, reintento desde la copia ligera). vitest 29.
 - Simulación sobre una copia de su BD (sin borrar nada): 10 grabaciones transcritas; al arrancar se liberarían 1.183 MB (originales) y las copias ligeras caducarían entre el 10 y el 12 de noviembre.

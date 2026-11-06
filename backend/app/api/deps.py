@@ -1,8 +1,10 @@
 import sqlite3
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import Depends, Request
 
+from app.core import clock
 from app.core.config import Settings
 from app.db.connection import get_db
 
@@ -23,3 +25,10 @@ def get_settings(request: Request) -> Settings:
 
 
 AppSettings = Annotated[Settings, Depends(get_settings)]
+
+
+def current_time() -> datetime:
+    return clock.now()
+
+
+Now = Annotated[datetime, Depends(current_time)]

@@ -42,6 +42,14 @@ export type SourceIndex = S['SourceIndexOut']
 export type Exam = S['ExamOut']
 export type ExamIn = S['ExamIn']
 export type ExamConfig = S['ExamConfig']
+export type Deck = S['DeckOut']
+export type DeckDetail = S['DeckDetailOut']
+export type DeckIn = S['DeckIn']
+export type Flashcard = S['CardOut']
+export type CardPatch = S['CardPatch']
+export type Study = S['StudyOut']
+export type Rating = S['ReviewIn']['rating']
+export type Stats = S['StatsOut']
 export type Attempt = S['AttemptOut']
 export type AttemptQuestion = S['QuestionOut']
 export type AnswerState = S['AnswerStateOut']
@@ -271,6 +279,44 @@ export class ApiClient {
   }
   deleteAttempt(attemptId: string): Promise<void> {
     return this.call('DELETE', `/api/v1/attempts/${id(attemptId)}`)
+  }
+
+  // --- Flashcards y repaso
+  listDecks(subjectId: string): Promise<Deck[]> {
+    return this.call('GET', `/api/v1/subjects/${id(subjectId)}/decks`)
+  }
+  createDeck(subjectId: string, body: DeckIn): Promise<Deck> {
+    return this.call('POST', `/api/v1/subjects/${id(subjectId)}/decks`, body)
+  }
+  getDeck(deckId: string): Promise<DeckDetail> {
+    return this.call('GET', `/api/v1/decks/${id(deckId)}`)
+  }
+  retryDeck(deckId: string): Promise<Deck> {
+    return this.call('POST', `/api/v1/decks/${id(deckId)}/retry`)
+  }
+  deleteDeck(deckId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/decks/${id(deckId)}`)
+  }
+  updateCard(cardId: string, body: CardPatch): Promise<Flashcard> {
+    return this.call('PATCH', `/api/v1/cards/${id(cardId)}`, body)
+  }
+  deleteCard(cardId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/cards/${id(cardId)}`)
+  }
+  study(scope: { subject_id?: string; deck_id?: string }): Promise<Study> {
+    return this.call('GET', `/api/v1/study${query(scope)}`)
+  }
+  reviewCard(cardId: string, rating: Rating, durationMs: number): Promise<Flashcard> {
+    return this.call('POST', `/api/v1/cards/${id(cardId)}/review`, {
+      rating,
+      duration_ms: durationMs,
+    })
+  }
+  updateStudySettings(body: { new_per_day: number }): Promise<Study> {
+    return this.call('PUT', '/api/v1/study/settings', body)
+  }
+  stats(params: { subject_id?: string; days?: number }): Promise<Stats> {
+    return this.call('GET', `/api/v1/stats${query(params)}`)
   }
 
   // --- Trabajos en segundo plano

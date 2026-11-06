@@ -1,0 +1,153 @@
+{
+  "corpus": {
+    "status": "ready",
+    "error": null,
+    "saved": 20,
+    "literal_evidence": "20/20",
+    "seconds": 266,
+    "stats": {
+      "batches": 6,
+      "batches_used": 5,
+      "proposed": 35,
+      "valid": 24,
+      "rejected": {
+        "juez_no_respaldada": 7,
+        "juez_poco_clara": 4
+      }
+    },
+    "calls": {
+      "cards:generate": {
+        "n": 5,
+        "ms": 127958,
+        "max_loaded_mb": 8209
+      },
+      "cards:judge": {
+        "n": 5,
+        "ms": 128016,
+        "max_loaded_mb": 8298
+      }
+    },
+    "cards": [
+      {
+        "front": "¿Qué son los microservicios?",
+        "back": "Son un estilo arquitectónico en el que una aplicación se compone de servicios pequeños, desplegables de forma independiente y organizados alrededor de capacidades de negocio.",
+        "evidence": "Los microservicios son un estilo arquitectónico en el que una aplicación se compone de servicios pequeños, desplegables de forma independiente y organizados alrededor de capacidades de negocio",
+        "literal": true
+      },
+      {
+        "front": "¿Qué recomendación propone 'monolith first'?",
+        "back": "Propone empezar con un monolito bien estructurado y extraer servicios solo cuando los límites estén claros.",
+        "evidence": "La recomendación conocida como 'monolith first' propone empezar con un monolito bien estructurado y extraer servicios solo cuando los límites estén claros",
+        "literal": true
+      },
+      {
+        "front": "¿Qué establece el patrón base de datos por servicio?",
+        "back": "Establece que cada microservicio gestiona su propio almacenamiento y ningún otro servicio accede a él directamente.",
+        "evidence": "El patrón base de datos por servicio establece que cada microservicio gestiona su propio almacenamiento y ningún otro servicio accede a él directamente",
+        "literal": true
+      },
+      {
+        "front": "¿Cuál es la diferencia entre coreografía y orquestación en una Saga?",
+        "back": "En la coreografía cada servicio publica eventos y reacciona sin un coordinador central; en la orquestación un componente indica a cada servicio qué operación ejecutar.",
+        "evidence": "En la coreografía, cada servicio publica eventos y reacciona a los eventos de los demás, sin un coordinador central. En la orquestación, un componente orquestador indica a cada servicio qué operación ejecutar y cuándo",
+        "literal": true
+      },
+      {
+        "front": "¿Qué sostiene el teorema CAP enunciado por Eric Brewer?",
+        "back": "Un sistema distribuido no puede garantizar simultáneamente consistencia, disponibilidad y tolerancia a particiones.",
+        "evidence": "El teorema CAP, enunciado por Eric Brewer, sostiene que un sistema distribuido no puede garantizar simultáneamente consistencia, disponibilidad y tolerancia a particiones",
+        "literal": true
+      },
+      {
+        "front": "¿Qué debe elegir un sistema ante una partición de red inevitable?",
+        "back": "La elección real es entre consistencia y disponibilidad.",
+        "evidence": "Como las particiones de red son inevitables en la práctica, la elección real ante una partición es entre consistencia y disponibilidad",
+        "literal": true
+      },
+      {
+        "front": "¿Qué eligen muchas bases de datos NoSQL frente a una partición?",
+        "back": "Eligen disponibilidad y ofrecen consistencia eventual.",
+        "evidence": "Muchas bases de datos NoSQL eligen disponibilidad y ofrecen consistencia eventual",
+        "literal": true
+      },
+      {
+        "front": "¿Qué garantiza la consistencia eventual?",
+        "back": "Garantiza que si no hay nuevas escrituras, todas las réplicas acabarán convergiendo al mismo valor.",
+        "evidence": "La consistencia eventual garantiza que, si no se producen nuevas escrituras, todas las réplicas acabarán convergiendo al mismo valor",
+        "literal": true
+      },
+      {
+        "front": "¿Qué limitación tiene la consistencia eventual respecto al tiempo?",
+        "back": "No dice cuánto tardarán las réplicas en converger.",
+        "evidence": "La consistencia eventual garantiza que, si no se producen nuevas escrituras, todas las réplicas acabarán convergiendo al mismo valor, pero no dice cuánto tardarán",
+        "literal": true
+      },
+      {
+        "front": "¿Cómo se implementa comúnmente la idempotencia en peticiones de pago?",
+        "back": "Se envía una clave de idempotencia con cada petición para que el servidor detecte y descarte duplicados.",
+        "evidence": "Una técnica común es enviar una clave de idempotencia con cada petición de pago, de modo que el servidor pueda detectar y descartar los duplicados",
+        "literal": true
+      },
+      {
+        "front": "¿Qué describe la arquitectura de software?",
+        "back": "Describe las decisiones estructurales de un sistema que son costosas de cambiar más adelante.",
+        "evidence": "La arquitectura de software describe las decisiones estructurales de un sistema que son costosas de cambiar más adelante",
+        "literal": true
+      },
+      {
+        "front": "¿Qué atributos de calidad determinan realmente la arquitectura?",
+        "back": "El rendimiento, la disponibilidad, la seguridad y la mantenibilidad.",
+        "evidence": "Los atributos de calidad, como el rendimiento, la disponibilidad, la seguridad y la mantenibilidad, son los que realmente determinan la arquitectura",
+        "literal": true
+      },
+      {
+        "front": "¿Qué ventaja principal ofrece la arquitectura en capas?",
+        "back": "Proporciona separación de responsabilidades y facilita que equipos nuevos entiendan el sistema.",
+        "evidence": "Su principal ventaja es la separación de responsabilidades y la facilidad para que equipos nuevos entiendan el sistema",
+        "literal": true
+      },
+      {
+        "front": "¿Qué problema presenta la arquitectura en capas?",
+        "back": "El sumidero de arquitectura, cuando las peticiones atraviesan todas las capas sin que ninguna aporte lógica real.",
+        "evidence": "Su desventaja más citada es el llamado sumidero de arquitectura, cuando las peticiones atraviesan todas las capas sin que ninguna aporte lógica real",
+        "literal": true
+      },
+      {
+        "front": "¿Qué permiten hacer los adaptadores en la arquitectura hexagonal?",
+        "back": "Conectar el mundo exterior (base de datos, interfaz web o cola) con los puertos del núcleo.",
+        "evidence": "el mundo exterior se conecta mediante adaptadores: una base de datos, una interfaz web o una cola de mensajes",
+        "literal": true
+      },
+      {
+        "front": "¿Cuál es el valor principal de un registro de decisiones de arquitectura (ADR)?",
+        "back": "Que los miembros futuros del equipo puedan entender por qué se tomó una decisión y no solo qué se decidió.",
+        "evidence": "Su valor no está en el documento en sí, sino en que los miembros futuros del equipo puedan entender por qué se tomó una decisión y no solo qué se decidió",
+        "literal": true
+      },
+      {
+        "front": "¿Quién agrupó los principios SOLID?",
+        "back": "Los principios SOLID fueron agrupados por Robert C. Martin.",
+        "evidence": "Los principios SOLID fueron agrupados por Robert C. Martin",
+        "literal": true
+      },
+      {
+        "front": "¿Qué significa la S en SOLID?",
+        "back": "La S corresponde a responsabilidad única: una clase debería tener un solo motivo para cambiar.",
+        "evidence": "La S corresponde a responsabilidad única: una clase debería tener un solo motivo para cambiar",
+        "literal": true
+      },
+      {
+        "front": "¿En qué se clasifican los patrones de diseño del libro de la Banda de los Cuatro?",
+        "back": "Se clasifican en tres familias: creacionales, estructurales y de comportamiento.",
+        "evidence": "se clasifican en tres familias: creacionales, estructurales y de comportamiento",
+        "literal": true
+      },
+      {
+        "front": "¿Qué define la relación del patrón Observer?",
+        "back": "Define una relación de uno a muchos entre objetos donde los observadores son notificados automáticamente cuando el sujeto cambia de estado.",
+        "evidence": "define una relación de uno a muchos entre objetos: cuando el sujeto cambia de estado, todos sus observadores registrados son notificados automáticamente",
+        "literal": true
+      }
+    ]
+  }
+}

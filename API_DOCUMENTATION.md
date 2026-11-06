@@ -61,6 +61,14 @@ Formato único:
 | PUT | `/api/v1/attempts/{id}/answers/{qid}` | `{answer?, set_answer, flagged?, index?}` guarda progreso (409 `attempt_closed`, `time_over`, `already_checked`; 400 `invalid_answer`) |
 | POST | `/api/v1/attempts/{id}/answers/{qid}/check` | Solo modo práctica: corrige esa pregunta y la bloquea |
 | POST | `/api/v1/attempts/{id}/submit` | Entregar: test y V/F se corrigen al momento; las cortas, con la IA en segundo plano (`grading` → `graded`) |
+| GET/POST | `/api/v1/subjects/{id}/decks` | Mazos de la asignatura con recuento (nuevas, aprendiendo, dominadas, suspendidas, pendientes, próximo repaso) / crear `{title?, count 5..100, scope?}` → 202, se genera en segundo plano; 400 `no_sources`, `invalid_scope` |
+| GET/DELETE | `/api/v1/decks/{id}` | Mazo con sus tarjetas (estado de repaso y cita literal) / borrar (cancela la generación) |
+| POST | `/api/v1/decks/{id}/retry` | Reintentar si falló o se canceló |
+| PATCH/DELETE | `/api/v1/cards/{id}` | `{front?, back?, suspended?}` editar o suspender / borrar una tarjeta |
+| GET | `/api/v1/study` | `?subject_id=` o `?deck_id=` (o nada: todo). Siguiente tarjeta que toca (aprendizaje vencido → repasos vencidos → nuevas hasta el límite diario; si no queda nada, adelanta pasos de aprendizaje de los próximos 20 min), fecha que pondría cada valoración, cuántas quedan y próximo repaso |
+| POST | `/api/v1/cards/{id}/review` | `{rating 1..4 (Otra vez, Difícil, Bien, Fácil), duration_ms}` → estado nuevo (FSRS). 409 `suspended` |
+| PUT | `/api/v1/study/settings` | `{new_per_day 0..200}` (20 por defecto) |
+| GET | `/api/v1/stats` | `?subject_id=&days=7\|30\|90` tiempo de estudio por día (tarjetas, máx. 2 min cada una, + intentos de examen), repasos, retención, racha, días activos, tarjetas (reparto y previsión de 7 días), exámenes (intentos corregidos, nota media, últimos 10). Días locales |
 | GET | `/api/v1/jobs` | Trabajos (`?active=true`) con progreso |
 | POST | `/api/v1/jobs/{id}/cancel` | Cancelar (inmediato si está en cola; cooperativo si está en curso) |
 

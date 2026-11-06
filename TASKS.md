@@ -15,7 +15,8 @@
 | 4 — IA local: apuntes y resúmenes | ✅ Aprobada por el usuario (2026-11-04) |
 | 5 — RAG y asistente | ✅ Aprobada por el usuario (2026-11-04) |
 | 6 — Exámenes | ✅ Completada (2026-11-04) — evidencia literal 100 %; en transcripciones 20 % de preguntas dudosas (limitación aceptada, ver BENCHMARKS §7) |
-| 7–10 | ⏳ No iniciadas |
+| 7 — Flashcards y seguimiento | 🔶 Implementada (2026-11-06), pendiente de aprobación — en transcripciones 30 % de tarjetas dudosas (ver BENCHMARKS §8) |
+| 8–10 | ⏳ No iniciadas |
 
 ### Ajustes tras la prueba del usuario (2026-11-05)
 - [x] Copiar texto en resúmenes, apuntes y asistente; resúmenes proporcionales al material (0.6.1)
@@ -110,10 +111,13 @@
 - **Criterio de aceptación:** en un examen de 20 preguntas, el 100 % de las preguntas guardadas tiene una evidencia literal verificable; una revisión manual de una muestra confirma ≤ 5 % de preguntas ambiguas o incorrectas.
 
 ## Fase 7 — Flashcards y seguimiento
-- [ ] Generación de tarjetas con fuente
-- [ ] Planificador FSRS (o SM-2, según la decisión) detrás de la interfaz `Scheduler`
-- [ ] Sesión de repaso, dominio, próximas fechas
-- [ ] Dashboard y estadísticas (tiempo de estudio, exámenes, progreso, repasos)
+- [x] Generación de tarjetas con fuente (cita literal verificada, duplicados, revisor; por tandas hasta completar)
+- [x] Planificador FSRS (`fsrs` 6.3.2, MIT) detrás de la interfaz `Scheduler`
+- [x] Sesión de repaso (atajos 1–4 y espacio, intervalo en cada botón), dominio, próximas fechas, límite de nuevas al día
+- [x] Edición, suspensión y borrado de tarjetas
+- [x] Estadísticas (tiempo de estudio, repasos, retención, racha, exámenes, tarjetas, previsión) y «Para repasar hoy» en Inicio
+- [x] Aceptación con reloj simulado: 62 días (`test_simulated_days_dates_and_stats_evolve`)
+- [ ] Prueba en la app (usuario)
 - **Criterio de aceptación:** estudiar tarjetas durante varios días simulados y ver que las fechas y las estadísticas evolucionan correctamente (pruebas con reloj simulado).
 
 ## Fase 8 — Cloud y optimización

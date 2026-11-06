@@ -128,6 +128,22 @@ Script: `bench/bench_exam.py [--real <app.db> --out <ruta>]` (corpus en `bench/r
 - Probado y descartado: exigir que las palabras de la respuesta aparezcan en la cita (no discrimina; rechaza preguntas buenas, sobre todo con material en inglés).
 - **Limitación conocida aceptada por el usuario:** en transcripciones de clase el criterio de ≤ 5 % no se alcanza con el modelo local (20 %); en material escrito, sí. Cada pregunta muestra su evidencia para que el estudiante lo vea. Mejora prevista: juez más potente (Claude, con consentimiento) en la Fase 8.
 
+## 8. Fase 7: calidad de las tarjetas (pipeline real, 2026-11-06)
+`bench/bench_cards.py`, mazo de 20 con `qwen3.5:9b`. Resultados del corpus en `bench/results/cards.json`; las tarjetas de la clase real solo en el scratchpad (no se versionan).
+
+| Pasada | Material | Guardadas | Cita literal | Tiempo | Dudosas (revisión manual) | Cambio |
+|---|---|---|---|---|---|---|
+| 1 | Corpus | 20/20 | 100 % | 2 min 39 s | 0 (1 con «según el texto») | — |
+| 1 | Clase real (82K caracteres) | 4/20 | 100 % | 2 min 20 s | 2/4 | 6 lotes fijos: 11 citas no literales, 10 rechazadas por el revisor |
+| 2 | Clase real | 12/20 | 100 % | 9 min 3 s | 5/12 (42 %) | Generar y revisar por tandas hasta completar (máx. 16 lotes); cita corta y exacta |
+| 3 | Corpus | 18/20 | 100 % | 3 min 34 s | 0 | Revisor con criterio «útil» (tautologías, imágenes, anécdotas, mal transcrito) |
+| 3 | Clase real | 20/20 | 100 % | 9 min 58 s | 6/20 (30 %) | ídem |
+| 4 | Corpus | 20/20 | 100 % | 4 min 26 s | 0 | Material corto: más tarjetas por lote |
+
+- Tipos de tarjeta dudosa que quedan en transcripciones: remite a un gráfico, vaga («en este contexto»), anécdota, reverso con algo que no está en la cita, reverso que repite el anverso, frase en inglés mal transcrita.
+- Pico de memoria 8,5 GB (generación y revisor con el mismo modelo).
+- Todas las tarjetas se pueden editar, suspender o borrar, y muestran su cita.
+
 ## 5. Resumen de decisiones
 
 | Componente | Por defecto | Alternativa | Descartado |

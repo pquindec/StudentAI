@@ -3,6 +3,46 @@ import { StatusDot } from '../components/StatusDot'
 import { es } from '../i18n/es'
 import { api, ApiError, type SystemInfo } from '../lib/api'
 import type { BackendStatus } from '../lib/backendStatus'
+import { useNavigate } from '../lib/nav'
+import { useQuery } from '../lib/useQuery'
+
+/** Tarjetas pendientes de hoy (de todas las asignaturas) y racha. */
+function TodayCard() {
+  const navigate = useNavigate()
+  const study = useQuery(() => api.study({}), [])
+  const stats = useQuery(() => api.stats({ days: 7 }), [])
+  const s = study.data
+  if (!s) return null
+  const pending = s.learning + s.review + s.new
+  const streak = stats.data?.streak ?? 0
+  return (
+    <section className="mt-8 flex flex-wrap items-center gap-4 rounded-xl border border-zinc-200 p-5 dark:border-zinc-800">
+      <div className="flex-1">
+        <h2 className="text-sm font-medium">{es.home.dueTitle}</h2>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          {es.home.dueBody(pending)}
+          {streak ? ` · ${es.home.streak(streak)}` : ''}
+        </p>
+      </div>
+      <button
+        type="button"
+        className="text-sm text-zinc-500 hover:underline"
+        onClick={() => navigate({ name: 'stats' })}
+      >
+        {es.home.goStats}
+      </button>
+      {pending > 0 && (
+        <button
+          type="button"
+          className="rounded-md bg-accent-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-700"
+          onClick={() => navigate({ name: 'review', back: { name: 'dashboard' } })}
+        >
+          {es.home.study}
+        </button>
+      )}
+    </section>
+  )
+}
 
 export function Dashboard({ status }: { status: BackendStatus }) {
   const [info, setInfo] = useState<SystemInfo | null>(null)
@@ -33,6 +73,8 @@ export function Dashboard({ status }: { status: BackendStatus }) {
     <div className="mx-auto max-w-4xl px-10 py-10">
       <h1 className="text-2xl font-semibold tracking-tight">{es.dashboard.title}</h1>
       <p className="mt-1 text-sm text-zinc-500">{es.dashboard.subtitle}</p>
+
+      {status.state === 'ready' && <TodayCard />}
 
       <section
         aria-labelledby="system-title"
