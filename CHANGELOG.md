@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.1] — 2026-11-07 · Privacidad al usar tu plan de Claude
+### Cambiado
+- Cuando la app usa tu plan mediante Claude Code, este ya no envía estadísticas de uso, informes de errores ni encuestas asociados a tu cuenta, ni intenta actualizarse: solo sale la petición al modelo que apruebas. Comprobado con `claude auth status` (`analyticsDisabled: true`).
+- Recordatorio: de tu sesión de Claude Code la app solo lee si hay sesión, el método y el plan. Tu correo y tu organización nunca se leen, guardan ni muestran.
+
 ## [0.9.0] — 2026-11-06 · Fase 9: QA y seguridad
 ### Seguridad (corregido)
 - **Trabajos en proceso aislados por usuario:** los trabajos sin fuente asociada (apuntes, mazos, exámenes, correcciones, respuestas del asistente) se veían y podían cancelarse desde cualquier usuario. Ahora cada trabajo pertenece al dueño de lo que procesa.

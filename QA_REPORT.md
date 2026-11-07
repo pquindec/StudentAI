@@ -27,7 +27,7 @@ reproduce; el resto, informativos o riesgo aceptado.
 | F-13 | Info | El subproceso de extracción tiene límite de CPU y tiempo, pero no de memoria (macOS no aplica `RLIMIT_AS`) | Riesgo aceptado: pico de 55 MB en 2.100 archivos mutados; las bombas zip/XML se rechazan antes | |
 | F-14 | Info | Los ajustes (Claude, transcripción, IA, repaso) son de la app, no por usuario | Aceptado mientras sea de un solo usuario; a revisar en el modo web (T16) | |
 | F-16 | Info | Semgrep (`uv-missing-dependency-cooldown`): `pyproject.toml` no fija un periodo de espera ante versiones recién publicadas (`exclude-newer = "7 days"` en `[tool.uv]`) | **Pendiente de decisión del usuario**: es una defensa de cadena de suministro barata, pero cambia la resolución del `uv.lock`; no se aplica sin aprobación. Hoy se mitiga con versiones fijadas y `uv.lock` | |
-| F-15 | Info (entorno) | Claude Code (`/opt/homebrew/bin/claude`) se actualizó solo a 2.1.319 y quedó a medio instalar («native binary not installed»). La app lo detecta como «sin sesión» y todo sigue en local | Acción del usuario: `npm i -g @anthropic-ai/claude-code` | |
+| F-15 | Info (entorno) | Claude Code (`/opt/homebrew/bin/claude`) se actualizó solo a 2.1.319 y quedó a medio instalar («native binary not installed»). La app lo detecta como «sin sesión» y todo sigue en local | ✅ Resuelto (2026-11-07): npm 12 bloquea los scripts de instalación no autorizados, así que cada actualización automática dejaba el programa sin su binario. Se autorizó solo ese paquete (`allow-scripts=@anthropic-ai/claude-code` en `~/.npmrc`) | |
 
 ## Pruebas realizadas
 

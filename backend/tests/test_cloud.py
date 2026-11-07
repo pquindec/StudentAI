@@ -407,8 +407,10 @@ if sys.argv[1:3] == ["auth", "status"]:
 prompt = sys.stdin.read()
 with open(log, "a") as f:
     env = sorted(k for k in os.environ if k.startswith("ANTHROPIC"))
+    private = {{k: os.environ.get(k) for k in ("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
+               "DISABLE_TELEMETRY", "DISABLE_ERROR_REPORTING")}}
     f.write(json.dumps({{"argv": sys.argv[1:], "cwd": os.getcwd(), "prompt": prompt,
-                        "env": env}}) + "\\n")
+                        "env": env, "private": private}}) + "\\n")
 import re
 ids = re.findall(r"\\[([A-Z]\\d+)\\]", prompt)
 text = f"La mitocondria produce energía [{{ids[0]}}]."
@@ -447,7 +449,7 @@ def test_plan_via_runs_claude_code_without_tools_or_credentials(
         "logged_in": True,
         "plan": "pro",
     }
-    assert "secreto" not in json.dumps(st)  # solo se leen campos no secretos
+    assert "secreto" not in json.dumps(st)  # ni el correo ni otros datos de la cuenta
     tid = _thread(client, auth, subject_id=sid)
     q = "¿Qué produce la mitocondria?"
     assert _ask(client, auth, tid, q)["model"] == "qwen3.5:9b"  # sin consentimiento: local
@@ -473,6 +475,8 @@ def test_plan_via_runs_claude_code_without_tools_or_credentials(
         and argv[argv.index("--model") + 1] == "claude-sonnet-5-5"
     )
     assert call["env"] == [] and "La mitocondria produce" in call["prompt"]
+    # Sin estadísticas ni informes de errores asociados a la cuenta: solo la petición al modelo.
+    assert set(call["private"].values()) == {"1"}
     assert not os.path.exists(call["cwd"])  # carpeta temporal ya borrada
     rows = _requests(settings)
     assert rows[-1]["via"] == "plan" and rows[-1]["cost_usd"] == pytest.approx(0.0123)

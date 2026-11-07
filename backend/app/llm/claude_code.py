@@ -39,8 +39,20 @@ def find_binary() -> str | None:
     return next((c for c in CANDIDATES if os.access(c, os.X_OK)), None)
 
 
+# Al ejecutar Claude Code, solo sale la petición al modelo: sin estadísticas de uso, informes de
+# errores, encuestas ni autoactualización, que irían asociados a la cuenta del usuario.
+PRIVATE_ENV = {
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "DISABLE_AUTOUPDATER": "1",
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
+}
+
+
 def _env() -> dict[str, str]:
-    return {k: v for k, v in os.environ.items() if k not in STRIP_ENV}
+    env = {k: v for k, v in os.environ.items() if k not in STRIP_ENV}
+    return {**env, **PRIVATE_ENV}
 
 
 def auth_status(binary: str) -> dict[str, Any]:
