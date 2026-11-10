@@ -56,11 +56,23 @@ Formato único:
 | GET/DELETE | `/api/v1/exams/{id}` | Estado, progreso, métricas de validación e intentos / borrar (cancela la generación) |
 | POST | `/api/v1/exams/{id}/accept` | Con estado `insufficient`: aceptar las `available` preguntas válidas |
 | POST | `/api/v1/exams/{id}/retry` | Reintentar si falló o se canceló |
+| POST | `/api/v1/subjects/{id}/exams/manual` | Examen escrito a mano (201, listo al momento): `{title, mode, time_limit_min?, penalty, questions: [{type, stem, options (2–6, solo opción múltiple), answer (índice \| bool \| respuesta modelo), justification?, rubric? (solo cortas), difficulty?, source_id?}]}` (1–50). 422 si falta la correcta, hay opciones repetidas o vacías…; 400 `invalid_source` si la fuente no es de la asignatura |
+| GET/PUT | `/api/v1/exams/{id}/manual` | Preguntas completas (con respuestas) para editar, y `editable` / guardar cambios. 409 `not_manual` (examen generado) o `exam_in_use` (ya tiene intentos o salas en vivo) |
+| POST | `/api/v1/exams/{id}/duplicate` | Copia editable de un examen manual, sin sus intentos (201) |
 | POST | `/api/v1/exams/{id}/attempts` | Empezar un intento (409 `exam_not_ready`). Nunca incluye las respuestas correctas |
 | GET/DELETE | `/api/v1/attempts/{id}` | Intento con preguntas y respuestas; la solución, justificación y evidencia solo aparecen en preguntas comprobadas o tras la corrección. Si pasó la hora límite, se entrega al consultarlo |
 | PUT | `/api/v1/attempts/{id}/answers/{qid}` | `{answer?, set_answer, flagged?, index?}` guarda progreso (409 `attempt_closed`, `time_over`, `already_checked`; 400 `invalid_answer`) |
 | POST | `/api/v1/attempts/{id}/answers/{qid}/check` | Solo modo práctica: corrige esa pregunta y la bloquea |
 | POST | `/api/v1/attempts/{id}/submit` | Entregar: test y V/F se corrigen al momento; las cortas, con la IA en segundo plano (`grading` → `graded`) |
+| POST | `/api/v1/exams/{id}/live` | Abrir una sala en vivo (201): `{mode: practice\|graded\|quiz, time_limit_min? 1..240, show_results, question_s? 5..120 (concurso, 20 por defecto)}`. 409 `quiz_no_questions` si el examen no tiene opción múltiple ni V/F. 409 `live_open` (ya tienes una sala abierta), `exam_not_ready`, `exam_empty` |
+| GET | `/api/v1/live` · `/api/v1/live/{id}` | Salas (`?exam_id=`) / sala con `code`, `url` y `qr` (matriz de filas «1»/«0») mientras está abierta, `network_problem`, `https_attempts`, `server_now`, `ends_at` y participantes (conectado, dispositivo, respondidas/total, salidas de la página, intento y nota) |
+| POST | `/api/v1/live/{id}/participants/{pid}/admit` · `…/kick` | Admitir / expulsar (borra su intento) |
+| PUT | `/api/v1/live/{id}/lock` | `{locked}` cierra o abre la entrada de participantes |
+| POST | `/api/v1/live/{id}/start` · `finish` · `publish` · `close` | Iniciar (crea un intento por admitido; 409 `live_empty`, `live_started`) / terminar (entrega lo pendiente) / publicar notas (409 `live_not_finished`) / cerrar (apaga el servidor si no queda otra sala) |
+| POST | `/api/v1/live/{id}/quiz/next` | Concurso, «Pasar ya»: abre la pregunta, la cierra o pasa a la siguiente (409 `live_not_running`). La sala (`GET /live/{id}`) incluye `quiz`: fase `lobby/countdown/question/reveal/finished`, pregunta actual, `remaining_ms`, respondidas, `correct_index` y `counts` solo con la pregunta cerrada, y la clasificación |
+| GET | `/api/v1/live/{id}/results` | En cualquier estado de la sala: preguntas con solución, `justification`, `rubric`, `evidence` (citas de las fuentes, como en los intentos) y acierto medio; por participante, respuestas, puntos, comentario, `graded_by` y `adjusted` |
+| PUT | `/api/v1/live/{id}/participants/{pid}/answers/{qid}` | `{points: 0\|0.5\|1}` ajusta una nota (400 `invalid_points`; 409 `not_graded`) |
+| DELETE | `/api/v1/live/{id}` | Borra la sala y los intentos de sus participantes |
 | GET/POST | `/api/v1/subjects/{id}/decks` | Mazos de la asignatura con recuento (nuevas, aprendiendo, dominadas, suspendidas, pendientes, próximo repaso) / crear `{title?, count 5..100, scope?}` → 202, se genera en segundo plano; 400 `no_sources`, `invalid_scope` |
 | GET/DELETE | `/api/v1/decks/{id}` | Mazo con sus tarjetas (estado de repaso y cita literal) / borrar (cancela la generación) |
 | POST | `/api/v1/decks/{id}/retry` | Reintentar si falló o se canceló |
@@ -82,6 +94,8 @@ Formato único:
 **Consentimiento (Fase 8):** crear apuntes/resúmenes, mazos y exámenes, y enviar un mensaje al asistente, aceptan `consent_id` opcional (de `POST /cloud/consents`). Sin él, todo va en local. Los reintentos usan el consentimiento de sesión activo, si lo hay.
 
 Errores de dominio frecuentes: `not_found`, `invalid_hierarchy`, `invalid_link`, `duplicate` (con `details.source_id`), `content_mismatch`, `unsupported_type`, `empty_file`, `too_large`, `version_conflict`. Los fallos de extracción quedan en la fuente (`error_code`: `encrypted`, `corrupt`, `no_text`, `zip_bomb`, `crashed`, `timeout`…) con `error_message` en español.
+
+**Servidor de la sala (Fase 9.5, red local, sin token de la app):** solo existe mientras hay una sala abierta, en `http://<IP de la Wi-Fi>/s/<CÓDIGO>/` (puerto 80; si no se puede, `:8765` u otro libre). Con el acceso por internet activo (`POST /api/v1/live/{id}/tunnel`, solo tras el consentimiento en la UI; `DELETE` lo cierra; 409 `tunnel_unavailable` si falta `cloudflared`, `live_closed`, `no_network`), `url` y `qr` usan `https://<aleatorio>.trycloudflare.com/s/<CÓDIGO>/` y `tunnel` = `{status: off|starting|on|error, url, error}`; el túnel es uno para todas las salas abiertas. Rutas: `GET /` (página), `POST join {name}` → `{token}`, `GET state`, `POST answer {question_id, value}`, `POST submit`, `POST left`. El token del dispositivo va en `X-Live-Token`. Cualquier otra ruta → 404. Errores: `room_not_found` (404), `not_joined` (401), `too_many` (429), `too_large` (413), `invalid_body` (400), `invalid_name`, `invalid_answer` (400), `name_taken`, `live_locked`, `live_full`, `live_finished`, `live_not_running`, `quiz_closed`, `already_answered` (409). En el concurso, `state` incluye `quiz` (fase, pregunta, tu respuesta, tu puntuación y puesto; la correcta y el top 5 solo tras cerrar la pregunta) y `answer` acepta el índice de la opción (o verdadero/falso) de la pregunta abierta. En la app, admitir puede dar 409 `live_closed` o `kicked`.
 
 ## Importar archivos (solo escritorio)
 1. La UI llama a `invoke('pick_files')` (selector nativo abierto desde Rust) o recibe rutas por el evento de arrastrar y soltar.

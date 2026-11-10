@@ -17,14 +17,19 @@
 | 6 — Exámenes | ✅ Completada (2026-11-04) — evidencia literal 100 %; en transcripciones 20 % de preguntas dudosas (limitación aceptada, ver BENCHMARKS §7) |
 | 7 — Flashcards y seguimiento | ✅ Aprobada por el usuario (2026-11-06) — en transcripciones 30 % de tarjetas dudosas: limitación aceptada, a mejorar en la Fase 8 con Claude (ver BENCHMARKS §8) |
 | 8 — Cloud y optimización | ✅ Aprobada por el usuario (2026-11-06) |
-| 9 — QA y seguridad | 🔄 En curso (aprobada para empezar el 2026-11-06) |
-| 10 | ⏳ No iniciada |
+| 9 — QA y seguridad | ✅ Aprobada por el usuario (2026-11-07) |
+| 9.5 — Examen en vivo en el aula | 🔄 En curso (aprobada para empezar el 2026-11-07) |
+| 10 — Empaquetado | ⏳ No iniciada |
 
 ### Ajustes tras la prueba del usuario (2026-11-05)
 - [x] Copiar texto en resúmenes, apuntes y asistente; resúmenes proporcionales al material (0.6.1)
 - [x] Grabaciones guardadas filtradas por la asignatura elegida (0.6.2)
 - [x] Retención del audio: el original se borra al transcribir; la copia ligera, a los 7/30 días o nunca; botón «Borrar audio ahora». La transcripción nunca se borra (0.6.2)
 - [x] Asistente: crea ejemplos, ejercicios y preguntas de opción múltiple a partir de las fuentes (con citas); si el tema no está en ellas, con conocimiento general y marcado «sin respaldo» (0.7.2)
+- [x] Modo concurso en la sala en vivo: misma pregunta para todos, puntos por acierto y rapidez (sin rachas), vista para proyectar y teléfonos, avance automático, apodo a elegir, podio (decidido con el usuario, 2026-11-09)
+- [ ] Probar el concurso en el aula con el proyector y varios teléfonos (usuario)
+- [x] Exámenes escritos a mano: editor de preguntas (opción múltiple, V/F, corta con respuesta modelo y puntos clave), explicación, dificultad y fuente opcionales; listo al guardar; editable hasta que tenga intentos o salas, después «Duplicar para editar» (petición del usuario, 2026-11-09)
+- [ ] Comprobar en la app: crear un examen a mano y usarlo en una sala en vivo (usuario)
 - [ ] Comprobar en la app: copiar texto, filtro de grabaciones, borrado del audio y peticiones de crear en el asistente (usuario)
 
 ### Tareas nuevas surgidas de la Fase 0.5
@@ -141,6 +146,52 @@
 - [x] Pruebas de rendimiento y estabilidad (audio de 3 h en 11,6 min; 500 documentos sin fallos)
 - [x] Informe `QA_REPORT.md`: 0 críticos/altos; 3 medios y 6 bajos/informativos corregidos
 - **Criterio de aceptación:** informe con hallazgos, evidencias, severidad y estado; 0 críticos/altos abiertos.
+
+## Fase 9.5 — Examen en vivo en el aula (decidido con el usuario el 2026-11-07; diseño: ADR-012)
+Contexto: en el aula, con la Wi-Fi de la universidad, 15–20 personas, para **practicar** y para **exámenes con nota**. Los participantes usan el navegador de su teléfono (Android/iOS) o de su ordenador; no instalan nada.
+
+**0. Comprobación previa (bloqueante)**
+- [x] Herramienta de prueba de red lista (`cd backend && uv run python -m app.live.netcheck`): QR, latencia, tiempo real (SSE) y reconexión; probada en la Wi-Fi de casa con un iPhone simulado (WebKit) → 4/4 correcto
+- [x] Prueba en casa con un Android real: Chrome ✓ (46,5 ms, tiempo real 15/15); Samsung Internet ✗ (probable HTTPS forzado; la herramienta lo detecta)
+- [ ] Confirmar la causa con Samsung Internet y decidir cómo soportarlo (decisión del usuario)
+- [ ] **Prueba en el aula (usuario):** ejecutarla con 2–3 teléfonos reales (Android e iPhone) en la Wi-Fi de la universidad. *Plan original:* la app abre temporalmente una página de prueba con su QR; desde 2–3 teléfonos en la Wi-Fi de la universidad se comprueba si llegan al Mac (muchas redes aíslan los dispositivos). Si no llegan → decidir alternativa (router de viaje propio sin internet, o túnel con consentimiento) antes de seguir
+
+**1. Servidor de la sala**
+- [x] Servidor aparte y mínimo, solo en la red local y solo mientras haya una sala abierta; ofrece únicamente las rutas del participante. La API principal sigue sin puerto de red (Unix socket)
+- [x] Código de sala aleatorio que caduca, límite de participantes, límite de peticiones por dispositivo y bloqueo ante códigos erróneos repetidos
+- [x] Migración nueva `0009_live.sql`: sesiones en vivo y participantes; las respuestas reutilizan los intentos de examen (todo filtrado por `owner_id`)
+- [x] El Mac no se suspende mientras la sala está abierta
+- [x] Puerto 80 por defecto (el que menos redes filtran; 2026-11-10, la página no abría en la Wi-Fi de la universidad con 8765). Solo atiende lo que llega por la IP de la Wi-Fi; si no se puede, 8765. **Resultado 2026-11-10:** tampoco abre con el 80. El teléfono da `ERR_ADDRESS_UNREACHABLE` y no llega ninguna conexión al Mac: la Wi-Fi de la universidad aísla a los dispositivos (no era el puerto). Decidir alternativa (usuario)
+- [x] **Acceso por internet con Cloudflare** (elegido por el usuario el 2026-11-10 tras probar un túnel manual que funcionó en la universidad): botón «Compartir por internet» en la sala, con aviso de consentimiento cada vez; el QR y el enlace pasan a `https://….trycloudflare.com`; se cierra al cerrar la sala o la app. Límites por IP real del teléfono a través del túnel
+- [ ] Probar el botón en el aula con varios teléfonos (usuario). Decidir si `cloudflared` se incluye en el `.dmg` o se sigue instalando aparte (`brew install cloudflared`)
+
+**2. En la app (tú)**
+- [x] Botón «Compartir en vivo» en un examen: modo **Práctica** o **Con nota**
+- [x] Sala de espera: código, **QR** y enlace; lista en tiempo real de quién entra; Admitir, Expulsar, Cerrar la sala, **Iniciar** y Terminar
+- [x] Con nota: **admisión manual** de cada persona; un token por dispositivo y nombre único en la sala (desde otro dispositivo no se puede reutilizar el nombre)
+- [ ] Lista de clase opcional (pegar o CSV) — no construida; la admisión manual la cubre. Decidir si hace falta
+- [ ] Cambio de dispositivo aprobado por ti (hoy: expulsar y que vuelva a entrar, perdiendo lo respondido)
+- [x] Durante el examen: quién responde, quién entregó, desconexiones, salidas de la página (informativo) y tiempo restante
+- [x] Preguntas con respuesta correcta, justificación y fuente en la sala (solo en la app; petición del usuario tras la primera prueba con 1 teléfono, 2026-11-07)
+- [x] Resultados: corrección automática (opción múltiple, V/F) y por IA local (respuestas cortas, marcada «Corregida por IA»); **revisas y ajustas** las notas antes de publicarlas; estadística por pregunta; exportar CSV
+
+**3. En el teléfono (participantes)**
+- [x] Página web ligera en español, sin recursos externos: nombre → «Esperando a que se inicie…» → examen
+- [x] Empieza para todos a la vez; el tiempo lo controla tu Mac; respuestas guardadas al momento; si se bloquea el teléfono o se corta la Wi-Fi, vuelve donde estaba
+- [x] Orden de preguntas y opciones distinto por persona; las respuestas correctas **nunca** llegan al teléfono antes de que publiques los resultados
+- [x] Práctica: nota y explicaciones al entregar (si lo permites). Con nota: solo cuando publiques
+
+**4. Privacidad y seguridad**
+- [x] Se guardan solo nombre, dispositivo, respuestas y nota, en tu Mac; borrado manual («Borrar datos de la sala»); aviso en la página de entrada
+- [ ] Borrado automático (plazo a decidir por el usuario; propuesta: 1 año con nota, 30 días práctica)
+- [x] Ampliar `THREAT_MODEL.md` (T20–T25) y pruebas: DAST del servidor de la sala desde «otro dispositivo», fuerza bruta del código, suplantación, acceso a la API principal desde la red (debe ser imposible), sala cerrada → puerto cerrado
+
+**Criterio de aceptación:**
+- E2E con **20 participantes simulados** (navegadores móviles WebKit y Chromium): entrar, esperar, iniciar, desconexión y reconexión, entregar, corregir, publicar y exportar.
+- Prueba real en el aula con al menos **3 teléfonos reales (Android e iOS)** en la Wi-Fi de la universidad.
+- Ningún participante puede ver las respuestas correctas antes de publicarlas; desde la red no se alcanza nada salvo la sala abierta; al cerrar la sala no queda ningún puerto abierto.
+
+**Estado del criterio (2026-11-07):** 20 teléfonos simulados a la vez por HTTP contra el servidor real ✓ (`test_twenty_phones_at_once`); E2E con la app real y 3 navegadores móviles (iPhone/WebKit y Android/Pixel) ✓: entrar, admitir, iniciar, responder, recargar y recuperar respuestas, entregar, corregir, publicar y cerrar. Sin cubrir en el E2E: exportar CSV (probado en unidad) y un corte real de Wi-Fi. **Pendiente: prueba real en el aula.**
 
 ## Fase 10 — Empaquetado
 - [ ] `.app` + `.dmg`, Python embebido, binarios de ffmpeg (LGPL) y whisper incluidos

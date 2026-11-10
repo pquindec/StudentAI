@@ -13,10 +13,12 @@ import { DeckView } from './pages/DeckView'
 import { DocumentView } from './pages/DocumentView'
 import { Documents } from './pages/Documents'
 import { Exams } from './pages/Exams'
+import { ExamEditor } from './pages/ExamEditor'
 import { ExamView } from './pages/ExamView'
 import { Flashcards } from './pages/Flashcards'
 import { Import } from './pages/Import'
 import { Library } from './pages/Library'
+import { LiveRoom } from './pages/LiveRoom'
 import { Recordings } from './pages/Recordings'
 import { Review } from './pages/Review'
 import { Settings } from './pages/Settings'
@@ -61,8 +63,18 @@ function Page({ route, status }: { route: Route; status: ReturnType<typeof useBa
       return <Exams />
     case 'exam':
       return <ExamView key={route.id} id={route.id} />
+    case 'examEditor':
+      return (
+        <ExamEditor
+          key={`${route.subjectId}:${route.id ?? 'new'}`}
+          subjectId={route.subjectId}
+          examId={route.id}
+        />
+      )
     case 'attempt':
       return <AttemptView key={route.id} id={route.id} />
+    case 'live':
+      return <LiveRoom key={route.id} id={route.id} />
     case 'flashcards':
       return <Flashcards />
     case 'deck':

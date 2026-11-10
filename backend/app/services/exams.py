@@ -399,10 +399,122 @@ def save_questions(
         )
 
 
+# ------------------------------------------------------------------ exámenes manuales
+def is_manual(exam: dict[str, Any]) -> bool:
+    return bool(json.loads(exam.get("stats_json") or "{}").get("manual"))
+
+
+def in_use(db: sqlite3.Connection, exam_id: str) -> bool:
+    """Tiene intentos (propios o de una sala en vivo) o alguna sala: ya no se edita."""
+    row = db.execute(
+        "SELECT EXISTS (SELECT 1 FROM exam_attempts WHERE exam_id = ?)"
+        " OR EXISTS (SELECT 1 FROM live_sessions WHERE exam_id = ?)",
+        (exam_id, exam_id),
+    ).fetchone()
+    return bool(row[0])
+
+
+def _check_sources(db: sqlite3.Connection, subject_id: str, qs: list[dict[str, Any]]) -> None:
+    ids = {q["source_id"] for q in qs if q.get("source_id")}
+    if not ids:
+        return
+    marks = ",".join("?" * len(ids))
+    found = db.execute(
+        f"SELECT COUNT(*) FROM sources WHERE subject_id = ? AND id IN ({marks})",  # noqa: S608
+        [subject_id, *ids],
+    ).fetchone()[0]
+    if found != len(ids):
+        raise bad_request("invalid_source", "Una de las fuentes no es de esta asignatura")
+
+
+def _write_manual(
+    db: sqlite3.Connection,
+    exam_id: str,
+    title: str,
+    cfg: gen.ExamConfig,
+    qs: list[dict[str, Any]],
+) -> None:
+    db.execute("DELETE FROM exam_questions WHERE exam_id = ?", (exam_id,))
+    for pos, q in enumerate(qs):
+        db.execute(
+            "INSERT INTO exam_questions(id, exam_id, position, kept, type, stem, options_json,"
+            " answer_json, justification, rubric_json, difficulty, source_id)"
+            " VALUES (?,?,?,1,?,?,?,?,?,?,?,?)",
+            (
+                str(uuid.uuid4()),
+                exam_id,
+                pos,
+                q["type"],
+                q["stem"],
+                json.dumps(q["options"], ensure_ascii=False),
+                json.dumps(q["answer"], ensure_ascii=False),
+                q["justification"],
+                json.dumps(q["rubric"], ensure_ascii=False),
+                q["difficulty"],
+                q.get("source_id"),
+            ),
+        )
+    db.execute(
+        "UPDATE exams SET title = ?, config_json = ?, requested = ?, available = ?,"
+        " updated_at = now_iso() WHERE id = ?",
+        (title, cfg.model_dump_json(), len(qs), len(qs), exam_id),
+    )
+
+
+def create_manual(
+    db: sqlite3.Connection,
+    user: str,
+    subject_id: str,
+    title: str,
+    cfg: gen.ExamConfig,
+    qs: list[dict[str, Any]],
+) -> str:
+    """Examen con preguntas escritas por el usuario: listo al momento, sin IA."""
+    subj.get_subject(db, user, subject_id)
+    _check_sources(db, subject_id, qs)
+    eid = str(uuid.uuid4())
+    with tx(db):
+        db.execute(
+            "INSERT INTO exams(id, subject_id, title, config_json, scope_json, status, requested,"
+            " available, stats_json) VALUES (?,?,?,?,?,'ready',?,?,?)",
+            (
+                eid,
+                subject_id,
+                title,
+                cfg.model_dump_json(),
+                Scope(subject_id=subject_id).model_dump_json(),
+                len(qs),
+                len(qs),
+                json.dumps({"manual": True}),
+            ),
+        )
+        _write_manual(db, eid, title, cfg, qs)
+    return eid
+
+
+def update_manual(
+    db: sqlite3.Connection,
+    exam: dict[str, Any],
+    title: str,
+    cfg: gen.ExamConfig,
+    qs: list[dict[str, Any]],
+) -> None:
+    if not is_manual(exam):
+        raise conflict("not_manual", "Solo se pueden editar los exámenes creados a mano")
+    if in_use(db, exam["id"]):
+        raise conflict(
+            "exam_in_use", "El examen ya tiene intentos o salas en vivo: duplícalo para cambiarlo"
+        )
+    _check_sources(db, exam["subject_id"], qs)
+    with tx(db):
+        _write_manual(db, exam["id"], title, cfg, qs)
+
+
 # ------------------------------------------------------------------ intentos
 def get_attempt(db: sqlite3.Connection, user: str, attempt_id: str) -> dict[str, Any]:
     row = db.execute(
-        "SELECT a.*, e.config_json, e.title AS exam_title, e.subject_id FROM exam_attempts a"
+        "SELECT a.*, e.config_json, e.stats_json, e.title AS exam_title, e.subject_id"
+        " FROM exam_attempts a"
         " JOIN exams e ON e.id = a.exam_id JOIN subjects s ON s.id = e.subject_id"
         " WHERE a.id = ? AND s.owner_id = ?",
         (attempt_id, user),
@@ -607,7 +719,9 @@ def ensure_closed_if_late(db: sqlite3.Connection, attempt: dict[str, Any]) -> di
     return attempt
 
 
-def weak_topics(db: sqlite3.Connection, attempt_id: str) -> list[dict[str, Any]]:
+def weak_topics(
+    db: sqlite3.Connection, attempt_id: str, manual: bool = False
+) -> list[dict[str, Any]]:
     """Rendimiento por fuente (y sus temas vinculados): los peores primero."""
     rows = db.execute(
         """SELECT q.source_id, s.title, COUNT(*) AS n, SUM(COALESCE(a.points, 0) > 0.99) AS ok,
@@ -630,7 +744,8 @@ def weak_topics(db: sqlite3.Connection, attempt_id: str) -> list[dict[str, Any]]
         out.append(
             {
                 "source_id": r["source_id"],
-                "source_title": r["title"] or "Fuente eliminada",
+                "source_title": r["title"]
+                or ("Sin fuente" if manual and r["source_id"] is None else "Fuente eliminada"),
                 "units": units,
                 "questions": r["n"],
                 "correct": r["ok"] or 0,

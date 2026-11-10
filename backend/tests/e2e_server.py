@@ -6,10 +6,12 @@ Keychain ni Claude Code. Nunca toca los datos del usuario: la carpeta la elige l
 """
 
 import json
+from pathlib import Path
 from typing import Any
 
 from app import main
 from app.core import secrets
+from app.live import room
 from app.llm import claude_code
 from app.llm.base import ChatRequest, ChatResult, LoadedModel, RuntimeInfo
 from app.rag import index
@@ -67,7 +69,28 @@ def run() -> None:
     claude_code.find_binary = lambda: None  # type: ignore[assignment]
     # La «nube» de las pruebas es un puerto local cerrado: nada puede salir a Internet.
     engine.API_BASE_URL = "http://127.0.0.1:9"
+    # La sala del examen en vivo, en 127.0.0.1: los «teléfonos» de las pruebas son navegadores
+    # de este mismo Mac y nada se abre en la Wi-Fi real.
+    room.manager = room.Manager(resolve_ip=lambda: "127.0.0.1")
+    room.manager.find_cloudflared = fake_cloudflared  # nada sale a Cloudflare
     main.main()
+
+
+def fake_cloudflared() -> Path:
+    """Un `cloudflared` que imprime lo mismo que el real, sin conectarse a nada."""
+    import sys
+    import tempfile
+
+    exe = Path(tempfile.mkdtemp(prefix="e2e-cloudflared-")) / "cloudflared"
+    exe.write_text(
+        f"#!{sys.executable}\n"
+        "import time\n"
+        "print('INF |  https://sala-de-pruebas-e2e.trycloudflare.com  |', flush=True)\n"
+        "print('INF Registered tunnel connection connIndex=0 protocol=http2', flush=True)\n"
+        "time.sleep(3600)\n"
+    )
+    exe.chmod(0o755)
+    return exe
 
 
 if __name__ == "__main__":

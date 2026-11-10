@@ -6,6 +6,7 @@ import { grade10, isGenerating } from '../lib/exams'
 import { formatDate } from '../lib/format'
 import { useNavigate } from '../lib/nav'
 import { errorMessage, useQuery } from '../lib/useQuery'
+import { LiveSessions, LiveShareButton } from '../components/LiveShare'
 import { ExamStatusBadge } from './Exams'
 
 export function ExamView({ id }: { id: string }) {
@@ -142,14 +143,29 @@ export function ExamView({ id }: { id: string }) {
         {e.status === 'ready' && (
           <Card className="flex items-center gap-4">
             <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400">
-              {es.exams.validation(e.stats.valid, e.stats.proposed)}
-              {e.model ? ` · ${es.docs.model(e.model)}` : ''}
+              {e.manual ? (
+                es.examEditor.manual
+              ) : (
+                <>
+                  {es.exams.validation(e.stats.valid, e.stats.proposed)}
+                  {e.model ? ` · ${es.docs.model(e.model)}` : ''}
+                </>
+              )}
             </div>
+            {e.manual && (
+              <Button
+                onClick={() => navigate({ name: 'examEditor', subjectId: e.subject_id, id: e.id })}
+              >
+                {e.editable ? es.examEditor.editQuestions : es.examEditor.duplicate}
+              </Button>
+            )}
+            <LiveShareButton examId={e.id} timeLimit={c.time_limit_min ?? null} />
             <Button variant="primary" disabled={busy} onClick={() => void start()}>
               {es.exams.start}
             </Button>
           </Card>
         )}
+        {e.status === 'ready' && <LiveSessions examId={e.id} />}
         {e.status === 'ready' && (
           <Card>
             <h2 className="mb-3 font-medium">{es.exams.attempts}</h2>

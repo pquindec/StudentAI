@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prueba de red del aula</title>
+<style nonce="{nonce}">
+body{font:17px/1.45 -apple-system,system-ui,sans-serif;margin:0;padding:20px;background:#f6f6f4;color:#1d1d1b}
+main{max-width:480px;margin:auto}h1{font-size:22px;margin:0 0 4px}.muted{color:#666}
+li{margin:10px 0;list-style:none;padding:12px 14px;background:#fff;border-radius:10px}
+ul{padding:0}.ok{color:#18794e}.bad{color:#b42318}#final{font-weight:600;margin-top:16px}
+@media (prefers-color-scheme:dark){body{background:#161615;color:#eee}li{background:#242422}.muted{color:#aaa}}
+</style></head><body><main>
+<h1>Prueba de red del aula</h1>
+<p class="muted" id="who">Conectando…</p>
+<ul>
+<li id="s1">⏳ Llegar al Mac</li>
+<li id="s2">⏳ Latencia</li>
+<li id="s3">⏳ Conexión en tiempo real</li>
+<li id="s4">⏳ Reconexión: bloquea el teléfono 10 s y vuelve</li>
+</ul>
+<p id="final"></p>
+<p class="muted">Solo es una prueba: no se guarda tu nombre ni tu IP.</p>
+</main>
+<script nonce="{nonce}">
+const $ = (id) => document.getElementById(id);
+const mark = (id, ok, text) => { const el = $(id); el.textContent = (ok ? "✅ " : "❌ ") + text; el.className = ok ? "ok" : "bad"; };
+const post = (path, data) => fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data), cache: "no-store"});
+let id = null, hiddenAt = null, reconnectTested = false;
+
+function sse(url, expected, timeoutMs) {
+  return new Promise((resolve) => {
+    let n = 0; const es = new EventSource(url);
+    const end = () => { es.close(); resolve(n); };
+    es.onmessage = () => { n++; };
+    es.addEventListener("done", end);
+    es.onerror = () => { if (n >= expected) end(); };
+    setTimeout(end, timeoutMs);
+  });
+}
+
+async function run() {
+  try {
+    const r = await post("hello", {});
+    if (!r.ok) throw new Error();
+    const d = await r.json(); id = d.id;
+    $("who").textContent = d.label;
+    mark("s1", true, "Llega al Mac");
+  } catch { mark("s1", false, "No llega al Mac"); return; }
+  const t = [];
+  for (let i = 0; i < 20; i++) {
+    const a = performance.now();
+    try { await fetch("ping", {cache: "no-store"}); t.push(performance.now() - a); } catch {}
+  }
+  t.sort((x, y) => x - y);
+  const med = t.length ? t[Math.floor(t.length / 2)] : 60000;
+  const p95 = t.length ? t[Math.max(0, Math.ceil(t.length * 0.95) - 1)] : 60000;
+  mark("s2", t.length === 20 && p95 < 500, "Latencia " + Math.round(med) + " ms (p95 " + Math.round(p95) + " ms)");
+  $("s3").textContent = "⏳ Conexión en tiempo real (15 s)…";
+  const got = await sse("events", 15, 25000);
+  mark("s3", got === 15, "Tiempo real: " + got + "/15 mensajes");
+  await post("report", {id, rtt_median_ms: med, rtt_p95_ms: p95, sse_received: got});
+  $("final").textContent = "Ahora bloquea el teléfono unos 10 segundos y vuelve a esta página.";
+}
+
+document.addEventListener("visibilitychange", async () => {
+  if (document.hidden) { hiddenAt = Date.now(); return; }
+  if (id === null || reconnectTested || hiddenAt === null || Date.now() - hiddenAt < 5000) return;
+  reconnectTested = true;
+  let ok = false;
+  try { const r = await fetch("ping", {cache: "no-store"}); ok = r.ok && (await sse("events?short=1", 3, 8000)) === 3; } catch {}
+  mark("s4", ok, ok ? "Reconexión correcta" : "No se pudo reconectar");
+  try { await post("report", {id, type: "reconnect", ok}); } catch {}
+  $("final").textContent = ok ? "Prueba terminada. ¡Gracias!" : "Prueba terminada con problemas en la reconexión.";
+});
+
+run();
+</script></body></html>

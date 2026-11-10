@@ -2085,6 +2085,186 @@
         }
       }
     },
+    "/api/v1/subjects/{subject_id}/exams/manual": {
+      "post": {
+        "tags": ["exams"],
+        "summary": "Create Manual Exam",
+        "operationId": "create_manual_exam_api_v1_subjects__subject_id__exams_manual_post",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Subject Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualExamIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exams/{exam_id}/manual": {
+      "get": {
+        "tags": ["exams"],
+        "summary": "Get Manual Exam",
+        "description": "Preguntas completas (con la respuesta) para editarlas en la app.",
+        "operationId": "get_manual_exam_api_v1_exams__exam_id__manual_get",
+        "parameters": [
+          {
+            "name": "exam_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Exam Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManualExamOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["exams"],
+        "summary": "Update Manual Exam",
+        "operationId": "update_manual_exam_api_v1_exams__exam_id__manual_put",
+        "parameters": [
+          {
+            "name": "exam_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Exam Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualExamIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exams/{exam_id}/duplicate": {
+      "post": {
+        "tags": ["exams"],
+        "summary": "Duplicate Manual Exam",
+        "description": "Copia editable de un examen manual (el original conserva sus intentos).",
+        "operationId": "duplicate_manual_exam_api_v1_exams__exam_id__duplicate_post",
+        "parameters": [
+          {
+            "name": "exam_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Exam Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExamOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/exams/{exam_id}": {
       "get": {
         "tags": ["exams"],
@@ -2478,6 +2658,714 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AttemptOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exams/{exam_id}/live": {
+      "post": {
+        "tags": ["live"],
+        "summary": "Create Session",
+        "operationId": "create_session_api_v1_exams__exam_id__live_post",
+        "parameters": [
+          {
+            "name": "exam_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Exam Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live": {
+      "get": {
+        "tags": ["live"],
+        "summary": "List Sessions",
+        "operationId": "list_sessions_api_v1_live_get",
+        "parameters": [
+          {
+            "name": "exam_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Exam Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LiveSummaryOut"
+                  },
+                  "title": "Response List Sessions Api V1 Live Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}": {
+      "get": {
+        "tags": ["live"],
+        "summary": "Get Session",
+        "operationId": "get_session_api_v1_live__live_id__get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["live"],
+        "summary": "Delete Session",
+        "operationId": "delete_session_api_v1_live__live_id__delete",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/participants/{participant_id}/admit": {
+      "post": {
+        "tags": ["live"],
+        "summary": "Admit",
+        "operationId": "admit_api_v1_live__live_id__participants__participant_id__admit_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "participant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Participant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/participants/{participant_id}/kick": {
+      "post": {
+        "tags": ["live"],
+        "summary": "Kick",
+        "operationId": "kick_api_v1_live__live_id__participants__participant_id__kick_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "participant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Participant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/lock": {
+      "put": {
+        "tags": ["live"],
+        "summary": "Lock",
+        "operationId": "lock_api_v1_live__live_id__lock_put",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LockIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/start": {
+      "post": {
+        "tags": ["live"],
+        "summary": "Start",
+        "operationId": "start_api_v1_live__live_id__start_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/quiz/next": {
+      "post": {
+        "tags": ["live"],
+        "summary": "Quiz Next",
+        "description": "Concurso: «Pasar ya» (abrir la pregunta, cerrarla o ir a la siguiente sin esperar).",
+        "operationId": "quiz_next_api_v1_live__live_id__quiz_next_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/finish": {
+      "post": {
+        "tags": ["live"],
+        "summary": "Finish",
+        "operationId": "finish_api_v1_live__live_id__finish_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/publish": {
+      "post": {
+        "tags": ["live"],
+        "summary": "Publish",
+        "operationId": "publish_api_v1_live__live_id__publish_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/close": {
+      "post": {
+        "tags": ["live"],
+        "summary": "Close",
+        "operationId": "close_api_v1_live__live_id__close_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/results": {
+      "get": {
+        "tags": ["live"],
+        "summary": "Results",
+        "operationId": "results_api_v1_live__live_id__results_get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveResultsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/participants/{participant_id}/answers/{question_id}": {
+      "put": {
+        "tags": ["live"],
+        "summary": "Adjust",
+        "operationId": "adjust_api_v1_live__live_id__participants__participant_id__answers__question_id__put",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "participant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Participant Id"
+            }
+          },
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Question Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveResultsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/{live_id}/tunnel": {
+      "post": {
+        "tags": ["live"],
+        "summary": "Start Tunnel",
+        "description": "Acceso por internet con Cloudflare. La UI pide consentimiento antes de llamar aquí.",
+        "operationId": "start_tunnel_api_v1_live__live_id__tunnel_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["live"],
+        "summary": "Stop Tunnel",
+        "operationId": "stop_tunnel_api_v1_live__live_id__tunnel_delete",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSessionOut"
                 }
               }
             }
@@ -3302,6 +4190,17 @@
   },
   "components": {
     "schemas": {
+      "AdjustIn": {
+        "properties": {
+          "points": {
+            "type": "number",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": ["points"],
+        "title": "AdjustIn"
+      },
       "AiSettingsIn": {
         "properties": {
           "model": {
@@ -5411,6 +6310,16 @@
           "created_at": {
             "type": "string",
             "title": "Created At"
+          },
+          "manual": {
+            "type": "boolean",
+            "title": "Manual",
+            "default": false
+          },
+          "editable": {
+            "type": "boolean",
+            "title": "Editable",
+            "default": false
           }
         },
         "type": "object",
@@ -5691,6 +6600,678 @@
         ],
         "title": "JobOut"
       },
+      "LiveAnswerOut": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "title": "Question Id"
+          },
+          "answer": {
+            "title": "Answer"
+          },
+          "points": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Points"
+          },
+          "is_correct": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Correct"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback"
+          },
+          "graded_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["auto", "ai"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Graded By"
+          },
+          "adjusted": {
+            "type": "boolean",
+            "title": "Adjusted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "answer",
+          "points",
+          "is_correct",
+          "feedback",
+          "graded_by",
+          "adjusted"
+        ],
+        "title": "LiveAnswerOut"
+      },
+      "LiveIn": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": ["practice", "graded", "quiz"],
+            "title": "Mode",
+            "default": "practice"
+          },
+          "time_limit_min": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 240.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Limit Min"
+          },
+          "show_results": {
+            "type": "boolean",
+            "title": "Show Results",
+            "default": true
+          },
+          "question_s": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 5.0,
+            "title": "Question S",
+            "default": 20
+          }
+        },
+        "type": "object",
+        "title": "LiveIn"
+      },
+      "LiveParticipantOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "admitted"],
+            "title": "Status"
+          },
+          "online": {
+            "type": "boolean",
+            "title": "Online"
+          },
+          "answered": {
+            "type": "integer",
+            "title": "Answered"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "attempt_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["in_progress", "grading", "graded"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Status"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "max_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Score"
+          },
+          "left_count": {
+            "type": "integer",
+            "title": "Left Count"
+          },
+          "joined_at": {
+            "type": "string",
+            "title": "Joined At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "device",
+          "status",
+          "online",
+          "answered",
+          "total",
+          "attempt_status",
+          "score",
+          "max_score",
+          "left_count",
+          "joined_at",
+          "finished_at"
+        ],
+        "title": "LiveParticipantOut"
+      },
+      "LiveQuestionStatOut": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "title": "Question Id"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["single", "true_false", "short"],
+            "title": "Type"
+          },
+          "stem": {
+            "type": "string",
+            "title": "Stem"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "answer": {
+            "title": "Answer"
+          },
+          "justification": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Justification"
+          },
+          "rubric": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rubric"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/CitationOut"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "answered": {
+            "type": "integer",
+            "title": "Answered"
+          },
+          "ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "position",
+          "type",
+          "stem",
+          "options",
+          "answer",
+          "justification",
+          "rubric",
+          "evidence",
+          "answered",
+          "ratio"
+        ],
+        "title": "LiveQuestionStatOut"
+      },
+      "LiveResultRowOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "device": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "admitted"],
+            "title": "Status"
+          },
+          "online": {
+            "type": "boolean",
+            "title": "Online"
+          },
+          "answered": {
+            "type": "integer",
+            "title": "Answered"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "attempt_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["in_progress", "grading", "graded"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attempt Status"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "max_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Score"
+          },
+          "left_count": {
+            "type": "integer",
+            "title": "Left Count"
+          },
+          "joined_at": {
+            "type": "string",
+            "title": "Joined At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/LiveAnswerOut"
+            },
+            "type": "array",
+            "title": "Answers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "device",
+          "status",
+          "online",
+          "answered",
+          "total",
+          "attempt_status",
+          "score",
+          "max_score",
+          "left_count",
+          "joined_at",
+          "finished_at",
+          "answers"
+        ],
+        "title": "LiveResultRowOut"
+      },
+      "LiveResultsOut": {
+        "properties": {
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/LiveResultRowOut"
+            },
+            "type": "array",
+            "title": "Participants"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/LiveQuestionStatOut"
+            },
+            "type": "array",
+            "title": "Questions"
+          }
+        },
+        "type": "object",
+        "required": ["participants", "questions"],
+        "title": "LiveResultsOut"
+      },
+      "LiveSessionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "exam_id": {
+            "type": "string",
+            "title": "Exam Id"
+          },
+          "exam_title": {
+            "type": "string",
+            "title": "Exam Title"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["practice", "graded", "quiz"],
+            "title": "Mode"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["lobby", "running", "finished", "closed"],
+            "title": "Status"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "locked": {
+            "type": "boolean",
+            "title": "Locked"
+          },
+          "show_results": {
+            "type": "boolean",
+            "title": "Show Results"
+          },
+          "published": {
+            "type": "boolean",
+            "title": "Published"
+          },
+          "time_limit_min": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Limit Min"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "server_now": {
+            "type": "string",
+            "title": "Server Now"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "qr": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qr"
+          },
+          "network_problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Network Problem"
+          },
+          "https_attempts": {
+            "type": "integer",
+            "title": "Https Attempts"
+          },
+          "tunnel": {
+            "$ref": "#/components/schemas/TunnelOut"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/LiveParticipantOut"
+            },
+            "type": "array",
+            "title": "Participants"
+          },
+          "quiz": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuizOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "exam_id",
+          "exam_title",
+          "mode",
+          "status",
+          "code",
+          "locked",
+          "show_results",
+          "published",
+          "time_limit_min",
+          "started_at",
+          "ends_at",
+          "finished_at",
+          "created_at",
+          "server_now",
+          "url",
+          "qr",
+          "network_problem",
+          "https_attempts",
+          "tunnel",
+          "participants"
+        ],
+        "title": "LiveSessionOut"
+      },
+      "LiveSummaryOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "exam_id": {
+            "type": "string",
+            "title": "Exam Id"
+          },
+          "exam_title": {
+            "type": "string",
+            "title": "Exam Title"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["practice", "graded", "quiz"],
+            "title": "Mode"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["lobby", "running", "finished", "closed"],
+            "title": "Status"
+          },
+          "published": {
+            "type": "boolean",
+            "title": "Published"
+          },
+          "admitted": {
+            "type": "integer",
+            "title": "Admitted"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "exam_id",
+          "exam_title",
+          "mode",
+          "status",
+          "published",
+          "admitted",
+          "created_at"
+        ],
+        "title": "LiveSummaryOut"
+      },
       "LlmModelOut": {
         "properties": {
           "name": {
@@ -5728,6 +7309,197 @@
         "type": "object",
         "required": ["name", "size_mb"],
         "title": "LoadedOut"
+      },
+      "LockIn": {
+        "properties": {
+          "locked": {
+            "type": "boolean",
+            "title": "Locked"
+          }
+        },
+        "type": "object",
+        "required": ["locked"],
+        "title": "LockIn"
+      },
+      "ManualExamIn": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["practice", "timed"],
+            "title": "Mode",
+            "default": "practice"
+          },
+          "time_limit_min": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 240.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Limit Min"
+          },
+          "penalty": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Penalty",
+            "default": 0.0
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/ManualQuestionIn"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Questions"
+          }
+        },
+        "type": "object",
+        "required": ["title", "questions"],
+        "title": "ManualExamIn"
+      },
+      "ManualExamOut": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["practice", "timed"],
+            "title": "Mode",
+            "default": "practice"
+          },
+          "time_limit_min": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 240.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Limit Min"
+          },
+          "penalty": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Penalty",
+            "default": 0.0
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/ManualQuestionIn"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Questions"
+          },
+          "editable": {
+            "type": "boolean",
+            "title": "Editable"
+          }
+        },
+        "type": "object",
+        "required": ["title", "questions", "editable"],
+        "title": "ManualExamOut"
+      },
+      "ManualQuestionIn": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["single", "true_false", "short"],
+            "title": "Type"
+          },
+          "stem": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Stem"
+          },
+          "options": {
+            "items": {
+              "type": "string",
+              "maxLength": 500,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Options",
+            "default": []
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string",
+                "maxLength": 2000
+              }
+            ],
+            "title": "Answer"
+          },
+          "justification": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Justification",
+            "default": ""
+          },
+          "rubric": {
+            "items": {
+              "type": "string",
+              "maxLength": 500,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Rubric",
+            "default": []
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": ["easy", "medium", "hard"],
+            "title": "Difficulty",
+            "default": "medium"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          }
+        },
+        "type": "object",
+        "required": ["type", "stem", "answer"],
+        "title": "ManualQuestionIn",
+        "description": "Pregunta escrita a mano. `answer`: índice de la opción correcta, verdadero/falso o la\nrespuesta modelo (corta, la corrige la IA local con ella y la rúbrica)."
       },
       "MessageIn": {
         "properties": {
@@ -6193,6 +7965,173 @@
         "type": "object",
         "required": ["id", "type", "stem", "options", "difficulty"],
         "title": "QuestionOut"
+      },
+      "QuizOut": {
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": ["lobby", "countdown", "question", "reveal", "finished"],
+            "title": "Phase"
+          },
+          "index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "skipped": {
+            "type": "integer",
+            "title": "Skipped"
+          },
+          "question_s": {
+            "type": "integer",
+            "title": "Question S"
+          },
+          "remaining_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining Ms"
+          },
+          "players": {
+            "type": "integer",
+            "title": "Players"
+          },
+          "answered": {
+            "type": "integer",
+            "title": "Answered"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuizQuestionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "correct_index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correct Index"
+          },
+          "counts": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counts"
+          },
+          "leaderboard": {
+            "items": {
+              "$ref": "#/components/schemas/QuizRankOut"
+            },
+            "type": "array",
+            "title": "Leaderboard"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phase",
+          "index",
+          "total",
+          "skipped",
+          "question_s",
+          "remaining_ms",
+          "players",
+          "answered",
+          "question",
+          "correct_index",
+          "counts",
+          "leaderboard"
+        ],
+        "title": "QuizOut"
+      },
+      "QuizQuestionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["single", "true_false"],
+            "title": "Type"
+          },
+          "stem": {
+            "type": "string",
+            "title": "Stem"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": ["id", "type", "stem", "options"],
+        "title": "QuizQuestionOut"
+      },
+      "QuizRankOut": {
+        "properties": {
+          "participant_id": {
+            "type": "string",
+            "title": "Participant Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score"
+          },
+          "correct": {
+            "type": "integer",
+            "title": "Correct"
+          },
+          "answered": {
+            "type": "integer",
+            "title": "Answered"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          }
+        },
+        "type": "object",
+        "required": ["participant_id", "name", "score", "correct", "answered", "rank"],
+        "title": "QuizRankOut"
       },
       "RagStatusOut": {
         "properties": {
@@ -7815,6 +9754,41 @@
         },
         "type": "object",
         "title": "TranscribeIn"
+      },
+      "TunnelOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["off", "starting", "on", "error"],
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": ["status", "url", "error"],
+        "title": "TunnelOut",
+        "description": "Acceso por internet (Cloudflare). Uno para todas las salas abiertas: el túnel lleva al\nservidor de la sala, no a una sala concreta."
       },
       "UnitIn": {
         "properties": {

@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Examen en vivo</title>
+<style nonce="{nonce}">
+:root{--bg:#f6f6f4;--card:#fff;--ink:#1d1d1b;--muted:#5f5f5a;--line:#dedcd6;--accent:#2f5bd3;--ok:#18794e;--bad:#b42318;--warn:#9a6700}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--card:#232321;--ink:#eeeeea;--muted:#a9a9a2;--line:#3a3a36;--accent:#7c9cff;--ok:#4cc38a;--bad:#ff8a80;--warn:#e3b341}}
+*{box-sizing:border-box}
+body{font:17px/1.45 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;margin:0;background:var(--bg);color:var(--ink)}
+main{max-width:640px;margin:auto;padding:16px 16px 96px}
+h1{font-size:22px;margin:8px 0 4px}h2{font-size:18px;margin:0 0 10px}
+.muted{color:var(--muted)}.small{font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+label.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer}
+label.opt:first-of-type{border-top:0}
+input[type=radio]{width:20px;height:20px;margin-top:2px;flex:none}
+input[type=text],textarea{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+textarea{min-height:110px;resize:vertical}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;background:var(--accent);color:#fff;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+.bar{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0 8px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.timer{font-variant-numeric:tabular-nums;font-weight:700}
+.timer.low{color:var(--bad)}
+.foot{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 16px;display:flex;justify-content:center}
+.foot button{width:100%;max-width:608px}
+.saved{font-size:13px;color:var(--muted);margin-top:6px;min-height:18px}
+.saved.bad{color:var(--bad)}
+.banner{background:var(--warn);color:#000;border-radius:10px;padding:10px 12px;margin:10px 0;display:none}
+.err{color:var(--bad);min-height:22px;margin:8px 0}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.big{font-size:40px;font-weight:800;margin:4px 0}
+.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite;margin:18px auto}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none}}
+.center{text-align:center}
+.choices{display:grid;gap:10px;margin-top:12px}
+.choice{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:14px;border-radius:12px;background:var(--card);color:var(--ink);border:2px solid var(--line);font-weight:600;min-height:60px}
+.choice .letter{flex:none;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800}
+.choice.picked{border-color:var(--accent)}
+.choice.right{border-color:var(--ok)}.choice.right .letter{background:var(--ok)}
+.choice.wrong{border-color:var(--bad)}.choice.wrong .letter{background:var(--bad)}
+.count{font-size:64px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;margin:8px 0}
+ol.rank{list-style:none;margin:0;padding:0}
+ol.rank li{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+ol.rank li:first-child{border-top:0}
+ol.rank .pos{width:36px;font-weight:800}ol.rank .pts{margin-left:auto;font-variant-numeric:tabular-nums}
+ol.rank li.me{font-weight:700}
+</style>
+</head>
+<body data-kind="{kind}">
+<main id="app"><p class="muted">Cargando…</p></main>
+<script nonce="{nonce}">
+"use strict";
+const code = location.pathname.split("/")[2];
+const KEY = "sala:" + code;
+let memToken = null;
+const store = {
+  get() { try { return localStorage.getItem(KEY) || memToken; } catch { return memToken; } },
+  set(v) { memToken = v; try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} },
+};
+const app = document.getElementById("app");
+const QUIZ = document.body.dataset.kind === "quiz";
+let state = null, examKey = null, offset = 0, timerId = null, pollId = null, offline = false;
+const pending = new Map(); // respuestas sin confirmar: id → valor
+const debounce = new Map();
+
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids) if (k != null) e.append(k instanceof Node ? k : String(k));
+  return e;
+}
+function show(...nodes) { app.replaceChildren(...nodes); }
+
+async function call(method, action, body) {
+  const headers = {};
+  const t = store.get();
+  if (t) headers["X-Live-Token"] = t;
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  const r = await fetch(action, { method, headers, cache: "no-store",
+    body: body === undefined ? undefined : JSON.stringify(body) });
+  setOffline(false);
+  if (r.status === 204) return null;
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error((data.error && data.error.message) || "Error"); e.code = data.error && data.error.code; e.status = r.status; throw e; }
+  return data;
+}
+function setOffline(v) {
+  offline = v;
+  const b = document.getElementById("banner");
+  if (b) b.style.display = v ? "block" : "none";
+}
+const banner = () => el("div", { id: "banner", class: "banner" }, "Sin conexión con el profesor. Reintentando… Tus respuestas se guardarán al volver.");
+
+// ------------------------------------------------------------------ entrar
+function renderJoin(message) {
+  examKey = null;
+  const err = el("p", { class: "err", role: "alert" }, message || "");
+  const input = el("input", { type: "text", id: "name", maxlength: "60", autocomplete: QUIZ ? "nickname" : "name", placeholder: QUIZ ? "Cómo quieres aparecer" : "Nombre y apellido" });
+  const btn = el("button", { type: "submit" }, "Entrar");
+  const form = el("form", { onsubmit: async (ev) => {
+    ev.preventDefault();
+    btn.disabled = true; err.textContent = "";
+    try {
+      const r = await call("POST", "join", { name: input.value });
+      store.set(r.token);
+      await poll();
+    } catch (e) { err.textContent = e.message || "No se pudo entrar"; btn.disabled = false; }
+  } },
+    el("label", { for: "name" }, QUIZ ? "Tu nombre o apodo" : "Tu nombre"), input, err, btn);
+  show(
+    el("h1", {}, QUIZ ? "Concurso en vivo" : "Examen en vivo"),
+    el("div", { class: "card" }, form),
+    QUIZ ? el("p", { class: "small" }, "Se mostrará en la clasificación, en la pantalla del aula. No cuenta para nota.") : null,
+    el("p", { class: "muted small" }, (QUIZ ? "Tu nombre y tus respuestas" : "Tu nombre, tus respuestas y tu nota") + " se guardan solo en el ordenador del profesor, en la red del aula. No necesitas cuenta.")
+  );
+  input.focus();
+}
+
+// ------------------------------------------------------------------ estados
+function waiting(title, text) {
+  examKey = null;
+  show(el("h1", {}, state.session.title), el("div", { class: "card" },
+    el("h2", {}, title), el("div", { class: "spinner", "aria-hidden": "true" }),
+    el("p", { class: "muted" }, text), el("p", { class: "small muted" }, "Entraste como: " + state.me.name)), banner());
+}
+
+function fmtScore(score, max) {
+  if (!max) return "—";
+  return (Math.round((score / max) * 100) / 10).toLocaleString("es", { maximumFractionDigits: 1 }) + "/10";
+}
+
+function renderResult(res) {
+  examKey = null;
+  const nodes = [el("h1", {}, state.session.title)];
+  if (!res.visible) {
+    nodes.push(el("div", { class: "card" }, el("h2", {}, "Examen entregado ✓"),
+      el("p", { class: "muted" }, "El profesor publicará las notas. Puedes cerrar esta página.")));
+  } else if (res.status !== "graded") {
+    nodes.push(el("div", { class: "card" }, el("h2", {}, "Examen entregado ✓"),
+      el("div", { class: "spinner", "aria-hidden": "true" }), el("p", { class: "muted" }, "Corrigiendo tus respuestas…")));
+  } else {
+    nodes.push(el("div", { class: "card" }, el("p", { class: "muted" }, "Tu nota"),
+      el("p", { class: "big" }, fmtScore(res.score, res.max_score)),
+      el("p", { class: "muted small" }, res.score.toLocaleString("es") + " de " + res.max_score + " puntos")));
+    res.questions.forEach((q, i) => {
+      const okText = q.is_correct === true ? "Correcta" : q.is_correct === false ? (q.points > 0 ? "Parcialmente correcta" : "Incorrecta") : "Sin responder";
+      nodes.push(el("div", { class: "card" },
+        el("p", { class: "small muted" }, "Pregunta " + (i + 1)),
+        el("p", {}, q.stem),
+        el("p", { class: q.is_correct ? "ok" : "bad" }, okText + (q.points != null ? " · " + q.points.toLocaleString("es") + " p" : "")),
+        el("p", { class: "small" }, "Tu respuesta: " + (q.given == null || q.given === "" ? "—" : q.given)),
+        q.is_correct ? null : el("p", { class: "small" }, "Respuesta correcta: " + q.correct),
+        q.feedback ? el("p", { class: "small muted" }, "Corregida por IA: " + q.feedback) : null,
+        q.justification ? el("p", { class: "small muted" }, q.justification) : null));
+    });
+  }
+  show(...nodes, banner());
+}
+
+// ------------------------------------------------------------------ examen
+function save(qid, value, status) {
+  pending.set(qid, value);
+  status.textContent = "Guardando…"; status.className = "saved";
+  call("POST", "answer", { question_id: qid, value })
+    .then(() => { if (pending.get(qid) === value) pending.delete(qid); status.textContent = "Guardado ✓"; updateCount(); })
+    .catch((e) => {
+      if (e.code === "time_over" || e.code === "attempt_closed" || e.code === "live_not_running") { status.textContent = e.message; return; }
+      if (!e.status) setOffline(true);
+      status.textContent = "No guardado: se reintentará"; status.className = "saved bad";
+    });
+}
+function retryPending() {
+  for (const [qid, value] of pending) {
+    const status = document.getElementById("st-" + qid);
+    if (status) save(qid, value, status);
+  }
+}
+function answeredCount() {
+  return state.exam.questions.filter((q) => {
+    const v = currentValue(q);
+    return v !== null && v !== undefined && v !== "";
+  }).length;
+}
+function currentValue(q) {
+  if (q.type === "short") { const t = document.getElementById("in-" + q.id); return t ? t.value.trim() : q.answer; }
+  const c = document.querySelector('input[name="q-' + q.id + '"]:checked');
+  if (!c) return null;
+  return q.type === "true_false" ? c.value === "true" : Number(c.value);
+}
+function updateCount() {
+  const c = document.getElementById("count");
+  if (c && state.exam) c.textContent = answeredCount() + "/" + state.exam.questions.length + " respondidas";
+}
+
+function renderExam() {
+  const ex = state.exam;
+  const key = ex.questions.map((q) => q.id).join(",");
+  if (examKey === key) return; // ya pintado: no se borra lo que se está escribiendo
+  examKey = key;
+  const cards = ex.questions.map((q, i) => {
+    const status = el("p", { class: "saved", id: "st-" + q.id, "aria-live": "polite" });
+    const body = [el("p", { class: "small muted" }, "Pregunta " + (i + 1) + " de " + ex.questions.length), el("p", { id: "stem-" + q.id }, q.stem)];
+    if (q.type === "short") {
+      const ta = el("textarea", { id: "in-" + q.id, maxlength: "4000", "aria-labelledby": "stem-" + q.id });
+      ta.value = q.answer || "";
+      ta.addEventListener("input", () => {
+        updateCount();
+        clearTimeout(debounce.get(q.id));
+        debounce.set(q.id, setTimeout(() => save(q.id, ta.value, status), 800));
+      });
+      ta.addEventListener("blur", () => { clearTimeout(debounce.get(q.id)); if ((q.answer || "") !== ta.value) { q.answer = ta.value; save(q.id, ta.value, status); } });
+      body.push(ta);
+    } else {
+      const opts = q.type === "true_false" ? [["true", "Verdadero"], ["false", "Falso"]] : q.options.map((o, j) => [String(j), o]);
+      const group = el("div", { role: "radiogroup", "aria-labelledby": "stem-" + q.id });
+      for (const [val, text] of opts) {
+        const checked = q.type === "true_false" ? q.answer === (val === "true") : q.answer === Number(val);
+        const input = el("input", { type: "radio", name: "q-" + q.id, value: val, checked });
+        input.addEventListener("change", () => { updateCount(); save(q.id, q.type === "true_false" ? val === "true" : Number(val), status); });
+        group.append(el("label", { class: "opt" }, input, el("span", {}, text)));
+      }
+      body.push(group);
+    }
+    body.push(status);
+    return el("div", { class: "card" }, ...body);
+  });
+  const submitBtn = el("button", { type: "button", id: "submit", onclick: async () => {
+    const missing = ex.questions.length - answeredCount();
+    const msg = missing ? "Te quedan " + missing + " sin responder (cuentan 0). ¿Entregar? No podrás cambiar las respuestas." : "¿Entregar el examen? No podrás cambiar las respuestas.";
+    if (!confirm(msg)) return;
+    submitBtn.disabled = true;
+    // Guarda antes lo que se esté escribiendo.
+    for (const q of ex.questions) if (q.type === "short") { const t = document.getElementById("in-" + q.id); if (t && t.value !== (q.answer || "")) { try { await call("POST", "answer", { question_id: q.id, value: t.value }); } catch {} } }
+    try { await call("POST", "submit", {}); await poll(); } catch (e) { alert(e.message || "No se pudo entregar"); submitBtn.disabled = false; }
+  } }, "Entregar examen");
+  show(
+    el("div", { class: "bar" }, el("strong", {}, state.session.title), el("span", { class: "timer", id: "timer", "aria-live": "off" }, "")),
+    el("p", { class: "muted small", id: "count" }), banner(), ...cards,
+    el("div", { class: "foot" }, submitBtn)
+  );
+  updateCount();
+  tickTimer();
+}
+
+function tickTimer() {
+  clearInterval(timerId);
+  const t = document.getElementById("timer");
+  if (!t || !state.exam || !state.exam.deadline_at) { if (t) t.textContent = ""; return; }
+  const end = Date.parse(state.exam.deadline_at);
+  const step = () => {
+    const left = Math.max(0, end - (Date.now() + offset));
+    const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
+    t.textContent = "⏱ " + m + ":" + String(s).padStart(2, "0");
+    t.className = left < 60000 ? "timer low" : "timer";
+    if (left <= 0) {
+      clearInterval(timerId);
+      t.textContent = "Se acabó el tiempo";
+      document.querySelectorAll("input,textarea,#submit").forEach((x) => { x.disabled = true; });
+      poll();
+    }
+  };
+  step();
+  timerId = setInterval(step, 1000);
+}
+
+// ------------------------------------------------------------------ concurso
+let quizKey = null, quizEnd = 0, quizTimerId = null;
+const LETTERS = "ABCDEF";
+const ordinal = (n) => n + ".º";
+
+function quizTimer() {
+  clearInterval(quizTimerId);
+  const step = () => {
+    const t = document.getElementById("qtimer");
+    if (!t) { clearInterval(quizTimerId); return; }
+    const left = Math.max(0, Math.ceil((quizEnd - Date.now()) / 1000));
+    t.textContent = String(left);
+  };
+  step();
+  quizTimerId = setInterval(step, 250);
+}
+
+function rankList(top) {
+  return el("ol", { class: "rank" }, ...top.map((r) => el("li", { class: r.name === state.me.name ? "me" : "" },
+    el("span", { class: "pos" }, ["🥇", "🥈", "🥉"][r.rank - 1] || ordinal(r.rank)),
+    el("span", {}, r.name), el("span", { class: "pts" }, r.score.toLocaleString("es") + " pts"))));
+}
+
+function choiceButtons(q, onPick) {
+  return el("div", { class: "choices", role: "group", "aria-labelledby": "qstem" }, ...q.question.options.map((text, i) => {
+    let cls = "choice";
+    if (q.correct_index != null) cls += i === q.correct_index ? " right" : i === q.my_choice ? " wrong" : "";
+    else if (i === q.my_choice) cls += " picked";
+    const b = el("button", { type: "button", class: cls, disabled: !onPick }, el("span", { class: "letter", "aria-hidden": "true" }, LETTERS[i]), el("span", {}, text));
+    if (onPick) b.addEventListener("click", () => onPick(i));
+    return b;
+  }));
+}
+
+function renderQuiz() {
+  const q = state.quiz, s = state.session;
+  examKey = null;
+  quizEnd = Date.now() + (q.remaining_ms || 0);
+  const key = [q.phase, q.index, q.my_choice, q.me ? q.me.score : ""].join(":");
+  if (key === quizKey) return; // ya pintado: solo corre el reloj
+  quizKey = key;
+  const head = q.index != null && q.phase !== "finished" ? el("p", { class: "small muted" }, "Pregunta " + (q.index + 1) + " de " + q.total) : null;
+  const meLine = q.me ? el("p", { class: "small muted" }, q.me.score.toLocaleString("es") + " puntos · vas " + ordinal(q.me.rank) + " de " + q.me.players) : null;
+  if (q.phase === "lobby") {
+    show(el("h1", {}, s.title), el("div", { class: "card" }, el("h2", {}, "Esperando a que empiece el concurso…"),
+      el("div", { class: "spinner", "aria-hidden": "true" }),
+      el("p", { class: "muted" }, "Verás cada pregunta en la pantalla del aula y responderás aquí. Cuanto antes aciertes, más puntos (fallar no resta)."),
+      el("p", { class: "small muted" }, "Apareces como: " + state.me.name)), banner());
+  } else if (q.phase === "countdown") {
+    show(el("h1", {}, s.title), el("div", { class: "card center" }, head, el("h2", {}, "¡Prepárate!"),
+      el("p", { class: "count", id: "qtimer", "aria-live": "off" }), meLine), banner());
+  } else if (q.phase === "question") {
+    const status = el("p", { class: "err", role: "alert" });
+    const pick = async (i) => {
+      document.querySelectorAll(".choice").forEach((b) => { b.disabled = true; });
+      try {
+        await call("POST", "answer", { question_id: q.question.id, value: q.question.type === "true_false" ? i === 0 : i });
+        q.my_choice = i; quizKey = null; renderQuiz();
+      } catch (e) {
+        if (e.code === "already_answered") { q.my_choice = i; quizKey = null; renderQuiz(); return; }
+        if (!e.status) setOffline(true);
+        status.textContent = e.message || "No se pudo enviar la respuesta";
+        if (e.code !== "quiz_closed") document.querySelectorAll(".choice").forEach((b) => { b.disabled = false; });
+      }
+    };
+    const answered = q.my_choice != null;
+    show(el("div", { class: "bar" }, el("strong", {}, "Pregunta " + (q.index + 1) + " de " + q.total), el("span", { class: "timer" }, "⏱ ", el("span", { id: "qtimer" }))),
+      banner(),
+      el("div", { class: "card" }, el("p", { id: "qstem" }, q.question.stem), choiceButtons(q, answered ? null : pick), status,
+        answered ? el("p", { class: "muted center" }, "Respuesta enviada ✓ Espera a que termine el tiempo…") : null));
+  } else if (q.phase === "reveal") {
+    const last = q.last || { answered: false };
+    const verdict = !last.answered ? el("h2", { class: "bad" }, "Sin respuesta") : last.correct ? el("h2", { class: "ok" }, "¡Correcto! +" + last.points.toLocaleString("es")) : el("h2", { class: "bad" }, "Incorrecto");
+    show(el("h1", {}, s.title), el("div", { class: "card" }, head, verdict, el("p", { id: "qstem" }, q.question.stem), choiceButtons(q, null), meLine),
+      el("div", { class: "card" }, el("h2", {}, "Clasificación"), rankList(q.top || [])), banner());
+  } else {
+    const nodes = [el("h1", {}, s.title), el("div", { class: "card center" }, el("h2", {}, "¡Fin del concurso!"),
+      q.me ? el("p", { class: "big" }, ordinal(q.me.rank) + " de " + q.me.players) : null,
+      q.me ? el("p", { class: "muted" }, q.me.score.toLocaleString("es") + " puntos") : null)];
+    if (q.top && q.top.length) nodes.push(el("div", { class: "card" }, el("h2", {}, "Podio"), rankList(q.top)));
+    show(...nodes);
+  }
+  if (q.phase === "countdown" || q.phase === "question") quizTimer();
+}
+
+// ------------------------------------------------------------------ bucle
+async function poll() {
+  clearTimeout(pollId);
+  let delay = 2000;
+  try {
+    if (!store.get()) { renderJoin(); return; }
+    state = await call("GET", "state");
+    offset = Date.parse(state.session.server_now) - Date.now();
+    const s = state.session, me = state.me;
+    if (state.quiz && me.status === "admitted") { renderQuiz(); delay = state.quiz.phase === "finished" ? 10000 : 1000; }
+    else if (me.status === "pending") waiting("Esperando a que el profesor te admita…", "Cuando te admita, esperarás a que empiece el examen.");
+    else if (state.exam) { renderExam(); retryPending(); delay = 3000; }
+    else if (state.result) { renderResult(state.result); if (state.result.visible && state.result.status === "graded") delay = 10000; }
+    else if (s.status === "lobby") waiting("Esperando a que empiece el examen…", "El profesor lo iniciará para todos a la vez." + (s.time_limit_min ? " Tendrás " + s.time_limit_min + " minutos." : ""));
+    else if (s.status === "finished") { examKey = null; show(el("h1", {}, s.title), el("div", { class: "card" }, el("p", {}, "El examen ya terminó."))); delay = 10000; }
+    else waiting("Un momento…", "");
+  } catch (e) {
+    if (e.status === 401) { store.set(null); renderJoin(e.message); return; }
+    if (e.status === 404) { store.set(null); examKey = null; show(el("h1", {}, "Sala cerrada"), el("div", { class: "card" }, el("p", {}, "El profesor cerró la sala."))); return; }
+    if (!e.status) setOffline(true);
+    delay = 3000;
+  }
+  pollId = setTimeout(poll, delay);
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    if (state && state.exam) call("POST", "left", {}).catch(() => {});
+  } else poll();
+});
+poll();
+</script>
+</body>
+</html>

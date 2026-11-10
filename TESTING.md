@@ -45,6 +45,39 @@ scripts/check.sh backend    # solo una parte (preferible tras cambios acotados)
 - Con su clase real (82.464 caracteres, copia de la BD): resumen intermedio 12 frases + 12 ideas clave en 6 min 52 s, sin cortes. Antes de limitar las citas por punto, una de dos pasadas falló por respuesta cortada; «detallado» se cortaba (necesita ~4.100–5.100 tokens) → tope de 15 + 12 frases/ideas y hasta 5.600 tokens de salida con ventana de 12K en el paso final: 15 frases + 9 ideas clave, pico 7,7 GB.
 - Pendiente: comprobar la selección y el botón «Copiar» en la app (WKWebView).
 
+## Prueba de red del aula (Fase 9.5, 2026-11-07)
+```bash
+cd backend && uv run python -m app.live.netcheck            # --minutes 20 --port 8765 --no-open
+```
+1. Mac y teléfonos en la **misma Wi-Fi**. 2. Escanear el QR (se abre también como imagen). 3. Esperar ~20 s y luego bloquear el teléfono 10 s y volver. 4. Ctrl+C: veredicto en la terminal y `bench/results/netcheck.json`.
+- Automáticas: `tests/test_netcheck.py` (ruta secreta, CSP con nonce, validación, límites, veredictos, QR).
+- Verificada en la Wi-Fi de casa con un iPhone simulado (Playwright WebKit): llega, 1 ms, 15/15 en tiempo real, reconexión ✓. **Pendiente:** prueba real en el aula.
+- Wi-Fi de casa con un **Android real** (usuario, 2026-11-07): con Chrome llega, latencia 46,5 ms (p95 228 ms), tiempo real 15/15 ✓; reconexión sin probar. Con **Samsung Internet** no abre: probablemente fuerza HTTPS; la herramienta ahora lo detecta y lo avisa (🔒) para confirmarlo.
+
+## Modo concurso (2026-11-09)
+- `backend/tests/test_quiz.py` (3, con reloj controlado):
+  - **Ronda completa:** cuenta atrás sin enunciado; pregunta sin respuesta correcta en el teléfono; 1.000/750/0 puntos según acierto y rapidez; «ya respondiste»; cierre al responder todos; reparto por opción; clasificación y puesto en el teléfono; quien entra tarde empieza con 0; avance automático; «Pasar ya»; empate exacto que comparte puesto; sin «entregar»; expulsar lo quita de la clasificación; borrar la sala borra las respuestas.
+  - **Tiempo agotado y validaciones:** respuestas fuera de tiempo, examen solo con cortas → `quiz_no_questions`, segundos fuera de rango.
+  - **15 teléfonos respondiendo a la vez:** las 15 respuestas se registran.
+- `app/e2e/live.spec.ts`: concurso con la app real, el proyector y 3 teléfonos (iPhone/Android): apodos, QR en el proyector, 2 preguntas, clasificación, «Pasar ya», podio con ganador y puesto final en cada teléfono (~19 s).
+- Resultados: backend 239 ✓, frontend 41 ✓, E2E 10 ✓.
+
+## Exámenes escritos a mano (2026-11-09)
+- `backend/tests/test_exams_manual.py` (3): listo al momento y sin IA; se hace y se corrige como los generados (penalización, corta corregida por la IA con la respuesta modelo y los puntos clave, «Dónde fallaste más» con «Sin fuente»); validación (opciones, correcta, tipos, límites, fuente de otra asignatura); editar hasta tener un intento → 409 `exam_in_use` → duplicar; los generados no se editan (409 `not_manual`). `test_dast.py` incluye las rutas nuevas.
+- `app/src/lib/manualExam.test.ts` (5): mensajes en español por pregunta, limpieza del borrador, quitar opciones sin perder la correcta, ida y vuelta guardar/cargar.
+- `app/e2e/flows.spec.ts`: crear a mano con la UI, error si falta la correcta, editar (reordenar), hacerlo, y «Duplicar para editar» cuando ya tiene intento.
+- Resultados: backend 235 ✓, frontend 41 ✓, E2E 9 ✓.
+
+## Examen en vivo (Fase 9.5, 2026-11-07)
+- `backend/tests/test_live.py` (7, incluido compartir un examen escrito a mano): flujo con nota de principio a fin (admitir, orden por persona, sin soluciones en el teléfono, autoguardado, entregar, corrección, ajuste, publicar, cerrar → puerto cerrado), práctica (nota al entregar), fin por tiempo, el servidor de la sala solo sirve la sala (404 para la API, CSP, tokens, cuerpos rotos, nombres, fuerza bruta → 429), **20 teléfonos a la vez** (~1,2 s; 5 repeticiones sin fallos) y el Mac no se suspende solo mientras hay sala.
+- `test_dast.py` incluye las rutas nuevas (otro propietario no ve ni cambia ninguna sala).
+- `app/src/lib/live.test.ts`: estado del participante, CSV sin fórmulas, media.
+- La clave de respuestas (solución, justificación y fuente) llega a la app desde la sala de espera y nunca aparece en lo que recibe el teléfono durante el examen (`test_graded_session_end_to_end`).
+- `backend/tests/test_tunnel.py` (4): acceso por internet con un `cloudflared` falso (nada sale a internet): QR con la dirección del túnel, sin `cloudflared` instalado, cerrar al cerrar la sala, límites por IP real solo con el túnel, errores (sin respuesta, se cierra solo) y que `cloudflared` muere si muere el backend. El E2E de la sala activa y desactiva el acceso por internet con el aviso de consentimiento.
+- `app/e2e/live.spec.ts`: la app real + 3 «teléfonos» (WebKit con iPhone 15 y Pixel 7) de entrar a cerrar la sala (~12 s).
+- La prueba de 20 teléfonos encontró un fallo: la cola de conexiones del servidor era de 5 → «conexión reiniciada». Corregido (128).
+- Resultados: backend 232 ✓, frontend 36 ✓, E2E 8 ✓, Rust ✓. Prueba manual del usuario con 1 teléfono real ✓ (2026-11-07). En la Wi-Fi de la universidad (2026-11-09) la sala decía «No hay conexión Wi-Fi»: la red usa `100.64.0.0/10` (RFC 6598). Corregido y cubierto en `test_netcheck.py`; pendiente comprobar que los teléfonos llegan al Mac en esa red. **Pendiente:** aula real con varios teléfonos.
+
 ## Pruebas de la Fase 8 (2026-11-06)
 - Automáticas: pytest 160 (12 nuevas en `test_cloud.py`, con un servidor Anthropic falso y un `claude` falso que cuentan cada petición recibida), vitest 32, ruff, mypy, tsc y oxlint correctos.
   - Desactivado por defecto y sin consentimiento: 0 peticiones a la nube.

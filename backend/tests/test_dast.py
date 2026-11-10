@@ -132,7 +132,16 @@ def world(
     ids["job_id"] = next(j["id"] for j in jobs if j["source_id"] is None)
     ids["model_id"] = "base"
 
+    r = client.post(f"/api/v1/exams/{exam['id']}/live", headers=auth, json={"mode": "graded"})
+    assert r.status_code == 201, r.text
+    ids["live_id"] = r.json()["id"]
     db = sqlite3.connect(settings.db_path)
+    ids["participant_id"] = "p-local"
+    db.execute(
+        "INSERT INTO live_participants(id, session_id, name, token_hash, status)"
+        " VALUES ('p-local', ?, 'Ana', 'h', 'pending')",
+        (ids["live_id"],),
+    )
     ids["consent_id"] = "c-local"
     db.execute(
         "INSERT INTO cloud_consents(id, owner_id, kind, tasks_json, mode, via, model,"
@@ -145,6 +154,7 @@ def world(
 
 
 # Cuerpos válidos: así lo único que puede fallar es el propietario, no la validación.
+MANUAL = {"title": "X", "questions": [{"type": "true_false", "stem": "X", "answer": True}]}
 BODIES: dict[tuple[str, str], Any] = {
     ("PATCH", "/subjects/{subject_id}"): {"name": "Robada"},
     ("POST", "/subjects/{subject_id}/units"): {"kind": "course", "title": "X"},
@@ -165,6 +175,11 @@ BODIES: dict[tuple[str, str], Any] = {
     ("POST", "/subjects/{subject_id}/decks"): {"count": 5},
     ("PATCH", "/cards/{card_id}"): {"front": "X"},
     ("POST", "/cards/{card_id}/review"): {"rating": 3, "duration_ms": 1000},
+    ("POST", "/exams/{exam_id}/live"): {"mode": "practice"},
+    ("POST", "/subjects/{subject_id}/exams/manual"): MANUAL,
+    ("PUT", "/exams/{exam_id}/manual"): MANUAL,
+    ("PUT", "/live/{live_id}/lock"): {"locked": True},
+    ("PUT", "/live/{live_id}/participants/{participant_id}/answers/{question_id}"): {"points": 1},
 }
 
 
@@ -197,7 +212,7 @@ def test_another_owner_cannot_reach_or_change_anything(
     borrarlo ni lanzar trabajos sobre ello desde ninguna ruta."""
     db = sqlite3.connect(settings.db_path)
     db.execute("INSERT INTO users(id, display_name, role) VALUES ('intruso', 'Otro', 'member')")
-    for table in ("subjects", "chat_threads", "cloud_consents"):
+    for table in ("subjects", "chat_threads", "cloud_consents", "live_sessions"):
         db.execute(f"UPDATE {table} SET owner_id = 'intruso'")  # noqa: S608
     db.commit()
     db.close()
@@ -247,6 +262,7 @@ def test_another_owner_cannot_reach_or_change_anything(
     assert client.get("/api/v1/jobs?active=false&limit=200", headers=auth).json() == []
     assert client.get("/api/v1/study", headers=auth).json()["card"] is None
     assert client.get("/api/v1/cloud/status", headers=auth).json()["session_consents"] == []
+    assert client.get("/api/v1/live", headers=auth).json() == []
 
     assert _snapshot(settings.db_path) == before, "una petición cambió datos de otro usuario"
 

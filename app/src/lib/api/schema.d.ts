@@ -612,6 +612,64 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/subjects/{subject_id}/exams/manual': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Create Manual Exam */
+    post: operations['create_manual_exam_api_v1_subjects__subject_id__exams_manual_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/exams/{exam_id}/manual': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Get Manual Exam
+     * @description Preguntas completas (con la respuesta) para editarlas en la app.
+     */
+    get: operations['get_manual_exam_api_v1_exams__exam_id__manual_get']
+    /** Update Manual Exam */
+    put: operations['update_manual_exam_api_v1_exams__exam_id__manual_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/exams/{exam_id}/duplicate': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Duplicate Manual Exam
+     * @description Copia editable de un examen manual (el original conserva sus intentos).
+     */
+    post: operations['duplicate_manual_exam_api_v1_exams__exam_id__duplicate_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/exams/{exam_id}': {
     parameters: {
       query?: never
@@ -745,6 +803,252 @@ export interface paths {
     /** Submit */
     post: operations['submit_api_v1_attempts__attempt_id__submit_post']
     delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/exams/{exam_id}/live': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Create Session */
+    post: operations['create_session_api_v1_exams__exam_id__live_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Sessions */
+    get: operations['list_sessions_api_v1_live_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Session */
+    get: operations['get_session_api_v1_live__live_id__get']
+    put?: never
+    post?: never
+    /** Delete Session */
+    delete: operations['delete_session_api_v1_live__live_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/participants/{participant_id}/admit': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Admit */
+    post: operations['admit_api_v1_live__live_id__participants__participant_id__admit_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/participants/{participant_id}/kick': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Kick */
+    post: operations['kick_api_v1_live__live_id__participants__participant_id__kick_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/lock': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Lock */
+    put: operations['lock_api_v1_live__live_id__lock_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/start': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Start */
+    post: operations['start_api_v1_live__live_id__start_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/quiz/next': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Quiz Next
+     * @description Concurso: «Pasar ya» (abrir la pregunta, cerrarla o ir a la siguiente sin esperar).
+     */
+    post: operations['quiz_next_api_v1_live__live_id__quiz_next_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/finish': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Finish */
+    post: operations['finish_api_v1_live__live_id__finish_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/publish': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Publish */
+    post: operations['publish_api_v1_live__live_id__publish_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/close': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Close */
+    post: operations['close_api_v1_live__live_id__close_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/results': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Results */
+    get: operations['results_api_v1_live__live_id__results_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/participants/{participant_id}/answers/{question_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Adjust */
+    put: operations['adjust_api_v1_live__live_id__participants__participant_id__answers__question_id__put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/live/{live_id}/tunnel': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Start Tunnel
+     * @description Acceso por internet con Cloudflare. La UI pide consentimiento antes de llamar aquí.
+     */
+    post: operations['start_tunnel_api_v1_live__live_id__tunnel_post']
+    /** Stop Tunnel */
+    delete: operations['stop_tunnel_api_v1_live__live_id__tunnel_delete']
     options?: never
     head?: never
     patch?: never
@@ -1020,6 +1324,11 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    /** AdjustIn */
+    AdjustIn: {
+      /** Points */
+      points: number
+    }
     /** AiSettingsIn */
     AiSettingsIn: {
       /** Model */
@@ -1823,6 +2132,16 @@ export interface components {
       attempts: components['schemas']['AttemptSummaryOut'][]
       /** Created At */
       created_at: string
+      /**
+       * Manual
+       * @default false
+       */
+      manual: boolean
+      /**
+       * Editable
+       * @default false
+       */
+      editable: boolean
     }
     /** ExamScopeIn */
     ExamScopeIn: {
@@ -1932,6 +2251,221 @@ export interface components {
       /** Finished At */
       finished_at: string | null
     }
+    /** LiveAnswerOut */
+    LiveAnswerOut: {
+      /** Question Id */
+      question_id: string
+      /** Answer */
+      answer: unknown
+      /** Points */
+      points: number | null
+      /** Is Correct */
+      is_correct: boolean | null
+      /** Feedback */
+      feedback: string | null
+      /** Graded By */
+      graded_by: ('auto' | 'ai') | null
+      /** Adjusted */
+      adjusted: boolean
+    }
+    /** LiveIn */
+    LiveIn: {
+      /**
+       * Mode
+       * @default practice
+       * @enum {string}
+       */
+      mode: 'practice' | 'graded' | 'quiz'
+      /** Time Limit Min */
+      time_limit_min?: number | null
+      /**
+       * Show Results
+       * @default true
+       */
+      show_results: boolean
+      /**
+       * Question S
+       * @default 20
+       */
+      question_s: number
+    }
+    /** LiveParticipantOut */
+    LiveParticipantOut: {
+      /** Id */
+      id: string
+      /** Name */
+      name: string
+      /** Device */
+      device: string | null
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'pending' | 'admitted'
+      /** Online */
+      online: boolean
+      /** Answered */
+      answered: number
+      /** Total */
+      total: number
+      /** Attempt Status */
+      attempt_status: ('in_progress' | 'grading' | 'graded') | null
+      /** Score */
+      score: number | null
+      /** Max Score */
+      max_score: number | null
+      /** Left Count */
+      left_count: number
+      /** Joined At */
+      joined_at: string
+      /** Finished At */
+      finished_at: string | null
+    }
+    /** LiveQuestionStatOut */
+    LiveQuestionStatOut: {
+      /** Question Id */
+      question_id: string
+      /** Position */
+      position: number
+      /**
+       * Type
+       * @enum {string}
+       */
+      type: 'single' | 'true_false' | 'short'
+      /** Stem */
+      stem: string
+      /** Options */
+      options: string[]
+      /** Answer */
+      answer: unknown
+      /** Justification */
+      justification: string | null
+      /** Rubric */
+      rubric: string[]
+      /** Evidence */
+      evidence: components['schemas']['CitationOut'][]
+      /** Answered */
+      answered: number
+      /** Ratio */
+      ratio: number | null
+    }
+    /** LiveResultRowOut */
+    LiveResultRowOut: {
+      /** Id */
+      id: string
+      /** Name */
+      name: string
+      /** Device */
+      device: string | null
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'pending' | 'admitted'
+      /** Online */
+      online: boolean
+      /** Answered */
+      answered: number
+      /** Total */
+      total: number
+      /** Attempt Status */
+      attempt_status: ('in_progress' | 'grading' | 'graded') | null
+      /** Score */
+      score: number | null
+      /** Max Score */
+      max_score: number | null
+      /** Left Count */
+      left_count: number
+      /** Joined At */
+      joined_at: string
+      /** Finished At */
+      finished_at: string | null
+      /** Answers */
+      answers: components['schemas']['LiveAnswerOut'][]
+    }
+    /** LiveResultsOut */
+    LiveResultsOut: {
+      /** Participants */
+      participants: components['schemas']['LiveResultRowOut'][]
+      /** Questions */
+      questions: components['schemas']['LiveQuestionStatOut'][]
+    }
+    /** LiveSessionOut */
+    LiveSessionOut: {
+      /** Id */
+      id: string
+      /** Exam Id */
+      exam_id: string
+      /** Exam Title */
+      exam_title: string
+      /**
+       * Mode
+       * @enum {string}
+       */
+      mode: 'practice' | 'graded' | 'quiz'
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'lobby' | 'running' | 'finished' | 'closed'
+      /** Code */
+      code: string
+      /** Locked */
+      locked: boolean
+      /** Show Results */
+      show_results: boolean
+      /** Published */
+      published: boolean
+      /** Time Limit Min */
+      time_limit_min: number | null
+      /** Started At */
+      started_at: string | null
+      /** Ends At */
+      ends_at: string | null
+      /** Finished At */
+      finished_at: string | null
+      /** Created At */
+      created_at: string
+      /** Server Now */
+      server_now: string
+      /** Url */
+      url: string | null
+      /** Qr */
+      qr: string[] | null
+      /** Network Problem */
+      network_problem: string | null
+      /** Https Attempts */
+      https_attempts: number
+      tunnel: components['schemas']['TunnelOut']
+      /** Participants */
+      participants: components['schemas']['LiveParticipantOut'][]
+      quiz?: components['schemas']['QuizOut'] | null
+    }
+    /** LiveSummaryOut */
+    LiveSummaryOut: {
+      /** Id */
+      id: string
+      /** Exam Id */
+      exam_id: string
+      /** Exam Title */
+      exam_title: string
+      /**
+       * Mode
+       * @enum {string}
+       */
+      mode: 'practice' | 'graded' | 'quiz'
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'lobby' | 'running' | 'finished' | 'closed'
+      /** Published */
+      published: boolean
+      /** Admitted */
+      admitted: number
+      /** Created At */
+      created_at: string
+    }
     /** LlmModelOut */
     LlmModelOut: {
       /** Name */
@@ -1949,6 +2483,92 @@ export interface components {
       name: string
       /** Size Mb */
       size_mb: number
+    }
+    /** LockIn */
+    LockIn: {
+      /** Locked */
+      locked: boolean
+    }
+    /** ManualExamIn */
+    ManualExamIn: {
+      /** Title */
+      title: string
+      /**
+       * Mode
+       * @default practice
+       * @enum {string}
+       */
+      mode: 'practice' | 'timed'
+      /** Time Limit Min */
+      time_limit_min?: number | null
+      /**
+       * Penalty
+       * @default 0
+       */
+      penalty: number
+      /** Questions */
+      questions: components['schemas']['ManualQuestionIn'][]
+    }
+    /** ManualExamOut */
+    ManualExamOut: {
+      /** Title */
+      title: string
+      /**
+       * Mode
+       * @default practice
+       * @enum {string}
+       */
+      mode: 'practice' | 'timed'
+      /** Time Limit Min */
+      time_limit_min?: number | null
+      /**
+       * Penalty
+       * @default 0
+       */
+      penalty: number
+      /** Questions */
+      questions: components['schemas']['ManualQuestionIn'][]
+      /** Editable */
+      editable: boolean
+    }
+    /**
+     * ManualQuestionIn
+     * @description Pregunta escrita a mano. `answer`: índice de la opción correcta, verdadero/falso o la
+     *     respuesta modelo (corta, la corrige la IA local con ella y la rúbrica).
+     */
+    ManualQuestionIn: {
+      /**
+       * Type
+       * @enum {string}
+       */
+      type: 'single' | 'true_false' | 'short'
+      /** Stem */
+      stem: string
+      /**
+       * Options
+       * @default []
+       */
+      options: string[]
+      /** Answer */
+      answer: boolean | number | string
+      /**
+       * Justification
+       * @default
+       */
+      justification: string
+      /**
+       * Rubric
+       * @default []
+       */
+      rubric: string[]
+      /**
+       * Difficulty
+       * @default medium
+       * @enum {string}
+       */
+      difficulty: 'easy' | 'medium' | 'hard'
+      /** Source Id */
+      source_id?: string | null
     }
     /** MessageIn */
     MessageIn: {
@@ -2119,6 +2739,64 @@ export interface components {
        * @enum {string}
        */
       difficulty: 'easy' | 'medium' | 'hard'
+    }
+    /** QuizOut */
+    QuizOut: {
+      /**
+       * Phase
+       * @enum {string}
+       */
+      phase: 'lobby' | 'countdown' | 'question' | 'reveal' | 'finished'
+      /** Index */
+      index: number | null
+      /** Total */
+      total: number
+      /** Skipped */
+      skipped: number
+      /** Question S */
+      question_s: number
+      /** Remaining Ms */
+      remaining_ms: number | null
+      /** Players */
+      players: number
+      /** Answered */
+      answered: number
+      question: components['schemas']['QuizQuestionOut'] | null
+      /** Correct Index */
+      correct_index: number | null
+      /** Counts */
+      counts: number[] | null
+      /** Leaderboard */
+      leaderboard: components['schemas']['QuizRankOut'][]
+    }
+    /** QuizQuestionOut */
+    QuizQuestionOut: {
+      /** Id */
+      id: string
+      /**
+       * Type
+       * @enum {string}
+       */
+      type: 'single' | 'true_false'
+      /** Stem */
+      stem: string
+      /** Options */
+      options: string[]
+    }
+    /** QuizRankOut */
+    QuizRankOut: {
+      /** Participant Id */
+      participant_id: string
+      /** Name */
+      name: string
+      /** Score */
+      score: number
+      /** Correct */
+      correct: number
+      /** Answered */
+      answered: number
+      /** Rank */
+      rank: number
     }
     /** RagStatusOut */
     RagStatusOut: {
@@ -2639,6 +3317,22 @@ export interface components {
     TranscribeIn: {
       /** Language */
       language?: ('auto' | 'es' | 'en') | null
+    }
+    /**
+     * TunnelOut
+     * @description Acceso por internet (Cloudflare). Uno para todas las salas abiertas: el túnel lleva al
+     *     servidor de la sala, no a una sala concreta.
+     */
+    TunnelOut: {
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'off' | 'starting' | 'on' | 'error'
+      /** Url */
+      url: string | null
+      /** Error */
+      error: string | null
     }
     /** UnitIn */
     UnitIn: {
@@ -4276,6 +4970,138 @@ export interface operations {
       }
     }
   }
+  create_manual_exam_api_v1_subjects__subject_id__exams_manual_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        subject_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ManualExamIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ExamOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_manual_exam_api_v1_exams__exam_id__manual_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        exam_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ManualExamOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_manual_exam_api_v1_exams__exam_id__manual_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        exam_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ManualExamIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ExamOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  duplicate_manual_exam_api_v1_exams__exam_id__duplicate_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        exam_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ExamOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   get_exam_api_v1_exams__exam_id__get: {
     parameters: {
       query?: never
@@ -4575,6 +5401,516 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['AttemptOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_session_api_v1_exams__exam_id__live_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        exam_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['LiveIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_sessions_api_v1_live_get: {
+    parameters: {
+      query?: {
+        exam_id?: string | null
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSummaryOut'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_session_api_v1_live__live_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_session_api_v1_live__live_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  admit_api_v1_live__live_id__participants__participant_id__admit_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+        participant_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  kick_api_v1_live__live_id__participants__participant_id__kick_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+        participant_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  lock_api_v1_live__live_id__lock_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['LockIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  start_api_v1_live__live_id__start_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  quiz_next_api_v1_live__live_id__quiz_next_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  finish_api_v1_live__live_id__finish_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  publish_api_v1_live__live_id__publish_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  close_api_v1_live__live_id__close_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  results_api_v1_live__live_id__results_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveResultsOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  adjust_api_v1_live__live_id__participants__participant_id__answers__question_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+        participant_id: string
+        question_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdjustIn']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveResultsOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  start_tunnel_api_v1_live__live_id__tunnel_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  stop_tunnel_api_v1_live__live_id__tunnel_delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        live_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LiveSessionOut']
         }
       }
       /** @description Validation Error */

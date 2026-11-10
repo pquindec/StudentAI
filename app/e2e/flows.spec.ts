@@ -108,3 +108,58 @@ test('crear un examen, contestar y comprobar', async ({ page, backend }) => {
   await expect(page.getByRole('main')).toContainText(/Nota\s*\d+([.,]\d+)?\/10/)
   await expect(page.getByRole('heading', { name: 'Dónde fallaste más' })).toBeVisible()
 })
+
+test('crear un examen a mano, editarlo y hacerlo', async ({ page, backend }) => {
+  await seed(backend)
+  await page.goto('/')
+  await go(page, 'Exámenes')
+  await page.getByRole('button', { name: 'Crear a mano' }).click()
+  await page.getByRole('textbox', { name: 'Título' }).fill('Repaso de redes')
+
+  // Pregunta 1: opción múltiple (con 3 opciones: se quita la última de las 4 iniciales).
+  const q1 = page.getByRole('region', { name: 'Pregunta 1' })
+  await q1.getByRole('textbox', { name: 'Enunciado' }).fill('¿Qué capa enruta paquetes?')
+  for (const [i, text] of ['Enlace', 'Red', 'Transporte'].entries())
+    await q1.getByRole('textbox', { name: `Opción ${i + 1}` }).fill(text)
+  await q1.getByRole('button', { name: 'Quitar la opción 4' }).click()
+
+  // Guardar sin marcar la correcta: se explica qué falta.
+  await page.getByRole('button', { name: 'Guardar examen' }).click()
+  await expect(page.getByRole('alert')).toContainText(
+    'Pregunta 1: marca cuál es la opción correcta.',
+  )
+  await q1.getByRole('radio', { name: 'La opción 2 es la correcta' }).check()
+
+  // Pregunta 2: verdadero/falso.
+  await page.getByRole('button', { name: '+ Verdadero / falso' }).click()
+  const q2 = page.getByRole('region', { name: 'Pregunta 2' })
+  await q2.getByRole('textbox', { name: 'Afirmación' }).fill('TCP garantiza el orden.')
+  await q2.getByRole('radio', { name: 'Verdadero' }).check()
+  await page.getByRole('button', { name: 'Guardar examen' }).click()
+
+  // Queda listo al momento y se puede editar mientras nadie lo haya hecho.
+  await expect(page.getByRole('heading', { name: 'Repaso de redes', level: 1 })).toBeVisible()
+  await expect(page.getByText('Creado a mano')).toBeVisible()
+  await page.getByRole('button', { name: 'Editar preguntas' }).click()
+  await page
+    .getByRole('region', { name: 'Pregunta 2' })
+    .getByRole('button', { name: 'Subir' })
+    .click()
+  await expect(
+    page.getByRole('region', { name: 'Pregunta 1' }).getByRole('textbox', { name: 'Afirmación' }),
+  ).toHaveValue('TCP garantiza el orden.')
+  await page.getByRole('button', { name: 'Guardar examen' }).click()
+
+  // Hacerlo: la primera es ahora la de V/F.
+  await page.getByRole('button', { name: 'Empezar' }).click()
+  await expect(page.getByText('TCP garantiza el orden.')).toBeVisible()
+  await page.getByRole('radio', { name: 'Verdadero' }).check()
+  await page.getByRole('button', { name: /Comprobar/ }).click()
+  await expect(page.getByText('Correcta', { exact: true }).first()).toBeVisible()
+  await page.getByRole('button', { name: 'Volver al examen' }).click()
+
+  // Con un intento ya no se edita: se ofrece duplicarlo.
+  await page.getByRole('button', { name: 'Duplicar para editar' }).click()
+  await page.getByRole('button', { name: 'Duplicar para editar' }).click()
+  await expect(page.getByRole('textbox', { name: 'Título' })).toHaveValue('Repaso de redes (copia)')
+})

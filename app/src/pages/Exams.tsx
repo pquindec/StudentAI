@@ -323,9 +323,14 @@ export function Exams() {
         subtitle={es.exams.subtitle}
         actions={
           subjectId ? (
-            <Button variant="primary" onClick={() => setOpen(true)}>
-              {es.exams.new}
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => navigate({ name: 'examEditor', subjectId })}>
+                {es.examEditor.create}
+              </Button>
+              <Button variant="primary" onClick={() => setOpen(true)}>
+                {es.exams.new}
+              </Button>
+            </div>
           ) : undefined
         }
       />

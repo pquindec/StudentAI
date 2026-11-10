@@ -103,6 +103,17 @@ Pediste que cuestionara el stack donde tuviera sentido. Mantengo todas las tecno
 ### ADR-011 · Repetición espaciada con FSRS (decidido 2026-11-03)
 - Se elige **FSRS** (ver §9). SM-2 queda descartado como algoritmo principal; la interfaz `Scheduler` permite añadirlo si algún día se necesita.
 
+### ADR-012 · Examen en vivo en la red local del aula (propuesto 2026-11-07, Fase 9.5)
+**Contexto:** el usuario quiere compartir un examen en clase (Wi-Fi de la universidad, 15–20 personas, práctica y con nota): QR → nombre → sala de espera → empieza cuando él lo indica desde la app.
+**Decisión:**
+1. **Red local, sin nube.** Un servidor de sala separado de la API principal escucha en la IP de la Wi-Fi solo mientras hay una sala abierta y solo expone las rutas del participante. La API principal sigue en el Unix socket (ADR-002). Se descartan por ahora el túnel (los datos pasarían por un tercero) y un servidor en la nube.
+2. **La lógica vive en el backend** (servicio de sesiones en vivo reutilizando exámenes, intentos y corrección). La app (tú) usa la API de siempre; los teléfonos, una página web ligera servida por la sala.
+3. **Tiempo real por *polling* corto** (elegido al implementar: el teléfono consulta cada 2–3 s y la app cada 1,5 s; con 20 dispositivos es poca carga, sobrevive mejor a bloqueos del teléfono y a proxies que SSE, y simplifica el servidor). El reloj del examen es el del Mac. El **modo concurso** (2026-11-09) usa el mismo servidor: el avance de las preguntas lo calcula el backend a partir de la hora (`services/quiz.py::tick`, llamado en cada consulta), y teléfonos y app consultan cada segundo mientras está en marcha.
+4. **Las respuestas correctas no salen del Mac** hasta publicar resultados; la corrección siempre es en el servidor.
+5. **Identidad sin cuentas:** token por dispositivo (cookie `HttpOnly`); con nota, admisión manual por el profesor y lista de clase opcional.
+**Riesgos aceptados (a confirmar):** sin HTTPS en la red local (un certificado propio mostraría avisos en todos los teléfonos), así que en esa Wi-Fi nombres y respuestas viajan sin cifrar; el nombre no se verifica salvo por la admisión manual; si la Wi-Fi aísla dispositivos, no funciona (se comprueba primero).
+**Privacidad:** se guardan datos de otras personas (nombre, respuestas, nota) solo en el Mac del profesor, con aviso y borrado.
+
 ---
 
 ## 3. Vista de procesos

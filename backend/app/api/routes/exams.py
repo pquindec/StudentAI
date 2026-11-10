@@ -7,10 +7,11 @@ import json
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Response
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import BaseModel, Field, StrictBool, StrictInt, StringConstraints, model_validator
 
 from app.api.deps import Db, UserId
 from app.api.routes.ai import CitationOut
+from app.core.errors import conflict
 from app.generation.exam import ExamConfig
 from app.jobs import queue
 from app.rag.scope import Scope
@@ -37,6 +38,74 @@ class ExamIn(BaseModel):
     config: ExamConfig
     scope: ExamScopeIn = ExamScopeIn()
     consent_id: Annotated[str, StringConstraints(max_length=64)] | None = None  # Fase 8
+
+
+Text = Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)]
+Line = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
+
+
+class ManualQuestionIn(BaseModel):
+    """Pregunta escrita a mano. `answer`: índice de la opción correcta, verdadero/falso o la
+    respuesta modelo (corta, la corrige la IA local con ella y la rúbrica)."""
+
+    type: Literal["single", "true_false", "short"]
+    stem: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+    options: Annotated[list[Line], Field(max_length=6)] = []
+    answer: StrictBool | StrictInt | Text
+    justification: Text = ""
+    rubric: Annotated[list[Line], Field(max_length=10)] = []
+    difficulty: Literal["easy", "medium", "hard"] = "medium"
+    source_id: Annotated[str, StringConstraints(max_length=64)] | None = None
+
+    @model_validator(mode="after")
+    def _check(self) -> "ManualQuestionIn":
+        if self.type == "single":
+            if not 2 <= len(self.options) <= 6:
+                raise ValueError("Una pregunta de opción múltiple necesita de 2 a 6 opciones")
+            if len({o.casefold() for o in self.options}) != len(self.options):
+                raise ValueError("Hay opciones repetidas")
+            a = self.answer
+            if isinstance(a, bool) or not isinstance(a, int) or not 0 <= a < len(self.options):
+                raise ValueError("Marca cuál es la opción correcta")
+        else:
+            self.options = []
+            if self.type == "true_false" and not isinstance(self.answer, bool):
+                raise ValueError("Indica si la afirmación es verdadera o falsa")
+            if self.type == "short" and not (isinstance(self.answer, str) and self.answer):
+                raise ValueError("Escribe la respuesta modelo")
+        if self.type != "short":
+            self.rubric = []
+        return self
+
+
+class ManualExamIn(BaseModel):
+    title: Title
+    mode: Literal["practice", "timed"] = "practice"
+    time_limit_min: int | None = Field(None, ge=1, le=240)
+    penalty: float = Field(0.0, ge=0.0, le=1.0)
+    questions: Annotated[list[ManualQuestionIn], Field(min_length=1, max_length=50)]
+
+    def config(self) -> ExamConfig:
+        types = list(dict.fromkeys(q.type for q in self.questions))
+        opts = max((len(q.options) for q in self.questions if q.type == "single"), default=4)
+        return ExamConfig(
+            count=len(self.questions),
+            types=types,
+            difficulty="mixed",
+            options=min(5, max(3, opts)),  # solo informativo: cada pregunta tiene las suyas
+            mode=self.mode,
+            time_limit_min=self.time_limit_min,
+            penalty=self.penalty,
+        )
+
+    @model_validator(mode="after")
+    def _check(self) -> "ManualExamIn":
+        self.config()  # cronometrado sin tiempo → 422
+        return self
+
+
+class ManualExamOut(ManualExamIn):
+    editable: bool  # sin intentos ni salas: se puede cambiar
 
 
 class ExamStatsOut(BaseModel):
@@ -71,6 +140,8 @@ class ExamOut(BaseModel):
     stats: ExamStatsOut
     attempts: list[AttemptSummaryOut]
     created_at: str
+    manual: bool = False  # preguntas escritas a mano
+    editable: bool = False  # manual y sin intentos ni salas en vivo
 
 
 class QuestionOut(BaseModel):
@@ -158,8 +229,10 @@ def _exam_out(db: Db, row: dict[str, Any]) -> ExamOut:
             message = "Esperando a que termine otro trabajo de IA"
     stats = json.loads(row["stats_json"] or "{}")
     attempts = db.execute(
-        "SELECT id, status, started_at, finished_at, score, max_score FROM exam_attempts"
-        " WHERE exam_id = ? ORDER BY started_at DESC",
+        "SELECT id, status, started_at, finished_at, score, max_score FROM exam_attempts a"
+        " WHERE exam_id = ? AND NOT EXISTS"  # los de los participantes en vivo, aparte
+        " (SELECT 1 FROM live_participants p WHERE p.attempt_id = a.id)"
+        " ORDER BY started_at DESC",
         (row["id"],),
     ).fetchall()
     n = db.execute(
@@ -182,6 +255,8 @@ def _exam_out(db: Db, row: dict[str, Any]) -> ExamOut:
         stats=ExamStatsOut(**{k: v for k, v in stats.items() if k in ExamStatsOut.model_fields}),
         attempts=[AttemptSummaryOut(**dict(a)) for a in attempts],
         created_at=row["created_at"],
+        manual=svc.is_manual(row),
+        editable=svc.is_manual(row) and not svc.in_use(db, row["id"]),
     )
 
 
@@ -191,6 +266,61 @@ def create_exam(subject_id: str, body: ExamIn, db: Db, user: UserId) -> ExamOut:
     title = body.title or f"Examen · {sub['name']}"[:300]
     scope = Scope(subject_id=subject_id, **body.scope.model_dump())
     eid = svc.create_exam(db, user, subject_id, title, body.config, scope, body.consent_id)
+    return _exam_out(db, svc.get_exam(db, user, eid))
+
+
+@router.post("/subjects/{subject_id}/exams/manual", response_model=ExamOut, status_code=201)
+def create_manual_exam(subject_id: str, body: ManualExamIn, db: Db, user: UserId) -> ExamOut:
+    qs = [q.model_dump() for q in body.questions]
+    eid = svc.create_manual(db, user, subject_id, body.title, body.config(), qs)
+    return _exam_out(db, svc.get_exam(db, user, eid))
+
+
+@router.get("/exams/{exam_id}/manual", response_model=ManualExamOut)
+def get_manual_exam(exam_id: str, db: Db, user: UserId) -> ManualExamOut:
+    """Preguntas completas (con la respuesta) para editarlas en la app."""
+    exam = svc.get_exam(db, user, exam_id)
+    if not svc.is_manual(exam):
+        raise conflict("not_manual", "Solo se pueden editar los exámenes creados a mano")
+    cfg = ExamConfig.model_validate_json(exam["config_json"])
+    return ManualExamOut(
+        title=exam["title"],
+        mode=cfg.mode,
+        time_limit_min=cfg.time_limit_min,
+        penalty=cfg.penalty,
+        editable=not svc.in_use(db, exam_id),
+        questions=[
+            ManualQuestionIn(
+                type=q["type"],
+                stem=q["stem"],
+                options=json.loads(q["options_json"]),
+                answer=json.loads(q["answer_json"]),
+                justification=q["justification"],
+                rubric=json.loads(q["rubric_json"] or "[]"),
+                difficulty=q["difficulty"],
+                source_id=q["source_id"],
+            )
+            for q in svc.questions(db, exam_id)
+        ],
+    )
+
+
+@router.put("/exams/{exam_id}/manual", response_model=ExamOut)
+def update_manual_exam(exam_id: str, body: ManualExamIn, db: Db, user: UserId) -> ExamOut:
+    exam = svc.get_exam(db, user, exam_id)
+    qs = [q.model_dump() for q in body.questions]
+    svc.update_manual(db, exam, body.title, body.config(), qs)
+    return _exam_out(db, svc.get_exam(db, user, exam_id))
+
+
+@router.post("/exams/{exam_id}/duplicate", response_model=ExamOut, status_code=201)
+def duplicate_manual_exam(exam_id: str, db: Db, user: UserId) -> ExamOut:
+    """Copia editable de un examen manual (el original conserva sus intentos)."""
+    data = get_manual_exam(exam_id, db, user)
+    exam = svc.get_exam(db, user, exam_id)
+    title = f"{data.title} (copia)"[:300]
+    qs = [q.model_dump() for q in data.questions]
+    eid = svc.create_manual(db, user, exam["subject_id"], title, data.config(), qs)
     return _exam_out(db, svc.get_exam(db, user, eid))
 
 
@@ -235,6 +365,7 @@ def _attempt_out(db: Db, att: dict[str, Any]) -> AttemptOut:
     qs = svc.questions(db, att["exam_id"])
     ans = svc.answers(db, att["id"])
     graded = att["status"] == "graded"
+    weak = svc.weak_topics(db, att["id"], svc.is_manual(att)) if graded else []
     ev = svc.evidence(db, [q["id"] for q in qs])
     states = []
     for q in qs:
@@ -288,7 +419,7 @@ def _attempt_out(db: Db, att: dict[str, Any]) -> AttemptOut:
             for q in qs
         ],
         answers=states,
-        weak_topics=[WeakTopicOut(**w) for w in svc.weak_topics(db, att["id"])] if graded else [],
+        weak_topics=[WeakTopicOut(**w) for w in weak] if graded else [],
     )
 
 

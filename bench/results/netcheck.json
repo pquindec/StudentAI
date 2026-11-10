@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-07T19:13:24+00:00",
+  "private_network": true,
+  "ok": false,
+  "verdict": "Ningún dispositivo llegó al Mac. Si el QR abrió el enlace pero la página no cargó, la Wi-Fi aísla los dispositivos (o el cortafuegos bloqueó la conexión). Siguiente paso: decidir la alternativa (router de viaje propio o túnel).",
+  "devices": [],
+  "https_attempts": 0,
+  "rtt_median_ms_all": null
+}

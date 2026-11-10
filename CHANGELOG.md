@@ -1,5 +1,43 @@
 # Changelog
 
+## [Sin publicar] — Fase 9.5: examen en vivo en el aula (en curso)
+### Añadido
+- **Modo concurso en la sala en vivo:** al compartir, elige «Concurso» y los segundos por pregunta.
+  - **Ritmo:** todos ven la misma pregunta a la vez con cuenta atrás. Se cierra al acabar el tiempo o cuando han respondido todos los conectados, muestra la respuesta correcta y la clasificación 8 s y pasa sola a la siguiente («Pasar ya» para no esperar). Al final, podio con el ganador.
+  - **Puntos:** acertar da de 1.000 a 500 según la rapidez y fallar no resta. El tiempo se mide en el Mac al recibir la respuesta, no con el reloj del teléfono. A igualdad de puntos gana quien acertó en menos tiempo, y el empate exacto comparte puesto.
+  - **«Proyectar»:** vista a pantalla completa con el QR y quién entra, la pregunta con la cuenta atrás y cuántos han respondido, la respuesta con el reparto por opción y el top 5, y el podio.
+  - **En el teléfono:** opciones grandes, si acertó y cuántos puntos sumó, su puesto, el top 5 y su puesto final. Cada uno entra con el nombre o apodo que quiere mostrar (se avisa de que se proyectará). No cuenta para nota.
+  - Usa las preguntas de opción múltiple y verdadero/falso; las de respuesta corta se omiten y se indica. La respuesta correcta no sale de tu Mac (ni al teléfono ni al proyector) hasta que se cierra la pregunta.
+- **Exámenes escritos a mano:** en Exámenes, «Crear a mano».
+  - **Tipos de pregunta:** opción múltiple (2–6 opciones, marcas la correcta), verdadero/falso y respuesta corta (respuesta modelo y puntos clave; la corrige la IA local con ellos).
+  - **Por pregunta, opcional:** explicación que se muestra al corregir, dificultad y fuente relacionada (sirve para «Dónde fallaste más»).
+  - El examen queda listo al guardar, sin IA, y funciona igual que los generados: práctica, con tiempo, penalización y salas en vivo.
+  - **Editar:** se puede mientras no tenga intentos ni salas. Después, «Duplicar para editar» crea una copia, para que las notas ya dadas sigan cuadrando.
+- **Prueba de red del aula** (`cd backend && uv run python -m app.live.netcheck`): muestra un QR (en la terminal y como imagen grande); desde cada teléfono comprueba que llega al Mac, la latencia, la conexión en tiempo real y la reconexión tras bloquear el teléfono, y al final dice si la Wi-Fi sirve para el examen en vivo. Solo sirve la página de prueba en una ruta aleatoria, con límites de peticiones y de tamaño, y se apaga sola; no accede a los datos de la app. Resumen sin IPs en `bench/results/netcheck.json`.
+- **Examen en vivo:** botón «Compartir en vivo» en un examen listo, en modo **Práctica** o **Con nota**. La sala muestra código, QR y enlace; los participantes entran desde el navegador del teléfono u ordenador con su nombre (aviso de privacidad incluido) y esperan hasta que pulses **Iniciar examen**.
+  - **Con nota:** admites a cada persona a mano.
+  - **Práctica:** entran directamente y, si lo permites, ven su nota al entregar.
+  - **En la sala:** quién está conectado, su dispositivo, cuántas preguntas lleva, si salió de la página, y su entrega y nota. Puedes expulsar a alguien, cerrar la entrada y ver el tiempo restante.
+  - **Al terminar:** corrección automática y por IA local con los mismos criterios que tus exámenes, ajuste manual de los puntos (0, ½, 1), estadística por pregunta, media, exportación CSV (sin fórmulas ejecutables) y «Publicar notas».
+  - **En el teléfono:** el orden de preguntas y opciones cambia por persona, las respuestas se guardan al momento y se reintentan si se corta la Wi-Fi, y al recargar o bloquear el teléfono se vuelve donde estaba. Las respuestas correctas nunca llegan al teléfono antes de publicar.
+  - Los intentos de la sala no cuentan en tus estadísticas personales.
+  - **Preguntas y respuestas (solo en tu app):** desde la sala de espera puedes ver cada pregunta con la respuesta correcta, lo que debe incluir, por qué y el fragmento de la fuente que la respalda, con «Abrir fuente». El panel empieza cerrado por si proyectas la pantalla con el QR; los teléfonos nunca reciben nada de esto.
+- **Servidor de la sala:**
+  - Está separado de la API principal, que sigue sin puerto de red. Solo escucha en la IP de la Wi-Fi mientras haya una sala abierta y solo ofrece las rutas del participante.
+  - El Mac no se suspende mientras la sala está abierta (`caffeinate`).
+  - Límites: 600 peticiones por minuto por IP, bloqueo tras 30 códigos erróneos en 10 minutos, cuerpo máximo de 20 KB y 40 participantes.
+  - Si un navegador intenta entrar por HTTPS (Samsung Internet), lo detecta y te avisa.
+### Base de datos
+- Migración `0009_live.sql`: `live_sessions`, `live_participants` y la columna `attempt_answers.adjusted`.
+- Migración `0010_quiz.sql`: estado del concurso en `live_sessions` y la tabla `live_quiz_answers`.
+### Corregido
+- **«No hay conexión Wi-Fi» en la red de la universidad:** esa red usa direcciones del espacio compartido `100.64.0.0/10` (RFC 6598), que no se alcanzan desde internet pero que la app no reconocía como red local. Ahora se aceptan, tanto en la sala como en la prueba de red.
+- **La sala usa el puerto 80** (el de cualquier página web, el que menos redes filtran) y la dirección queda sin número de puerto: `http://<IP>/s/<CÓDIGO>/`. Para usarlo sin administrador, macOS obliga a escuchar en todas las interfaces; el servidor descarta cualquier conexión que no llegue por la IP de la Wi-Fi. Si el 80 no está disponible, vuelve a 8765.
+- **Compartir la sala por internet (Cloudflare):** para redes que aíslan los dispositivos, como la Wi-Fi de la universidad (confirmado: `ERR_ADDRESS_UNREACHABLE`, no llega nada al Mac). Botón «Compartir por internet» en la sala, con aviso de consentimiento cada vez: el tráfico pasa por Cloudflare, que puede verlo. Abre un túnel rápido (`cloudflared`, Apache-2.0, sin cuenta, instalado aparte con `brew install cloudflared`) por HTTP/2, porque en esa red QUIC está bloqueado. El QR y el enlace pasan a `https://….trycloudflare.com` (de paso, HTTPS para Samsung Internet). Se cierra al cerrar la sala, al dejar de compartir o si el backend muere (un vigilante cierra `cloudflared`). Con el túnel, los límites de peticiones usan la IP real del teléfono (`CF-Connecting-IP`), solo para conexiones del propio Mac. Endpoints `POST/DELETE /live/{id}/tunnel`; `LiveSessionOut.tunnel`. Sin migración.
+- La prueba de red y la sala aceptaban solo 5 conexiones en espera: con 20 teléfonos a la vez algunos recibían «conexión reiniciada». Ahora aceptan 128.
+### Dependencias
+- `segno` 1.6.6 (BSD-3-Clause, sin dependencias): genera los QR. Se usará también en la sala del examen en vivo; escribir un generador de QR propio es propenso a errores.
+
 ## [0.9.1] — 2026-11-07 · Privacidad al usar tu plan de Claude
 ### Cambiado
 - Cuando la app usa tu plan mediante Claude Code, este ya no envía estadísticas de uso, informes de errores ni encuestas asociados a tu cuenta, ni intenta actualizarse: solo sale la petición al modelo que apruebas. Comprobado con `claude auth status` (`analyticsDisabled: true`).

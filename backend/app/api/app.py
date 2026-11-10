@@ -16,6 +16,7 @@ from app.api.routes import (
     flashcards,
     internal,
     jobs,
+    live,
     sources,
     stats,
     stt,
@@ -27,6 +28,7 @@ from app.core.errors import AppError, from_integrity_error
 from app.core.limits import MAX_REQUEST_BYTES
 from app.core.security import BodyLimitMiddleware, TokenAuthMiddleware
 from app.jobs.scheduler import Scheduler
+from app.live import room
 
 log = logging.getLogger(__name__)
 API_PREFIX = "/api/v1"
@@ -40,6 +42,7 @@ def create_app(settings: Settings, run_jobs: bool = True) -> FastAPI:
         if run_jobs:
             scheduler.start()
         yield
+        room.manager.stop()  # sin la sala abierta en la red al cerrar
         await scheduler.stop()
 
     # Sin /docs ni /openapi.json en ejecución: el esquema se exporta en desarrollo.
@@ -61,6 +64,7 @@ def create_app(settings: Settings, run_jobs: bool = True) -> FastAPI:
         ai,
         chat,
         exams,
+        live,
         flashcards,
         stats,
         cloud,

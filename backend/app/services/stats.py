@@ -41,6 +41,7 @@ def _attempts(
             FROM exam_attempts a JOIN exams e ON e.id = a.exam_id
             JOIN subjects s ON s.id = e.subject_id
             WHERE s.owner_id = ? AND a.started_at >= ?{extra}
+              AND NOT EXISTS (SELECT 1 FROM live_participants p WHERE p.attempt_id = a.id)
             ORDER BY a.started_at""",  # noqa: S608
         [user, since, *args],
     ).fetchall()

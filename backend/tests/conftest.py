@@ -93,3 +93,14 @@ def client(settings: Settings) -> Iterator[TestClient]:
 @pytest.fixture
 def auth(settings: Settings) -> dict[str, str]:
     return {"Authorization": f"Bearer {settings.token}"}
+
+
+@pytest.fixture(autouse=True)
+def room_on_loopback(monkeypatch: pytest.MonkeyPatch) -> Iterator[object]:
+    """La sala del examen en vivo nunca se abre en la Wi-Fi real del Mac durante las pruebas."""
+    from app.live import room
+
+    m = room.Manager(resolve_ip=lambda: "127.0.0.1")
+    monkeypatch.setattr(room, "manager", m)
+    yield m
+    m.stop()

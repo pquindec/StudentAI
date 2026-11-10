@@ -42,6 +42,9 @@ export type SourceIndex = S['SourceIndexOut']
 export type Exam = S['ExamOut']
 export type ExamIn = S['ExamIn']
 export type ExamConfig = S['ExamConfig']
+export type ManualExamIn = S['ManualExamIn']
+export type ManualExam = S['ManualExamOut']
+export type ManualQuestion = S['ManualQuestionIn']
 export type Deck = S['DeckOut']
 export type DeckDetail = S['DeckDetailOut']
 export type DeckIn = S['DeckIn']
@@ -55,6 +58,15 @@ export type AttemptQuestion = S['QuestionOut']
 export type AnswerState = S['AnswerStateOut']
 export type AnswerIn = S['AnswerIn']
 export type WeakTopic = S['WeakTopicOut']
+export type LiveIn = S['LiveIn']
+export type LiveSession = S['LiveSessionOut']
+export type LiveParticipant = S['LiveParticipantOut']
+export type QuizState = S['QuizOut']
+export type QuizRank = S['QuizRankOut']
+export type LiveSummary = S['LiveSummaryOut']
+export type LiveResults = S['LiveResultsOut']
+export type LiveResultRow = S['LiveResultRowOut']
+export type LiveQuestionStat = S['LiveQuestionStatOut']
 export type CloudStatus = S['CloudStatusOut']
 export type CloudSettingsIn = S['CloudSettingsIn']
 export type CloudPreviewIn = S['PreviewIn']
@@ -263,6 +275,18 @@ export class ApiClient {
   createExam(subjectId: string, body: ExamIn): Promise<Exam> {
     return this.call('POST', `/api/v1/subjects/${id(subjectId)}/exams`, body)
   }
+  createManualExam(subjectId: string, body: ManualExamIn): Promise<Exam> {
+    return this.call('POST', `/api/v1/subjects/${id(subjectId)}/exams/manual`, body)
+  }
+  getManualExam(examId: string): Promise<ManualExam> {
+    return this.call('GET', `/api/v1/exams/${id(examId)}/manual`)
+  }
+  updateManualExam(examId: string, body: ManualExamIn): Promise<Exam> {
+    return this.call('PUT', `/api/v1/exams/${id(examId)}/manual`, body)
+  }
+  duplicateExam(examId: string): Promise<Exam> {
+    return this.call('POST', `/api/v1/exams/${id(examId)}/duplicate`)
+  }
   getExam(examId: string): Promise<Exam> {
     return this.call('GET', `/api/v1/exams/${id(examId)}`)
   }
@@ -292,6 +316,65 @@ export class ApiClient {
   }
   deleteAttempt(attemptId: string): Promise<void> {
     return this.call('DELETE', `/api/v1/attempts/${id(attemptId)}`)
+  }
+
+  // --- Examen en vivo en el aula (Fase 9.5)
+  createLive(examId: string, body: LiveIn): Promise<LiveSession> {
+    return this.call('POST', `/api/v1/exams/${id(examId)}/live`, body)
+  }
+  listLive(examId?: string): Promise<LiveSummary[]> {
+    return this.call('GET', `/api/v1/live${query({ exam_id: examId })}`)
+  }
+  getLive(liveId: string): Promise<LiveSession> {
+    return this.call('GET', `/api/v1/live/${id(liveId)}`)
+  }
+  liveAction(
+    liveId: string,
+    action: 'start' | 'finish' | 'publish' | 'close',
+  ): Promise<LiveSession> {
+    return this.call('POST', `/api/v1/live/${id(liveId)}/${action}`)
+  }
+  /** Concurso: «Pasar ya» (abrir la pregunta, cerrarla o ir a la siguiente). */
+  /** Acceso por internet (Cloudflare). La UI pide consentimiento antes. */
+  startTunnel(liveId: string): Promise<LiveSession> {
+    return this.call('POST', `/api/v1/live/${id(liveId)}/tunnel`)
+  }
+  stopTunnel(liveId: string): Promise<LiveSession> {
+    return this.call('DELETE', `/api/v1/live/${id(liveId)}/tunnel`)
+  }
+  quizNext(liveId: string): Promise<LiveSession> {
+    return this.call('POST', `/api/v1/live/${id(liveId)}/quiz/next`)
+  }
+  liveParticipant(
+    liveId: string,
+    participantId: string,
+    action: 'admit' | 'kick',
+  ): Promise<LiveSession> {
+    return this.call(
+      'POST',
+      `/api/v1/live/${id(liveId)}/participants/${id(participantId)}/${action}`,
+    )
+  }
+  lockLive(liveId: string, locked: boolean): Promise<LiveSession> {
+    return this.call('PUT', `/api/v1/live/${id(liveId)}/lock`, { locked })
+  }
+  liveResults(liveId: string): Promise<LiveResults> {
+    return this.call('GET', `/api/v1/live/${id(liveId)}/results`)
+  }
+  adjustLive(
+    liveId: string,
+    participantId: string,
+    questionId: string,
+    points: number,
+  ): Promise<LiveResults> {
+    return this.call(
+      'PUT',
+      `/api/v1/live/${id(liveId)}/participants/${id(participantId)}/answers/${id(questionId)}`,
+      { points },
+    )
+  }
+  deleteLive(liveId: string): Promise<void> {
+    return this.call('DELETE', `/api/v1/live/${id(liveId)}`)
   }
 
   // --- Claude en la nube (Fase 8)
